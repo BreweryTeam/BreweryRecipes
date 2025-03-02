@@ -32,6 +32,9 @@ class RecipeItem (recipe: Recipe) {
         if (config.recipeItem.glint == true) {
             meta.addEnchant(Enchantment.MENDING, 1, true)
         }
+        if (config.recipeItem.customModelData != null) {
+            meta.setCustomModelData(config.recipeItem.customModelData)
+        }
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES)
         item.itemMeta = meta
     }
