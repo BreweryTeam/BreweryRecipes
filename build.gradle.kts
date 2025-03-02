@@ -108,6 +108,10 @@ class DiscordWebhook(
     var defaultThumbnail: Boolean = true
 ) {
 
+    companion object {
+        private const val MAX_EMBED_DESCRIPTION_LENGTH = 4096
+    }
+
     var message: String = "content"
     var username: String = "BreweryX Updates"
     var avatarUrl: String = "https://github.com/breweryteam.png"
@@ -153,7 +157,7 @@ class DiscordWebhook(
     }
 
     private fun createEmbeds(): List<JsonObject> {
-        if (embedDescription.length <= 2000) {
+        if (embedDescription.length <= MAX_EMBED_DESCRIPTION_LENGTH) {
             return listOf(JsonObject().apply {
                 addProperty("title", embedTitle)
                 addProperty("description", embedDescription)
@@ -173,8 +177,9 @@ class DiscordWebhook(
         val embeds = mutableListOf<JsonObject>()
         var description = embedDescription
         while (description.isNotEmpty()) {
-            val chunk = description.substring(0, 2000)
-            description = description.substring(2000)
+            val chunkLength = minOf(MAX_EMBED_DESCRIPTION_LENGTH, description.length)
+            val chunk = description.substring(0, chunkLength)
+            description = description.substring(chunkLength)
             embeds.add(JsonObject().apply {
                 addProperty("title", embedTitle)
                 addProperty("description", chunk)
@@ -213,5 +218,3 @@ class DiscordWebhook(
         }
     }
 }
-
-
