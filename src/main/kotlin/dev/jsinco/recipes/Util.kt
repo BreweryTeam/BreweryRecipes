@@ -3,7 +3,6 @@ package dev.jsinco.recipes
 import com.dre.brewery.BreweryPlugin
 import com.dre.brewery.utility.BUtil
 import dev.jsinco.recipes.configuration.RecipesConfig
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
@@ -64,7 +63,7 @@ object Util {
         return item
     }
 
-    fun checkForRecipePermission(player: Player, recipeKey: String): Boolean {
+    fun hasRecipePermission(player: Player, recipeKey: String): Boolean {
         val permissionNode = config.recipePermissionNode.replace("%recipe%", recipeKey)
         // PermissionDefault.FALSE is required to prevent OPs from unlocking all recipes
         return player.hasPermission(Permission(permissionNode, PermissionDefault.FALSE))

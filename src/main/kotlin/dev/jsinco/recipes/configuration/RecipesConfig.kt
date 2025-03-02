@@ -49,6 +49,12 @@ class RecipesConfig : AddonConfigFile() {
         "Either by brewing the recipe or by receiving the brew via command")
     var learnRecipeUponCreation: Boolean = false
 
+    @CustomKey("require-recipe-permission-to-brew")
+    @Comment("If true, the player must have the recipe unlocked to brew the potion.",
+        "If the player does not have the recipe unlocked, they will not be able to fill the potion",
+        "from brewing cauldrons.")
+    var requireRecipePermissionToBrew: Boolean = false
+
     @CustomKey("recipe-spawning")
     @Comment("Recipes spawn in loot chests randomly throughout the world",
         "Disable this by setting your chance to -1")
@@ -245,12 +251,18 @@ class RecipesConfig : AddonConfigFile() {
         }
     }
 
+    @Comment("PLACEHOLDERS: %recipe% the name of the recipe.")
     var messages = MessagesSection()
     class MessagesSection : OkaeriConfig() {
         @CustomKey("already-learned")
         var alreadyLearned = "&rYou already know this recipe!"
-        @Comment("PLACEHOLDERS: %recipe% the name of the recipe.")
+
         @CommentSpace(0)
         var learned = "&rYou have learned the '&#F7FFC9%recipe%&r' recipe!"
+
+        @CustomKey("not-learned")
+        @Comment("Used when a player tries to brew a recipe they do not know (requires: `require-recipe-permission-to-brew` to be enabled)")
+        @CommentSpace(0)
+        var notLearned = "&cYou do not know the recipe for this potion!"
     }
 }

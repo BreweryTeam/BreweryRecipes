@@ -8,7 +8,6 @@ import dev.jsinco.recipes.recipe.Recipe
 import dev.jsinco.recipes.recipe.RecipeUtil
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
@@ -28,7 +27,7 @@ class RecipeGui(player: Player) : InventoryHolder {
         }
 
         val recipes: MutableList<MaybeKnownRecipe> = RecipeUtil.getAllRecipes()
-            .map { MaybeKnownRecipe(it, Util.checkForRecipePermission(player, it.recipeKey)) }.toMutableList()
+            .map { MaybeKnownRecipe(it, Util.hasRecipePermission(player, it.recipeKey)) }.toMutableList()
 
         when (config.gui.sortMethod) {
             SortMethod.ALPHABETICAL -> recipes.sortBy {
@@ -45,11 +44,8 @@ class RecipeGui(player: Player) : InventoryHolder {
 
         var knownRecipes = 0
         for (maybeKnownRecipe in recipes) {
-            if (maybeKnownRecipe.known) {
-                recipeGuiItems.add(GuiItem.createRecipeGuiItem(maybeKnownRecipe.recipe, true))
-                knownRecipes++
-            } else if (config.gui.items.unknownRecipe.material != Material.AIR) {
-                recipeGuiItems.add(GuiItem.createRecipeGuiItem(maybeKnownRecipe.recipe, false))
+            recipeGuiItems.add(GuiItem.createRecipeGuiItem(maybeKnownRecipe.recipe, maybeKnownRecipe.known)).also {
+                if (maybeKnownRecipe.known) knownRecipes++
             }
         }
 

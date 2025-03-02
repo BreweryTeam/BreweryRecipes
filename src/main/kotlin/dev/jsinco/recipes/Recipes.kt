@@ -20,7 +20,7 @@ import dev.jsinco.recipes.recipe.RecipeUtil
 // Pulls directly from the Brewery plugin's config.yml file
 @AddonInfo(
     author = "Jsinco",
-    version = "BX3.4.7",
+    version = "BX3.4.10",
     name = "Recipes",
     description = "A unique way to collect and view recipes for brews"
 )

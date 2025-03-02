@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "dev.jsinco.recipes"
-version = "BX3.4.7"
+version = "BX3.4.10"
 
 repositories {
     mavenCentral()
