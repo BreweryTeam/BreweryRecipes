@@ -9,21 +9,25 @@ plugins {
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
     id("com.modrinth.minotaur") version "2.8.7"
     id("com.gradleup.shadow") version "8.3.5"
+    id("xyz.jpenilla.run-paper") version "2.3.0"
+    id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
 }
 
 group = "dev.jsinco.recipes"
-version = "BX3.4.10"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.jsinco.dev/releases")
+    maven("https://storehouse.okaeri.eu/repository/maven-public/")
 }
 
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
-    compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("net.luckperms:api:5.4")
+    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.8")
 }
 
 
@@ -61,8 +65,17 @@ tasks {
             webhook.message = "@everyone"
             webhook.embedTitle = "Recipes - v${project.version}"
             webhook.embedDescription = readChangeLog()
-            webhook.embedThumbnailUrl = "https://cdn.modrinth.com/data/F6Rdllwv/a51de91e8f7dca5303e4055c0d54e2e510efae7d.png"
+            webhook.embedThumbnailUrl =
+                "https://cdn.modrinth.com/data/F6Rdllwv/a51de91e8f7dca5303e4055c0d54e2e510efae7d.png"
             webhook.send()
+        }
+    }
+
+    runServer {
+        minecraftVersion("1.21.5")
+        downloadPlugins {
+            modrinth("breweryx", "gbkMRZcU")
+            url("https://download.luckperms.net/1593/bukkit/loader/LuckPerms-Bukkit-5.5.8.jar")
         }
     }
 }
@@ -83,7 +96,19 @@ hangarPublish {
     }
 }
 
-
+bukkit {
+    main = "dev.jsinco.recipes.Recipes"
+    foliaSupported = false
+    apiVersion = "1.21"
+    authors = listOf("Jsinco", "Thorinwasher")
+    name = rootProject.name
+    permissions {
+        register("recipes.command") {
+            children = listOf("recipes.command.give", "recipes.command.book")
+        }
+    }
+    softDepend = listOf("BreweryX", "TheBrewingProject")
+}
 
 modrinth {
     projectId.set("breweryrecipesaddon") // This can be the project ID or the slug. Either will work!
@@ -92,7 +117,7 @@ modrinth {
     uploadFile.set(tasks.shadowJar)
     token.set(System.getenv("MODRINTH_TOKEN") ?: return@modrinth)
     loaders.addAll("bukkit", "spigot", "paper", "purpur", "folia")
-    gameVersions.addAll("1.20.5", "1.20.6","1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4")
+    gameVersions.addAll("1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4")
     changelog.set(readChangeLog())
 }
 

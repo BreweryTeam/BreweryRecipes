@@ -2,10 +2,9 @@ package dev.jsinco.recipes.guis
 
 import com.dre.brewery.BreweryPlugin
 import com.dre.brewery.utility.BUtil
-import dev.jsinco.recipes.configuration.ConfigItemSection
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.Util
+import dev.jsinco.recipes.configuration.ConfigItemSection
 import dev.jsinco.recipes.configuration.ConfigRecipeItem
 import dev.jsinco.recipes.recipe.Recipe
 import dev.jsinco.recipes.recipe.RecipeUtil
@@ -43,39 +42,54 @@ data class GuiItem(
 
     companion object {
         private val plugin: BreweryPlugin = BreweryPlugin.getInstance()
-        private val config: RecipesConfig = Recipes.configManager.getConfig(RecipesConfig::class.java)
 
         fun getAllGuiBorderItems(): List<Pair<List<Int>, ItemStack>> {
             val items = mutableListOf<Pair<List<Int>, ItemStack>>()
-
-            for (configItemSection in config.gui.items.borderItems.capsules.values) {
+            val borderItems = Recipes.recipesConfig.gui.items.borderItems
+            for (configItemSection in listOf(
+                borderItems.border1,
+                borderItems.border2,
+                borderItems.border3,
+                borderItems.border4,
+                borderItems.border5
+            )) {
                 items.add(createGUIItem(getGUIItem(configItemSection), GuiItemType.BORDER_ITEM))
             }
             return items
         }
 
         fun getPageArrowItems(): Pair<Pair<List<Int>, ItemStack>, Pair<List<Int>, ItemStack>> {
-            val left = createGUIItem(getGUIItem(config.gui.items.previousPage), GuiItemType.PREVIOUS_PAGE)
-            val right = createGUIItem(getGUIItem(config.gui.items.nextPage), GuiItemType.NEXT_PAGE)
+            val left =
+                createGUIItem(getGUIItem(Recipes.recipesConfig.gui.items.previousPage), GuiItemType.PREVIOUS_PAGE)
+            val right = createGUIItem(getGUIItem(Recipes.recipesConfig.gui.items.nextPage), GuiItemType.NEXT_PAGE)
             return Pair(left, right)
         }
 
         fun getTotalRecipesItem(amount: Int, total: Int): Pair<List<Int>, ItemStack> {
-            val itemPair = createGUIItem(getGUIItem(config.gui.items.totalRecipes), GuiItemType.BORDER_ITEM)
+            val itemPair =
+                createGUIItem(getGUIItem(Recipes.recipesConfig.gui.items.totalRecipes), GuiItemType.BORDER_ITEM)
             val meta = itemPair.second.itemMeta!!
-            meta.lore = meta.lore?.let { Util.colorArrayList(it.map { line -> line.replace("%total_recipes%", "$amount/$total") }) }
+            meta.lore = meta.lore?.let {
+                Util.colorArrayList(it.map { line ->
+                    line.replace(
+                        "%total_recipes%",
+                        "$amount/$total"
+                    )
+                })
+            }
             meta.setDisplayName(BUtil.color(meta.displayName.replace("%total_recipes%", "$amount/$total")))
             itemPair.second.itemMeta = meta
             return itemPair
         }
 
-        fun createRecipeGuiItem(recipe: Recipe, known: Boolean) : ItemStack {
+        fun createRecipeGuiItem(recipe: Recipe, known: Boolean): ItemStack {
             return if (known) {
-                createRecipeGuiItem(recipe, config.gui.items.recipeGuiItem)
+                createRecipeGuiItem(recipe, Recipes.recipesConfig.gui.items.recipeGuiItem)
             } else {
-                createRecipeGuiItem(recipe, config.gui.items.unknownRecipe)
+                createRecipeGuiItem(recipe, Recipes.recipesConfig.gui.items.unknownRecipe)
             }
         }
+
         private fun createRecipeGuiItem(recipe: Recipe, configItemSection: ConfigRecipeItem): ItemStack {
             val item = ItemStack(configItemSection.material)
             val meta = item.itemMeta ?: return item
@@ -86,13 +100,15 @@ data class GuiItem(
                 meta.color = recipe.potionColor?.color
                 meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP)
             }
-            meta.setDisplayName(BUtil.color( // display name
-                recipeItemStringHelper(configItemSection.name, recipe)
-            ))
+            meta.setDisplayName(
+                BUtil.color( // display name
+                    recipeItemStringHelper(configItemSection.name, recipe)
+                )
+            )
             if (configItemSection.glint) { // glint
                 meta.addEnchant(Enchantment.MENDING, 1, true)
             }
-            if (config.gui.items.recipeGuiItem.useRecipeCustomModelData) { // custom model data
+            if (Recipes.recipesConfig.gui.items.recipeGuiItem.useRecipeCustomModelData) { // custom model data
                 meta.setCustomModelData(recipe.customModelData)
             }
 
@@ -100,13 +116,18 @@ data class GuiItem(
             // lore/ingredients
             val ingredients: MutableList<String> = mutableListOf()
             for (ingredient in recipe.ingredients) {
-                ingredients.add(BUtil.color(
-                    configItemSection.ingredientFormat.replace("%amount%", ingredient.value.toString())
-                        .replace("%ingredient%", Util.itemNameFromMaterial(RecipeUtil.parseIngredientsName(ingredient.key)))
-                ))
+                ingredients.add(
+                    BUtil.color(
+                        configItemSection.ingredientFormat.replace("%amount%", ingredient.value.toString())
+                            .replace(
+                                "%ingredient%",
+                                Util.itemNameFromMaterial(RecipeUtil.parseIngredientsName(ingredient.key))
+                            )
+                    )
+                )
             }
             val lore: MutableList<String> = configItemSection.lore
-                .map { BUtil.color(recipeItemStringHelper(it, recipe))}.toMutableList()
+                .map { BUtil.color(recipeItemStringHelper(it, recipe)) }.toMutableList()
 
             replaceWithList("%ingredients%", ingredients, lore)
             replaceWithList("%lore%", recipe.lore, lore)
@@ -117,13 +138,14 @@ data class GuiItem(
         }
 
         private fun replaceWithList(key: String, replacements: List<String>, lore: MutableList<String>) {
-            val placeHolderIndexes: List<Int> = lore.mapIndexedNotNull { index, line -> if (line.contains(key)) index else null }
+            val placeHolderIndexes: List<Int> =
+                lore.mapIndexedNotNull { index, line -> if (line.contains(key)) index else null }
             for (index in placeHolderIndexes) {
                 lore.removeAt(index)
                 lore.addAll(index, replacements)
             }
         }
-        
+
         private fun recipeItemStringHelper(string: String, recipe: Recipe): String {
             return string
                 .replace("%recipe%", RecipeUtil.parseRecipeName(recipe.name))
@@ -146,14 +168,19 @@ data class GuiItem(
             if (guiItem.customModelData != 0) {
                 meta.setCustomModelData(guiItem.customModelData)
             }
-            meta.persistentDataContainer.set(NamespacedKey(plugin, "gui-item-type"), PersistentDataType.STRING, guiItemType.name)
+            meta.persistentDataContainer.set(
+                NamespacedKey(plugin, "gui-item-type"),
+                PersistentDataType.STRING,
+                guiItemType.name
+            )
 
             item.itemMeta = meta
             return Pair(guiItem.slots, item)
         }
 
         private fun getGUIItem(configItemSection: ConfigItemSection): GuiItem {
-            return GuiItem(configItemSection.material ?: Material.MAP,
+            return GuiItem(
+                configItemSection.material ?: Material.MAP,
                 configItemSection.slots ?: listOf(),
                 configItemSection.name ?: " ",
                 configItemSection.lore ?: listOf(),

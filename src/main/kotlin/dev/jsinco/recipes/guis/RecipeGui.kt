@@ -14,8 +14,7 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 
 class RecipeGui(player: Player) : InventoryHolder {
-    private val config: RecipesConfig = Recipes.configManager.getConfig(RecipesConfig::class.java)
-    private val inv: Inventory = Bukkit.createInventory(this, config.gui.size, "Recipes")
+    private val inv: Inventory = Bukkit.createInventory(this, Recipes.recipesConfig.gui.size, "Recipes")
     private val recipeGuiItems: MutableList<ItemStack> = mutableListOf()
 
     init {
@@ -29,14 +28,14 @@ class RecipeGui(player: Player) : InventoryHolder {
         val recipes: MutableList<MaybeKnownRecipe> = RecipeUtil.getAllRecipes()
             .map { MaybeKnownRecipe(it, Util.hasRecipePermission(player, it.recipeKey)) }.toMutableList()
 
-        when (config.gui.sortMethod) {
+        when (Recipes.recipesConfig.gui.sortMethod) {
             SortMethod.ALPHABETICAL -> recipes.sortBy {
                 ChatColor.stripColor(RecipeUtil.parseRecipeName(it.recipe.name).lowercase())
             }
             SortMethod.DEFINITION -> {}
         }
         // sortBy is stable, the recipes will stay sorted alphabetically if enabled
-        when (config.gui.unknownRecipeSortMethod) {
+        when (Recipes.recipesConfig.gui.unknownRecipeSortMethod) {
             UnknownRecipeSortMethod.KNOWN_FIRST -> recipes.sortByDescending{ it.known }
             UnknownRecipeSortMethod.MIXED -> {}
             UnknownRecipeSortMethod.UNKNOWN_FIRST -> recipes.sortBy{ it.known }
@@ -58,7 +57,7 @@ class RecipeGui(player: Player) : InventoryHolder {
     data class MaybeKnownRecipe(val recipe: Recipe, val known: Boolean)
 
     //
-    val paginatedGui: PaginatedGui = PaginatedGui(BUtil.color(config.gui.title), inv, recipeGuiItems, config.gui.items.recipeGuiItem.slots)
+    val paginatedGui: PaginatedGui = PaginatedGui(BUtil.color(Recipes.recipesConfig.gui.title), inv, recipeGuiItems, Recipes.recipesConfig.gui.items.recipeGuiItem.slots)
 
     init {
         val arrowItems = GuiItem.getPageArrowItems()

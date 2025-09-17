@@ -1,6 +1,0 @@
-# Modrinth only allows jars that have a plugin.yml or paper-plugin.yml
-# Hangar bugs out if you try to upload a jar with a plugin.yml missing keys.
-# Annoying, but whatever.
-main: null
-name: BreweryRecipes
-version: null

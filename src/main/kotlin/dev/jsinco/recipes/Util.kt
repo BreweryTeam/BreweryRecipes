@@ -1,8 +1,6 @@
 package dev.jsinco.recipes
 
-import com.dre.brewery.BreweryPlugin
 import com.dre.brewery.utility.BUtil
-import dev.jsinco.recipes.configuration.RecipesConfig
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
@@ -14,25 +12,11 @@ import org.bukkit.permissions.PermissionDefault
 import org.bukkit.persistence.PersistentDataType
 
 object Util {
-    val plugin: BreweryPlugin = BreweryPlugin.getInstance()
-    private val config: RecipesConfig = Recipes.configManager.getConfig(RecipesConfig::class.java)
 
 
     @JvmStatic
     fun colorArrayList(list: List<String>): List<String> {
         return list.map { BUtil.color(it) }
-    }
-
-    @JvmStatic
-    fun giveItem(player: Player, item: ItemStack) {
-        for (i in 0..35) {
-            if (player.inventory.getItem(i) == null || player.inventory.getItem(i)!!.isSimilar(item)) {
-                player.inventory.addItem(item)
-                break
-            } else if (i == 35) {
-                player.world.dropItem(player.location, item)
-            }
-        }
     }
 
     @JvmStatic
@@ -50,21 +34,21 @@ object Util {
 
     @JvmStatic
     fun getRecipeBookItem(): ItemStack {
-        val item = ItemStack(config.recipeBookItem.material ?: Material.BOOK)
+        val item = ItemStack(Recipes.recipesConfig.recipeBookItem.material ?: Material.BOOK)
         val meta = item.itemMeta ?: return item
-        meta.setDisplayName(BUtil.color(config.recipeBookItem.name))
-        meta.lore = config.recipeBookItem.lore?.map { BUtil.color(it) }
-        if (config.recipeBookItem.glint == true) {
+        meta.setDisplayName(BUtil.color(Recipes.recipesConfig.recipeBookItem.name))
+        meta.lore = Recipes.recipesConfig.recipeBookItem.lore?.map { BUtil.color(it) }
+        if (Recipes.recipesConfig.recipeBookItem.glint == true) {
             meta.addEnchant(Enchantment.MENDING, 1, true)
         }
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES)
-        meta.persistentDataContainer.set(NamespacedKey(plugin, "recipe-book"), PersistentDataType.INTEGER, 0)
+        meta.persistentDataContainer.set(NamespacedKey(Recipes.instance, "recipe-book"), PersistentDataType.INTEGER, 0)
         item.itemMeta = meta
         return item
     }
 
     fun hasRecipePermission(player: Player, recipeKey: String): Boolean {
-        val permissionNode = config.recipePermissionNode.replace("%recipe%", recipeKey)
+        val permissionNode = Recipes.recipesConfig.recipePermissionNode.replace("%recipe%", recipeKey)
         // PermissionDefault.FALSE is required to prevent OPs from unlocking all recipes
         return player.hasPermission(Permission(permissionNode, PermissionDefault.FALSE))
     }

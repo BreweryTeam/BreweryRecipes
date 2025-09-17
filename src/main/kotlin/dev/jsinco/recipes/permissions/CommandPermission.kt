@@ -8,12 +8,10 @@ import org.bukkit.entity.Player
 
 class CommandPermission : PermissionManager {
 
-    private val config: RecipesConfig = Recipes.configManager.getConfig(RecipesConfig::class.java)
-
     override fun setPermission(permission: String, player: Player, value: Boolean) {
         BreweryPlugin.getScheduler().runTask {
             Bukkit.dispatchCommand(
-                Bukkit.getConsoleSender(), config.permissionCommand
+                Bukkit.getConsoleSender(), Recipes.recipesConfig.permissionCommand
                     .replace("%player%", player.name).replace("%permission%", permission)
                     .replace("%boolean%", value.toString())
             )
@@ -23,7 +21,7 @@ class CommandPermission : PermissionManager {
     override fun removePermission(permission: String, player: Player) {
         BreweryPlugin.getScheduler().runTask {
             Bukkit.dispatchCommand(
-                Bukkit.getConsoleSender(), config.permissionUnsetCommand
+                Bukkit.getConsoleSender(), Recipes.recipesConfig.permissionUnsetCommand
                     .replace("%player%", player.name).replace("%permission%", permission)
                     .replace("%boolean%", "false")
             )

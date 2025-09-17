@@ -26,9 +26,7 @@ import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
 
-class Events(private val plugin: BreweryPlugin) : Listener {
-
-    private val config: RecipesConfig = Recipes.configManager.getConfig(RecipesConfig::class.java)
+class EventListener(private val plugin: Recipes) : Listener {
 
     private val BOOK_KEY = NamespacedKey(plugin, "recipe-book")
     private val LEGACY_BOOK_KEY = NamespacedKey("brewery", "recipe-book")
@@ -64,13 +62,13 @@ class Events(private val plugin: BreweryPlugin) : Listener {
 
     @EventHandler
     fun onLootGenerate(event: LootGenerateEvent) {
-        val bound = config.recipeSpawning.bound
-        val chance = config.recipeSpawning.chance
+        val bound = Recipes.recipesConfig.recipeSpawning.bound
+        val chance = Recipes.recipesConfig.recipeSpawning.chance
         if (bound <= 0 || chance <= 0) return
         else if (Random.nextInt(bound) > chance) return
 
         var recipe: Recipe = RecipeUtil.getRandomRecipe()
-        while (config.recipeSpawning.blacklistedRecipes.contains(recipe.recipeKey)) {
+        while (Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(recipe.recipeKey)) {
             recipe = RecipeUtil.getRandomRecipe()
         }
         event.loot.add(RecipeItem(recipe).item)
@@ -95,14 +93,14 @@ class Events(private val plugin: BreweryPlugin) : Listener {
         event.isCancelled = true
 
         if (Util.hasRecipePermission(player, recipeKey)) {
-            Logging.msg(player, config.messages.alreadyLearned.replace("%recipe%", recipeObj.name))
+            Logging.msg(player, Recipes.recipesConfig.messages.alreadyLearned.replace("%recipe%", recipeObj.name))
             return
         }
 
         event.item!!.amount--
 
-        Recipes.permissionManager.setPermission(config.recipePermissionNode.replace("%recipe%", recipeKey), player, true)
-        Logging.msg(player, config.messages.learned.replace("%recipe%", recipeObj.name))
+        Recipes.permissionManager.setPermission(Recipes.recipesConfig.recipePermissionNode.replace("%recipe%", recipeKey), player, true)
+        Logging.msg(player, Recipes.recipesConfig.messages.learned.replace("%recipe%", recipeObj.name))
         player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
     }
 
@@ -117,14 +115,14 @@ class Events(private val plugin: BreweryPlugin) : Listener {
         val bRecipe = event.brew.currentRecipe
         val recipeKey: String = bRecipe.id
 
-        if (config.learnRecipeUponCreation && config.requireRecipePermissionToBrew) {
+        if (Recipes.recipesConfig.learnRecipeUponCreation && Recipes.recipesConfig.requireRecipePermissionToBrew) {
             Logging.errorLog("You have two conflicting options enabled: `learnRecipeUponCreation` and `requireRecipePermissionToBrew`. Please disable one of them.")
             return
         }
 
-        if (config.learnRecipeUponCreation) {
+        if (Recipes.recipesConfig.learnRecipeUponCreation) {
             handleLearnUponRecipeCreation(player, recipeKey)
-        } else if (config.requireRecipePermissionToBrew) {
+        } else if (Recipes.recipesConfig.requireRecipePermissionToBrew) {
             handleRequireRecipePermissionToBrew(player, recipeKey, event)
         }
     }
@@ -137,15 +135,15 @@ class Events(private val plugin: BreweryPlugin) : Listener {
             return
         }
 
-        Recipes.permissionManager.setPermission(config.recipePermissionNode.replace("%recipe%", recipeKey), player, true)
-        Logging.msg(player, config.messages.learned.replace("%recipe%", RecipeUtil.getRecipeFromKey(recipeKey)?.name ?: recipeKey))
+        Recipes.permissionManager.setPermission(Recipes.recipesConfig.recipePermissionNode.replace("%recipe%", recipeKey), player, true)
+        Logging.msg(player, Recipes.recipesConfig.messages.learned.replace("%recipe%", RecipeUtil.getRecipeFromKey(recipeKey)?.name ?: recipeKey))
         player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
     }
 
     private fun handleRequireRecipePermissionToBrew(player: Player, recipeKey: String, event: BrewModifyEvent) {
         if (!Util.hasRecipePermission(player, recipeKey)) {
             event.isCancelled = true
-            Logging.msg(player, config.messages.notLearned.replace("%recipe%", RecipeUtil.getRecipeFromKey(recipeKey)?.name ?: recipeKey))
+            Logging.msg(player, Recipes.recipesConfig.messages.notLearned.replace("%recipe%", RecipeUtil.getRecipeFromKey(recipeKey)?.name ?: recipeKey))
         }
     }
 }

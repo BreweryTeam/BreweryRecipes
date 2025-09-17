@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.configuration
 
-import com.dre.brewery.depend.okaeri.configs.OkaeriConfig
 import com.dre.brewery.depend.okaeri.configs.annotation.CustomKey
+import eu.okaeri.configs.OkaeriConfig
 import org.bukkit.Material
 
 
@@ -9,10 +9,12 @@ class ConfigItemSection : OkaeriConfig() {
 
     var material: Material? = null
     var slots: List<Int>? = null
+
     @CustomKey("display_name")
     var name: String? = null
     var lore: List<String>? = null
     var glint: Boolean? = null
+
     @CustomKey("custom_model_data")
     var customModelData: Int? = null
 
