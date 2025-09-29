@@ -1,16 +1,12 @@
 package dev.jsinco.recipes
 
-import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.RecipesConfig
+import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.listeners.EventListener
-import dev.jsinco.recipes.permissions.CommandPermission
-import dev.jsinco.recipes.permissions.LuckPermsPermission
-import dev.jsinco.recipes.permissions.PermissionManager
-import dev.jsinco.recipes.permissions.PermissionSetter
-import dev.jsinco.recipes.recipe.RecipeUtil
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -22,23 +18,14 @@ import java.io.File
 class Recipes : JavaPlugin() {
     companion object {
         lateinit var instance: Recipes
-        lateinit var permissionManager: PermissionManager
         lateinit var recipesConfig: RecipesConfig
     }
 
     override fun onEnable() {
         recipesConfig = readConfig()
 
-        Bukkit.getScheduler().runTask(this) { ->
-            permissionManager = when (recipesConfig.recipeSavingMethod) {
-                PermissionSetter.LUCKPERMS -> LuckPermsPermission()
-                PermissionSetter.COMMAND -> CommandPermission()
-            }
-        }
-
+        GlobalTranslator.translator().addSource(RecipesTranslator(dataFolder))
         Bukkit.getPluginManager().registerEvents(EventListener(this), this)
-        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS, RecipesCommand::register)
-        RecipeUtil.loadAllRecipes()
     }
 
     private fun readConfig(): RecipesConfig {
@@ -47,6 +34,7 @@ class Recipes : JavaPlugin() {
             it.withBindFile(File(this.dataFolder, "config.yml"))
             it.saveDefaults()
             it.load(true)
+            it.save()
         }
     }
 
@@ -56,6 +44,5 @@ class Recipes : JavaPlugin() {
 
     fun reload() {
         recipesConfig = readConfig()
-        RecipeUtil.loadAllRecipes()
     }
 }

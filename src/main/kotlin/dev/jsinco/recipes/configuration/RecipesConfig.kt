@@ -1,23 +1,11 @@
 package dev.jsinco.recipes.configuration
 
-import dev.jsinco.recipes.guis.SortMethod
-import dev.jsinco.recipes.guis.UnknownRecipeSortMethod
-import dev.jsinco.recipes.permissions.PermissionSetter
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
 import org.bukkit.Material
 
 class RecipesConfig : OkaeriConfig() {
-
-    @CustomKey("recipe-saving-method")
-    @Comment(
-        "Recipes can be stored to a player via 2 methods:",
-        "LuckPerms, Command",
-        "When using LUCKPERMS, Recipes will use LuckPerms' API to set the permission node",
-        "When using COMMAND, Recipes will run the command specified in the command field"
-    )
-    var recipeSavingMethod: PermissionSetter = PermissionSetter.COMMAND
 
 
     @CustomKey("permission-command")
@@ -117,18 +105,6 @@ class RecipesConfig : OkaeriConfig() {
             "When using ALPHABETICAL, recipes are sorted by their name alphabetically, case insensitive",
             "When using DEFINITION, recipes are sorted in the same order they are defined in recipes.yml"
         )
-        var sortMethod = SortMethod.ALPHABETICAL
-
-        @CustomKey("unknown-recipe-sort-method")
-        @Comment(
-            "Determines how recipes a player does not know are sorted in the Gui",
-            "When using KNOWN_FIRST, known recipes are shown first",
-            "When using MIXED, known and unknown recipes are sorted together",
-            "When using UNKNOWN_FIRST, unknown recipes are shown first",
-            "The unknown-recipe item must not be AIR for unknown recipes to show up in the Gui"
-        )
-        var unknownRecipeSortMethod = UnknownRecipeSortMethod.MIXED
-
 
         var items = GuiItemsSection()
 

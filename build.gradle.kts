@@ -18,6 +18,7 @@ version = "1.0.0"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.jsinco.dev/releases")
     maven("https://storehouse.okaeri.eu/repository/maven-public/")
@@ -26,7 +27,7 @@ repositories {
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("net.luckperms:api:5.4")
+    compileOnly("dev.jsinco.brewery:thebrewingproject:2.0.0-beta.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.8")
 }
 
@@ -72,9 +73,9 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("1.21.5")
+        minecraftVersion("1.21.8")
         downloadPlugins {
-            modrinth("breweryx", "gbkMRZcU")
+            modrinth("breweryx", "3.6.0")
             url("https://download.luckperms.net/1593/bukkit/loader/LuckPerms-Bukkit-5.5.8.jar")
         }
     }

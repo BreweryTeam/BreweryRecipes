@@ -1,15 +1,13 @@
 package dev.jsinco.recipes.listeners
 
-import com.dre.brewery.BreweryPlugin
 import com.dre.brewery.api.events.brew.BrewModifyEvent
 import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.Util
 import dev.jsinco.recipes.guis.GuiItemType
 import dev.jsinco.recipes.guis.PaginatedGui
 import dev.jsinco.recipes.guis.RecipeGui
-import dev.jsinco.recipes.recipe.Recipe
+import dev.jsinco.recipes.recipe.BreweryXRecipe
 import dev.jsinco.recipes.recipe.RecipeItem
 import dev.jsinco.recipes.recipe.RecipeUtil
 import org.bukkit.NamespacedKey
@@ -67,7 +65,7 @@ class EventListener(private val plugin: Recipes) : Listener {
         if (bound <= 0 || chance <= 0) return
         else if (Random.nextInt(bound) > chance) return
 
-        var recipe: Recipe = RecipeUtil.getRandomRecipe()
+        var recipe: BreweryXRecipe = RecipeUtil.getRandomRecipe()
         while (Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(recipe.recipeKey)) {
             recipe = RecipeUtil.getRandomRecipe()
         }
@@ -89,7 +87,7 @@ class EventListener(private val plugin: Recipes) : Listener {
         if (recipeKey == null) {
             recipeKey = meta.persistentDataContainer.get(LEGACY_RECIPE_KEY, PersistentDataType.STRING)
         }
-        val recipeObj: Recipe = RecipeUtil.getRecipeFromKey(recipeKey ?: return) ?: return
+        val recipeObj: BreweryXRecipe = RecipeUtil.getRecipeFromKey(recipeKey ?: return) ?: return
         event.isCancelled = true
 
         if (Util.hasRecipePermission(player, recipeKey)) {

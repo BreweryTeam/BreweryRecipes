@@ -4,11 +4,8 @@ import com.dre.brewery.utility.BUtil
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.permissions.Permission
-import org.bukkit.permissions.PermissionDefault
 import org.bukkit.persistence.PersistentDataType
 
 object Util {
@@ -45,11 +42,5 @@ object Util {
         meta.persistentDataContainer.set(NamespacedKey(Recipes.instance, "recipe-book"), PersistentDataType.INTEGER, 0)
         item.itemMeta = meta
         return item
-    }
-
-    fun hasRecipePermission(player: Player, recipeKey: String): Boolean {
-        val permissionNode = Recipes.recipesConfig.recipePermissionNode.replace("%recipe%", recipeKey)
-        // PermissionDefault.FALSE is required to prevent OPs from unlocking all recipes
-        return player.hasPermission(Permission(permissionNode, PermissionDefault.FALSE))
     }
 }
