@@ -22,12 +22,13 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.jsinco.dev/releases")
     maven("https://storehouse.okaeri.eu/repository/maven-public/")
+    maven("https://jitpack.io")
 }
 
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("dev.jsinco.brewery:thebrewingproject:2.0.0-beta.0")
+    compileOnly("com.github.BreweryTeam:TheBrewingProject:v2.3.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.8")
 }
 
