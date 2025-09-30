@@ -20,15 +20,16 @@ class DataManager(private val dataFolder: File) {
 
     @Synchronized
     private fun createStorage(type: StorageType): StorageImpl = when (type) {
-        StorageType.SQLite -> SQLiteStorageImpl()
-        StorageType.MySQL -> MySQLStorageImpl()
-        StorageType.YAML -> YAMLStorageImpl()
+        StorageType.SQLite -> SQLiteStorageImpl(dataFolder)
+        StorageType.MySQL -> MySQLStorageImpl(dataFolder)
+        StorageType.YAML -> YAMLStorageImpl(dataFolder)
     }
 
     @Synchronized
+    fun getStorage(type: StorageType): StorageImpl = loadedStorages.computeIfAbsent(type) { createStorage(it) }
+
     fun getSelectedStorage(): StorageImpl = getStorage(StorageType.fromString(Recipes.recipesConfig.storage.type))
 
-    @Synchronized
-    fun getStorage(type: StorageType): StorageImpl = loadedStorages.computeIfAbsent(type) { createStorage(it) }
+    fun getDataFolder(): File = dataFolder
 
 }
