@@ -6,7 +6,9 @@ import eu.okaeri.configs.annotation.CustomKey
 import org.bukkit.Material
 
 class RecipesConfig : OkaeriConfig() {
-    
+
+    @Comment("Storage settings")
+    var storage: StorageConfig = StorageConfig()
 
     @CustomKey("recipe-spawning")
     @Comment(
