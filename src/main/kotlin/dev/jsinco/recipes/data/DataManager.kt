@@ -3,7 +3,6 @@ package dev.jsinco.recipes.data
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.data.storage.MySQLStorageImpl
 import dev.jsinco.recipes.data.storage.SQLiteStorageImpl
-import dev.jsinco.recipes.data.storage.YAMLStorageImpl
 import java.io.File
 import java.util.*
 
@@ -22,7 +21,6 @@ class DataManager(private val dataFolder: File) {
     private fun createStorage(type: StorageType): StorageImpl = when (type) {
         StorageType.SQLite -> SQLiteStorageImpl(dataFolder)
         StorageType.MySQL -> MySQLStorageImpl(dataFolder)
-        StorageType.YAML -> YAMLStorageImpl(dataFolder)
     }
 
     @Synchronized

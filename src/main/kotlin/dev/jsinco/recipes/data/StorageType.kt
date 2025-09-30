@@ -2,7 +2,7 @@ package dev.jsinco.recipes.data
 
 enum class StorageType {
 
-    YAML, MySQL, SQLite;
+    MySQL, SQLite;
 
     companion object {
         @JvmStatic
@@ -10,7 +10,6 @@ enum class StorageType {
             if (type == null) return SQLite
             return when (type.trim().lowercase()) {
                 "mysql" -> MySQL
-                "yaml" -> YAML
                 else -> SQLite
             }
         }
