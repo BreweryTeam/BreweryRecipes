@@ -5,19 +5,24 @@ import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.api.brew.BrewingStep
 import dev.jsinco.brewery.api.recipe.Recipe
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
-import dev.jsinco.recipes.gui.GuiItem
+import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
+import dev.jsinco.recipes.gui.RecipeItem
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
-data class TBPRecipe(val recipe: Recipe<ItemStack>) : GuiItem {
+data class TBPRecipe(val recipe: Recipe<ItemStack>) : RecipeItem {
 
     companion object {
         lateinit var tbpApi: TheBrewingProjectApi
@@ -102,5 +107,29 @@ data class TBPRecipe(val recipe: Recipe<ItemStack>) : GuiItem {
             )
         }
         return Component.text { "Unknown component" }
+    }
+
+    override fun key(): String {
+        return recipe.recipeName;
+    }
+
+    override fun loot(): ItemStack {
+        val itemStack = ItemStack(Material.PAPER)
+        val recipeResult = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
+        itemStack.setData(
+            DataComponentTypes.CUSTOM_NAME,
+            MiniMessage.miniMessage().deserialize(recipeResult.name)
+                .colorIfAbsent(NamedTextColor.WHITE)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+        )
+        itemStack.setData(
+            DataComponentTypes.LORE, ItemLore.lore(
+                listOf(Component.translatable("recipes.loot.right.click.to.discover"))
+                    .map { it.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE) }
+                    .map { it.colorIfAbsent(NamedTextColor.GRAY) }
+                    .map { GlobalTranslator.render(it, Locale.ENGLISH) }
+            )
+        )
+        return itemStack
     }
 }
