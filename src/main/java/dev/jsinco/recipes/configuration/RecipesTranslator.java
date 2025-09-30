@@ -16,6 +16,10 @@ import java.nio.file.FileSystem;
 import java.util.*;
 
 //TODO make locale configurable /// placeholder
+
+/**
+ * Copy-pasted from TBP, can't bother to migrate to kotlin
+ */
 public class RecipesTranslator extends MiniMessageTranslator {
 
     private Map<Locale, Properties> translations;
