@@ -45,10 +45,12 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
     @Synchronized
     private fun createTable() {
         val sql = """
-            CREATE TABLE IF NOT EXISTS data (
-                uuid TEXT PRIMARY KEY,
-                data REAL
-            )
+            CREATE TABLE IF NOT EXISTS discovered_recipes (
+              player_uuid BLOB NOT NULL,
+              recipe_key TEXT NOT NULL,
+              recipe_state TEXT NOT NULL,
+              PRIMARY KEY (player_uuid, recipe_key)
+            );
         """.trimIndent()
 
         try {

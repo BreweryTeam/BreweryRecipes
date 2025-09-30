@@ -48,10 +48,12 @@ class MySQLStorageImpl(private val dataFolder: File) : StorageImpl {
     @Synchronized
     private fun createTable() {
         val sql = """
-            CREATE TABLE IF NOT EXISTS ${Recipes.recipesConfig.storage.mysql.prefix}data (
-                uuid VARCHAR(36) PRIMARY KEY,
-                data DOUBLE
-            )
+            CREATE TABLE IF NOT EXISTS ${Recipes.recipesConfig.storage.mysql.prefix}discovered_recipes (
+              player_uuid BINARY(16) NOT NULL,
+              recipe_key VARCHAR(255) NOT NULL, /* MySQL doesn't allow TEXT as PK */
+              recipe_state JSON NOT NULL,
+              PRIMARY KEY (player_uuid, recipe_key)
+            );
         """.trimIndent()
 
         try {
