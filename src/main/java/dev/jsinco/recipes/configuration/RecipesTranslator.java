@@ -107,11 +107,11 @@ public class RecipesTranslator extends MiniMessageTranslator {
             throw new IllegalArgumentException("Locale directory is not a directory!");
         }
         ImmutableMap.Builder<Locale, Properties> translationsBuilder = new ImmutableMap.Builder<>();
-        for (File translationFile : localeDirectory.listFiles(file -> file.getName().endsWith(".lang.properties"))) {
+        for (File translationFile : localeDirectory.listFiles(file -> file.getName().endsWith(".properties"))) {
             try (InputStream inputStream = new FileInputStream(translationFile)) {
                 Properties translation = new Properties();
                 translation.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-                Locale locale = Locale.forLanguageTag(translationFile.getName().replaceAll(".lang.properties$", ""));
+                Locale locale = Locale.forLanguageTag(translationFile.getName().replaceAll(".properties$", ""));
                 if (locale != null) {
                     translationsBuilder.put(locale, translation);
                 }

@@ -76,8 +76,8 @@ tasks {
     runServer {
         minecraftVersion("1.21.8")
         downloadPlugins {
-            modrinth("breweryx", "3.6.0")
-            url("https://download.luckperms.net/1593/bukkit/loader/LuckPerms-Bukkit-5.5.8.jar")
+            modrinth("thebrewingproject", "2.3.0")
+            url("https://download.luckperms.net/1600/bukkit/loader/LuckPerms-Bukkit-5.5.14.jar")
         }
     }
 }

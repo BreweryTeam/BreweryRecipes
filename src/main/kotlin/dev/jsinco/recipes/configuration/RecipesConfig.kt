@@ -6,40 +6,7 @@ import eu.okaeri.configs.annotation.CustomKey
 import org.bukkit.Material
 
 class RecipesConfig : OkaeriConfig() {
-
-
-    @CustomKey("permission-command")
-    @Comment(
-        "The command to run when using COMMAND as the recipe-saving-method",
-        "PLACEHOLDERS: %player% - The player's name",
-        "              %permission% - The permission node",
-        "              %boolean% - The boolean value of what the permission is being set to"
-    )
-    var permissionCommand: String = "lp user %player% permission set %permission% %boolean%"
-
-    @CustomKey("permission-unset-command")
-    var permissionUnsetCommand: String = "lp user %player% permission unset %permission%"
-
-
-    @CustomKey("recipe-permission-node")
-    @Comment("PLACEHOLDERS: %recipe% - The recipe's key in the config with spaces replaced as underscores \"_\"")
-    var recipePermissionNode: String = "brewery.recipesaddon.recipe.%recipe%"
-
-
-    @CustomKey("learn-recipe-upon-creation")
-    @Comment(
-        "If true, the player will automatically learn the recipe when they create it for the first time",
-        "Either by brewing the recipe or by receiving the brew via command"
-    )
-    var learnRecipeUponCreation: Boolean = false
-
-    @CustomKey("require-recipe-permission-to-brew")
-    @Comment(
-        "If true, the player must have the recipe unlocked to brew the potion.",
-        "If the player does not have the recipe unlocked, they will not be able to fill the potion",
-        "from brewing cauldrons."
-    )
-    var requireRecipePermissionToBrew: Boolean = false
+    
 
     @CustomKey("recipe-spawning")
     @Comment(

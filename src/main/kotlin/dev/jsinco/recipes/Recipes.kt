@@ -1,11 +1,15 @@
 package dev.jsinco.recipes
 
+import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
+import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.gui.RecipeItem
+import dev.jsinco.recipes.gui.integration.TBPRecipe
 import dev.jsinco.recipes.listeners.GuiEventListener
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
@@ -34,8 +38,32 @@ class Recipes : JavaPlugin() {
     override fun onEnable() {
         recipesConfig = readConfig()
 
-        GlobalTranslator.translator().addSource(RecipesTranslator(dataFolder))
+        val translator = RecipesTranslator(File(dataFolder, "locale"))
+        translator.reload()
+        GlobalTranslator.translator().addSource(translator)
         Bukkit.getPluginManager().registerEvents(GuiEventListener(this), this)
+        recipesProvider =
+            loadRecipeProvider() ?: throw IllegalStateException("Needs either TBP or BreweryX to function")
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
+            it.registrar().register(RecipesCommand.command())
+        }
+    }
+
+    private fun loadRecipeProvider(): Supplier<List<RecipeItem>>? {
+        try {
+            Class.forName("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")
+            if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
+                return null
+            }
+            val provider =
+                (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null
+            return Supplier {
+                provider.recipeRegistry.recipes
+                    .map { TBPRecipe(it) }
+            }
+        } catch (ignored: NoClassDefFoundError) {
+            return null
+        }
     }
 
     private fun readConfig(): RecipesConfig {

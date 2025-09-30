@@ -45,6 +45,7 @@ data class TBPRecipe(val recipe: Recipe<ItemStack>) : RecipeItem {
             DataComponentTypes.LORE, ItemLore.lore(
                 steps.asSequence()
                     .map(this::renderStep)
+                    .map { GlobalTranslator.render(it, Locale.ENGLISH) }
                     .toList()
             )
         )
@@ -87,7 +88,7 @@ data class TBPRecipe(val recipe: Recipe<ItemStack>) : RecipeItem {
         }
         if (brewingStep is BrewingStep.Cook) {
             return Component.translatable(
-                "recipes.display.recipe.step.mix", Argument.tagResolver(
+                "recipes.display.recipe.step.cook", Argument.tagResolver(
                     Placeholder.component(
                         "ingredients",
                         brewingStep.ingredients().entries.stream()

@@ -4,6 +4,7 @@ import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.gui.RecipeItem
 import dev.jsinco.recipes.gui.RecipesGui
+import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.RecipesUtil
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
@@ -26,9 +27,10 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
 
     companion object {
         val trackedInventories = mutableMapOf<Inventory, RecipesGui>()
+
+        val GUI_TYPE = Recipes.key("gui_type")!!
     }
 
-    private val BOOK_KEY: NamespacedKey = Recipes.key("recipe-book")!!
     private val RECIPE_KEY: NamespacedKey = Recipes.key("recipe-key")!!
 
     @EventHandler
@@ -38,7 +40,7 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
 
         val clickedItem: ItemStack = event.currentItem ?: return
         val guiType =
-            clickedItem.persistentDataContainer.get(NamespacedKey(plugin, "gui_type"), PersistentDataType.STRING)
+            clickedItem.persistentDataContainer.get(GUI_TYPE, PersistentDataType.STRING)
 
         when (guiType) {
             "next_page" -> gui.nextPage()
@@ -72,9 +74,9 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
         if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.RIGHT_CLICK_AIR) return
-        val meta = event.item?.itemMeta ?: return
+        val item = event.item ?: return
         val player = event.player
-        if (meta.persistentDataContainer.has(BOOK_KEY, PersistentDataType.INTEGER)) {
+        if (BookUtil.isBook(item)) {
             val view = MenuType.GENERIC_9X6.builder()
                 .build(player)
             val topInventory = view.topInventory
@@ -87,7 +89,7 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             return
         }
 
-        val recipeKey: String = meta.persistentDataContainer.get(RECIPE_KEY, PersistentDataType.STRING)
+        val recipeKey: String = item.persistentDataContainer.get(RECIPE_KEY, PersistentDataType.STRING)
             ?: return
         event.isCancelled = true
 

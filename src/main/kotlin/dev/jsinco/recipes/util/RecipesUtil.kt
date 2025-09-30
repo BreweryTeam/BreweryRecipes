@@ -10,6 +10,9 @@ object RecipesUtil {
 
 
     fun hasRecipe(player: Player, recipeKey: String): Boolean {
+        if (player.hasPermission("recipes.override.view")) {
+            return true
+        }
         return player.persistentDataContainer.get(RECIPES_KEY, RECIPES_PDC_TYPE)
             ?.contains(recipeKey) ?: false
     }
@@ -30,5 +33,9 @@ object RecipesUtil {
         }
         val newRecipes = (alreadyRegistered ?: listOf()) - listOf(recipeKey)
         player.persistentDataContainer.set(RECIPES_KEY, RECIPES_PDC_TYPE, newRecipes)
+    }
+
+    fun allPlayerRecipes(player: Player): List<String> {
+        return player.persistentDataContainer.get(RECIPES_KEY, RECIPES_PDC_TYPE) ?: listOf()
     }
 }
