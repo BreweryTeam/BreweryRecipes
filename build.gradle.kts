@@ -30,6 +30,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("com.github.BreweryTeam:TheBrewingProject:v2.3.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.8")
+    implementation("com.zaxxer:HikariCP:7.0.2")
 }
 
 
