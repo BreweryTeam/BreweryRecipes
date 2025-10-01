@@ -5,7 +5,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 plugins {
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm") version "2.2.20"
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
     id("com.modrinth.minotaur") version "2.8.7"
     id("com.gradleup.shadow") version "8.3.5"
