@@ -3,6 +3,7 @@ package dev.jsinco.recipes.core
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
@@ -66,13 +67,7 @@ object RecipeWriter {
             is MixStep -> Component.translatable(
                 "recipes.display.recipe.step.mix", Argument.tagResolver(
                     Placeholder.component(
-                        "ingredients",
-                        step.ingredients.entries.stream()
-                            .map { entry ->
-                                Component.text(entry.value).color(NamedTextColor.GOLD).appendSpace().append(
-                                    entry.key.displayName
-                                )
-                            }.collect(Component.toComponent(Component.text { ", " }))
+                        "ingredients", compileIngredients(step.ingredients, flaws)
                     ),
                     Formatter.number("mixing_time", step.mixingTicks)
                 )
@@ -81,12 +76,7 @@ object RecipeWriter {
             is CookStep -> Component.translatable(
                 "recipes.display.recipe.step.cook", Argument.tagResolver(
                     Placeholder.component(
-                        "ingredients",
-                        step.ingredients.entries.stream()
-                            .map { entry ->
-                                entry.key.displayName
-                                    .append { Component.text(entry.value).color(NamedTextColor.GOLD) }
-                            }.collect(Component.toComponent(Component.text { ", " }))
+                        "ingredients", compileIngredients(step.ingredients, flaws)
                     ),
                     Formatter.number("cooking_time", step.ticks),
                     Placeholder.component(
@@ -102,6 +92,15 @@ object RecipeWriter {
                 Component.text { "Unknown component" }
             }
         }
+    }
+
+    private fun compileIngredients(ingredients: Map<Ingredient, Int>, flaws: List<Flaw>): Component {
+        return ingredients.entries.stream()
+            .map { entry ->
+                Component.text(entry.value).color(NamedTextColor.GOLD).appendSpace().append(
+                    entry.key.displayName
+                ).colorIfAbsent(NamedTextColor.GRAY)
+            }.collect(Component.toComponent(Component.text(", ")))
     }
 
     private fun flawApplies(stepIndex: Int, flaw: Flaw): Boolean {
