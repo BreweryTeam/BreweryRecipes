@@ -1,10 +1,10 @@
 package dev.jsinco.recipes.core.process.steps
 
-import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.StepType
 
-class MixStep(private val ticks: Long, private val cauldronType: CauldronType, private val ingredients: Map<String, Int>, private val flaws: List<Flaw>) : Step {
+class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
 
     override fun getType(): StepType = StepType.MIX
 

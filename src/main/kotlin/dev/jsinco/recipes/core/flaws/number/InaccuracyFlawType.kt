@@ -3,7 +3,7 @@ package dev.jsinco.recipes.core.flaws.number
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
-class InaccuracyFlaw : NumberFlaw {
+class InaccuracyFlawType : NumberFlawType {
 
     override fun apply(number: Long, intensity: Double): Long {
 

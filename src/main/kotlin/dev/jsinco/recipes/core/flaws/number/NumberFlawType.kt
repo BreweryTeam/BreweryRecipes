@@ -1,8 +1,8 @@
 package dev.jsinco.recipes.core.flaws.number
 
-import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawType
 
-interface NumberFlaw : Flaw {
+interface NumberFlawType : FlawType {
 
     fun apply(number: Long, intensity/*0-100*/: Double): Long
 

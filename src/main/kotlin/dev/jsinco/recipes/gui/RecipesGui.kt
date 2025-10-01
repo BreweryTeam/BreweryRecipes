@@ -1,7 +1,6 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.listeners.GuiEventListener
-import dev.jsinco.recipes.util.RecipesUtil
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.persistence.PersistentDataType
@@ -23,11 +22,7 @@ class RecipesGui(private val player: Player, private val allItems: List<RecipeIt
 
     fun render() {
         inventory.clear()
-        val allKnown = RecipesUtil.allPlayerRecipes(player)
-        val recipes = allItems.stream()
-            .filter { allKnown.contains(it.key()) || player.hasPermission("recipes.override.view") }
-            .sorted(Comparator.comparing(RecipeItem::key))
-            .toList()
+        val recipes = allItems
         val pageContentSize = inventory.size - 18
         val pages = Math.ceilDiv(recipes.size, pageContentSize)
         if (page < pages) {

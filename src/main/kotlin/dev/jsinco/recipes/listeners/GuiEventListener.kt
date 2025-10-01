@@ -2,8 +2,9 @@ package dev.jsinco.recipes.listeners
 
 import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.gui.RecipeItem
+import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.gui.RecipesGui
+import dev.jsinco.recipes.gui.integration.TBPRecipe
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.RecipesUtil
 import org.bukkit.NamespacedKey
@@ -63,11 +64,11 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
         val chance = Recipes.recipesConfig.recipeSpawning.chance
         if (bound <= 0 || chance <= 0) return
         else if (Random.nextInt(bound) > chance) return
-        val applicableRecipes = (Recipes.recipesProvider.get()
-            .filter { !Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(it.key()) })
-        val recipe: RecipeItem? = if (applicableRecipes.isEmpty()) null else applicableRecipes.random()
+        val applicableRecipes = (Recipes.recipes()
+            .filter { !Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(it.identifier) })
+        val recipe: BreweryRecipe? = if (applicableRecipes.isEmpty()) null else applicableRecipes.random()
         recipe?.let {
-            event.loot.add(recipe.loot())
+            event.loot.add(recipe.lootItem())
         }
     }
 
@@ -80,7 +81,12 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             val view = MenuType.GENERIC_9X6.builder()
                 .build(player)
             val topInventory = view.topInventory
-            val gui = RecipesGui(player, Recipes.recipesProvider.get(), topInventory)
+            val gui = RecipesGui(
+                player,
+                Recipes.recipes()
+                    .map { breweryRecipe -> TBPRecipe(breweryRecipe.generateCompletedView()) },
+                topInventory
+            )
             gui.render()
             trackedInventories.put(topInventory, gui)
             view.open()

@@ -2,7 +2,7 @@ package dev.jsinco.recipes.core.flaws.text
 
 import kotlin.random.Random
 
-class OmissionFlaw : TextFlaw {
+class OmissionFlawType : TextFlawType {
 
     override fun apply(text: String, intensity: Double): String {
 

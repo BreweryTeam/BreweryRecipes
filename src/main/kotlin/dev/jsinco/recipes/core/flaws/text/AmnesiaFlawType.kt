@@ -2,7 +2,7 @@ package dev.jsinco.recipes.core.flaws.text
 
 import kotlin.random.Random
 
-class AmnesiaFlaw : TextFlaw {
+class AmnesiaFlawType : TextFlawType {
 
     // We can apply this one to numbers after they've been converted into a String
 

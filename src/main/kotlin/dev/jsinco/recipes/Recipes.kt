@@ -4,9 +4,9 @@ import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
-import dev.jsinco.recipes.gui.RecipeItem
-import dev.jsinco.recipes.gui.integration.TBPRecipe
+import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.listeners.GuiEventListener
+import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -15,7 +15,6 @@ import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
-import java.util.function.Supplier
 
 // Idea:
 // Allow recipes for brews to be collected from randomly generated chests and make some recipes rarer than others
@@ -25,13 +24,21 @@ class Recipes : JavaPlugin() {
     companion object {
         lateinit var instance: Recipes
         lateinit var recipesConfig: RecipesConfig
-        lateinit var recipesProvider: Supplier<List<RecipeItem>>
+        private lateinit var recipeList: List<BreweryRecipe>
 
         fun key(key: String): NamespacedKey? {
             if (key.contains(":")) {
                 return NamespacedKey.fromString(key)
             }
             return NamespacedKey("brewery_recipes", key)
+        }
+
+        fun recipes(): List<BreweryRecipe> {
+            if (this::recipeList.isInitialized && !recipeList.isEmpty()) {
+                return recipeList
+            }
+            recipeList = instance.loadRecipeProvider()!!
+            return recipeList
         }
     }
 
@@ -42,14 +49,12 @@ class Recipes : JavaPlugin() {
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
         Bukkit.getPluginManager().registerEvents(GuiEventListener(this), this)
-        recipesProvider =
-            loadRecipeProvider() ?: throw IllegalStateException("Needs either TBP or BreweryX to function")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
     }
 
-    private fun loadRecipeProvider(): Supplier<List<RecipeItem>>? {
+    private fun loadRecipeProvider(): List<BreweryRecipe>? {
         try {
             Class.forName("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")
             if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
@@ -57,10 +62,8 @@ class Recipes : JavaPlugin() {
             }
             val provider =
                 (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null
-            return Supplier {
-                provider.recipeRegistry.recipes
-                    .map { TBPRecipe(it) }
-            }
+            return provider.recipeRegistry.recipes
+                .map { TBPRecipeConverter.convert(it) }
         } catch (ignored: NoClassDefFoundError) {
             return null
         }

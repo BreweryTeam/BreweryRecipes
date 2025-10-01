@@ -1,10 +1,9 @@
 package dev.jsinco.recipes.core.process.steps
 
-import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.StepType
 
-class AgeStep(private val ticks: Long, private val barrelType: BarrelType, private val flaws: List<Flaw>) : Step {
+class AgeStep(val agingTicks: Long, val barrelType: BarrelType) : Step {
 
     override fun getType(): StepType = StepType.AGE
 

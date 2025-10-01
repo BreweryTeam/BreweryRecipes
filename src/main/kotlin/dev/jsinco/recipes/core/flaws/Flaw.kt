@@ -1,4 +1,3 @@
 package dev.jsinco.recipes.core.flaws
 
-interface Flaw {
-}
+data class Flaw(val type: FlawType, val extent: FlawExtent)

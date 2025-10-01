@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.core.flaws.text
 
-class SlurringFlaw : TextFlaw {
+class SlurringFlawType : TextFlawType {
 
     // Oh no, the writer of this recipe was drunk when writing it!
     // Apply BX's / TBP's drunk text on this text with the given intensity
