@@ -4,30 +4,21 @@ import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.data.storage.MySQLStorageImpl
 import dev.jsinco.recipes.data.storage.SQLiteStorageImpl
 import java.io.File
-import java.util.*
 
-class DataManager(private val dataFolder: File) {
+class DataManager(val dataFolder: File) {
+
+    private val storageImpl: StorageImpl
 
     init {
         if (!dataFolder.exists()) dataFolder.mkdirs()
-        getSelectedStorage()
+        storageImpl = createStorage(StorageType.fromString(Recipes.recipesConfig.storage.type))
     }
 
-    companion object {
-        private val loadedStorages: EnumMap<StorageType, StorageImpl> = EnumMap(StorageType::class.java)
+    private fun createStorage(type: StorageType): StorageImpl {
+        return when (type) {
+            StorageType.SQLite -> SQLiteStorageImpl(dataFolder)
+            StorageType.MySQL -> MySQLStorageImpl()
+        }
     }
-
-    @Synchronized
-    private fun createStorage(type: StorageType): StorageImpl = when (type) {
-        StorageType.SQLite -> SQLiteStorageImpl(dataFolder)
-        StorageType.MySQL -> MySQLStorageImpl(dataFolder)
-    }
-
-    @Synchronized
-    fun getStorage(type: StorageType): StorageImpl = loadedStorages.computeIfAbsent(type) { createStorage(it) }
-
-    fun getSelectedStorage(): StorageImpl = getStorage(StorageType.fromString(Recipes.recipesConfig.storage.type))
-
-    fun getDataFolder(): File = dataFolder
 
 }

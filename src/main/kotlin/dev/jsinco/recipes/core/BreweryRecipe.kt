@@ -39,7 +39,7 @@ class BreweryRecipe(val identifier: String, private val steps: List<Step>) {
     }
 
     fun generateCompletedView(): RecipeView {
-        return RecipeView(this, listOf())
+        return RecipeView(this.identifier, listOf())
     }
 
     // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them
