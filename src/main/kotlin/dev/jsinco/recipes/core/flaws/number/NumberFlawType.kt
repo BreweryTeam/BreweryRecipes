@@ -4,6 +4,6 @@ import dev.jsinco.recipes.core.flaws.FlawType
 
 interface NumberFlawType : FlawType {
 
-    fun apply(number: Long, intensity/*0-100*/: Double): Long
+    fun applyTo(number: Long): Long
 
 }

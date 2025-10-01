@@ -3,6 +3,8 @@ package dev.jsinco.recipes.core
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.number.NumberFlawType
+import dev.jsinco.recipes.core.flaws.text.TextFlawType
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
@@ -95,12 +97,26 @@ object RecipeWriter {
     }
 
     private fun compileIngredients(ingredients: Map<Ingredient, Int>, flaws: List<Flaw>): Component {
-        return ingredients.entries.stream()
+        val complete = ingredients.entries.stream()
             .map { entry ->
-                Component.text(entry.value).color(NamedTextColor.GOLD).appendSpace().append(
+                val flawMatch = flaws.asSequence()
+                    .filter { it.extent is FlawExtent.PartialStep && it.extent.part == "ingredient" }
+                    .map { it.type }
+                    .firstOrNull()
+                val amount =
+                    if (flawMatch is NumberFlawType) flawMatch.applyTo(entry.value.toLong()).toInt() else entry.value
+                val item = Component.text(amount).color(NamedTextColor.GOLD).appendSpace().append(
                     entry.key.displayName
                 ).colorIfAbsent(NamedTextColor.GRAY)
+                if (flawMatch is TextFlawType) flawMatch.applyTo(item) else item
             }.collect(Component.toComponent(Component.text(", ")))
+        val flawMatch = flaws.asSequence()
+            .filter { it.extent is FlawExtent.PartialStep && it.extent.part == "ingredient" }
+            .map { it.type }
+            .filterIsInstance<TextFlawType>()
+            .firstOrNull()
+        flawMatch?.let { return flawMatch.applyTo(complete) }
+        return complete
     }
 
     private fun flawApplies(stepIndex: Int, flaw: Flaw): Boolean {

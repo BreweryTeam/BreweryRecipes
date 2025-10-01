@@ -1,11 +1,10 @@
 package dev.jsinco.recipes.core.flaws.text
 
-class SlurringFlawType : TextFlawType {
+import net.kyori.adventure.text.Component
 
-    // Oh no, the writer of this recipe was drunk when writing it!
-    // Apply BX's / TBP's drunk text on this text with the given intensity
+class SlurringFlawType(val intensity: Double) : TextFlawType {
 
-    override fun apply(text: String, intensity: Double): String {
-        TODO("Not yet implemented")
+    override fun applyTo(component: Component): Component {
+        TODO("Need to expose the tbp text transformer in API")
     }
 }
