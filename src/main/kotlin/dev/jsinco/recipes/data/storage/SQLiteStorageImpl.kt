@@ -61,7 +61,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
             Logger.logErr(e)
         }
     }
-    
+
     override fun insertOrUpdateRecipeView(
         playerUuid: UUID,
         recipeView: RecipeView

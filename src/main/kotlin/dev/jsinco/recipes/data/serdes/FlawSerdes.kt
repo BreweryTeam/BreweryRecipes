@@ -1,17 +1,107 @@
 package dev.jsinco.recipes.data.serdes
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.FlawType
+import dev.jsinco.recipes.core.flaws.number.InaccuracyFlawType
+import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
+import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
+import dev.jsinco.recipes.core.flaws.text.OmissionFlawType
+import dev.jsinco.recipes.core.flaws.text.SlurringFlawType
 
 object FlawSerdes {
 
 
     fun serialize(flaw: Flaw): JsonElement {
-        val type = flaw.type
-        val extent = flaw.extent
+        val output = JsonObject()
+        output.add("type", serializeType(flaw.type))
+        output.add("extent", serializeExtent(flaw.extent))
+        // TODO store seed for flaw or something?
+        return output
     }
 
-    fun deserialize(jsonElement: JsonElement): Flaw {
+    private fun serializeExtent(extent: FlawExtent): JsonElement {
+        val output = JsonObject()
+        when (extent) {
+            is FlawExtent.Everywhere -> output.addProperty("type", "everywhere")
+            is FlawExtent.WholeStep -> {
+                output.addProperty("type", "whole_step")
+                output.addProperty("step-index", extent.stepIndex)
+            }
 
+            is FlawExtent.PartialStep -> {
+                output.addProperty("type", "partial_step")
+                output.addProperty("step-index", extent.stepIndex)
+                output.addProperty("part", extent.part)
+            }
+
+            is FlawExtent.ExactIngredient -> {
+                output.addProperty("type", "ingredient")
+                output.addProperty("step-index", extent.stepIndex)
+                output.addProperty("ingredient-key", extent.ingredientKey)
+            }
+
+            else -> throw IllegalStateException("Unknown flaw extent")
+        }
+        return output
+    }
+
+    private fun serializeType(flawType: FlawType): JsonElement {
+        return JsonPrimitive(
+            when (flawType) {
+                is InaccuracyFlawType -> "inaccuracy"
+                is AmnesiaFlawType -> "amnesia"
+                is ObfuscationFlawType -> "obfuscation"
+                is OmissionFlawType -> "omission"
+                is SlurringFlawType -> "slurring"
+                else -> throw IllegalStateException("Unknown flaw type")
+            }
+        )
+    }
+
+    fun deserialize(json: JsonElement): Flaw? {
+        if (json !is JsonObject) {
+            return null
+        }
+        val typeJson = json.get("type")
+        val extentJson = json.get("extent")
+        val type = deserializeType(typeJson) ?: return null
+        val extent = deserializeExtent(extentJson) ?: return null
+        return Flaw(type, extent)
+    }
+
+    private fun deserializeExtent(extentJson: JsonElement): FlawExtent? {
+        if (extentJson !is JsonObject) {
+            return null;
+        }
+        return when (extentJson.get("type").asString) {
+            "everywhere" -> FlawExtent.Everywhere()
+            "whole_step" -> FlawExtent.WholeStep(extentJson.get("step-index").asInt)
+            "partial_step" -> FlawExtent.PartialStep(
+                extentJson.get("step-index").asInt,
+                extentJson.get("part").asString
+            )
+
+            "ingredient" -> FlawExtent.ExactIngredient(
+                extentJson.get("step-index").asInt,
+                extentJson.get("ingredient-key").asString
+            )
+
+            else -> null
+        }
+    }
+
+    private fun deserializeType(typeJson: JsonElement): FlawType? {
+        return when (typeJson.asString) {
+            "inaccuracy" -> InaccuracyFlawType()
+            "amnesia" -> AmnesiaFlawType()
+            "obfuscation" -> ObfuscationFlawType()
+            "omission" -> OmissionFlawType()
+            "slurring" -> SlurringFlawType()
+            else -> null
+        }
     }
 }

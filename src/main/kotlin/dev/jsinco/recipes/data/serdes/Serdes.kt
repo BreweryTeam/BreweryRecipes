@@ -15,9 +15,10 @@ object Serdes {
     }
 
 
-    fun <T> deserialize(jsonArray: JsonArray, tConverter: Function<JsonElement, T>): List<T> {
-        return jsonArray.asList().stream()
-            .map(tConverter)
+    fun <T> deserialize(jsonArray: JsonArray, tConverter: Function<JsonElement, T?>): List<T> {
+        return jsonArray.asList().asSequence()
+            .map { tConverter.apply(it) }
+            .filterNotNull()
             .toList()
     }
 }
