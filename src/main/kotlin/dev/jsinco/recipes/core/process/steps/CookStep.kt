@@ -4,7 +4,7 @@ import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.StepType
 
-class CookStep(val ticks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
+class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
 
     override fun getType(): StepType = StepType.COOK
 

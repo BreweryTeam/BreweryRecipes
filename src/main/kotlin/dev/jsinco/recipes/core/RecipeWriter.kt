@@ -11,12 +11,12 @@ import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
+import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.translation.GlobalTranslator
@@ -25,8 +25,9 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 
 object RecipeWriter {
-    // TODO: Make this convert a BreweryRecipe to readable instructions based on language files and each step's flaws
-
+    // TODO: Read this from TBP and BreweryX
+    const val DEFAULT_COOKING_MINUTE = 60 * 60
+    const val DEFAULT_AGING_YEAR = DEFAULT_COOKING_MINUTE * 20
 
     fun writeToItem(recipeView: RecipeView): ItemStack? {
         val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
@@ -49,16 +50,19 @@ object RecipeWriter {
 
     private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>): Component {
         val stepFlaws = flaws.filter { flawApplies(stepIndex, it) }
-        return when (step) {
+        val output = when (step) {
             is DistillStep -> Component.translatable(
                 "recipes.display.recipe.step.distill", Argument.tagResolver(
-                    Formatter.number("distill_runs", step.count)
+                    Placeholder.component("distill_runs", compileNumber("runs", step.count, stepFlaws))
                 )
             )
 
             is AgeStep -> Component.translatable(
                 "recipes.display.recipe.step.age", Argument.tagResolver(
-                    Formatter.number("aging_years", step.agingTicks),
+                    Placeholder.component(
+                        "aging_years",
+                        compileNumber("time", step.agingTicks / DEFAULT_AGING_YEAR, stepFlaws)
+                    ),
                     Placeholder.component(
                         "barrel_type",
                         Component.translatable("recipes.barrel.type." + step.barrelType.name.lowercase(Locale.ROOT))
@@ -71,7 +75,10 @@ object RecipeWriter {
                     Placeholder.component(
                         "ingredients", compileIngredients(step.ingredients, flaws)
                     ),
-                    Formatter.number("mixing_time", step.mixingTicks)
+                    Placeholder.component(
+                        "mixing_time",
+                        compileNumber("time", step.mixingTicks / DEFAULT_COOKING_MINUTE, stepFlaws)
+                    )
                 )
             )
 
@@ -80,7 +87,10 @@ object RecipeWriter {
                     Placeholder.component(
                         "ingredients", compileIngredients(step.ingredients, flaws)
                     ),
-                    Formatter.number("cooking_time", step.ticks),
+                    Placeholder.component(
+                        "cooking_time",
+                        compileNumber("time", step.cookingTicks / DEFAULT_COOKING_MINUTE, stepFlaws)
+                    ),
                     Placeholder.component(
                         "cauldron_type",
                         Component.translatable(
@@ -94,6 +104,12 @@ object RecipeWriter {
                 Component.text { "Unknown component" }
             }
         }
+        val flawMatch =
+            stepFlaws.filter { (it.extent is FlawExtent.Everywhere || it.extent is FlawExtent.WholeStep) }
+                .map { it.type }
+                .filterIsInstance<TextFlawType>()
+                .firstOrNull()
+        return (flawMatch?.applyTo(TranslationUtil.render(output))) ?: output
     }
 
     private fun compileIngredients(ingredients: Map<Ingredient, Int>, flaws: List<Flaw>): Component {
@@ -108,7 +124,9 @@ object RecipeWriter {
                 val item = Component.text(amount).color(NamedTextColor.GOLD).appendSpace().append(
                     entry.key.displayName
                 ).colorIfAbsent(NamedTextColor.GRAY)
-                if (flawMatch is TextFlawType) flawMatch.applyTo(item) else item
+                if (flawMatch is TextFlawType) flawMatch.applyTo(TranslationUtil.render(item)) else TranslationUtil.render(
+                    item
+                )
             }.collect(Component.toComponent(Component.text(", ")))
         val flawMatch = flaws.asSequence()
             .filter { it.extent is FlawExtent.PartialStep && it.extent.part == "ingredient" }
@@ -128,4 +146,23 @@ object RecipeWriter {
             else -> false
         }
     }
+
+    private fun compileNumber(part: String, number: Long, flaws: List<Flaw>): Component {
+        val flawMatch = flaws.asSequence()
+            .filter { it.extent is FlawExtent.PartialStep && it.extent.part == part }
+            .map { it.type }
+            .filterIsInstance<NumberFlawType>()
+            .firstOrNull()
+        return Component.text(flawMatch?.applyTo(number) ?: number)
+    }
+
+    private fun compileText(part: String, text: Component, flaws: List<Flaw>): Component {
+        val flawMatch = flaws.asSequence()
+            .filter { it.extent is FlawExtent.PartialStep && it.extent.part == part }
+            .map { it.type }
+            .filterIsInstance<TextFlawType>()
+            .firstOrNull()
+        return flawMatch?.applyTo(text) ?: text
+    }
+
 }
