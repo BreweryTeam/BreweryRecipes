@@ -65,7 +65,11 @@ object RecipeWriter {
                     ),
                     Placeholder.component(
                         "barrel_type",
-                        Component.translatable("recipes.barrel.type." + step.barrelType.name.lowercase(Locale.ROOT))
+                        compileText(
+                            "type",
+                            Component.translatable("recipes.barrel.type." + step.barrelType.name.lowercase(Locale.ROOT)),
+                            flaws
+                        )
                     )
                 )
             )
@@ -93,8 +97,11 @@ object RecipeWriter {
                     ),
                     Placeholder.component(
                         "cauldron_type",
-                        Component.translatable(
-                            "recipes.cauldron.type." + step.cauldronType.name.lowercase(Locale.ROOT)
+                        compileText(
+                            "type", Component.translatable(
+                                "recipes.cauldron.type." + step.cauldronType.name.lowercase(Locale.ROOT)
+                            ),
+                            flaws
                         )
                     )
                 )
@@ -162,7 +169,7 @@ object RecipeWriter {
             .map { it.type }
             .filterIsInstance<TextFlawType>()
             .firstOrNull()
-        return flawMatch?.applyTo(text) ?: text
+        return flawMatch?.applyTo(TranslationUtil.render(text)) ?: text
     }
 
 }
