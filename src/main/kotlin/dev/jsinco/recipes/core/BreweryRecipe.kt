@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.core
 
-import dev.jsinco.recipes.core.decoration.Flaw
+import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
@@ -12,6 +12,7 @@ class BreweryRecipe(private val identifier: String) {
     private var name: String? = null
     private val steps: MutableList<Step> = mutableListOf()
 
+    // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them
     class Builder(private val identifier: String) {
         private val breweryRecipe = BreweryRecipe(identifier)
 

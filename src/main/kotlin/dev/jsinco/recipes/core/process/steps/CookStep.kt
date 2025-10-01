@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.core.process.steps
 
-import dev.jsinco.recipes.core.decoration.Flaw
+import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.StepType
 
