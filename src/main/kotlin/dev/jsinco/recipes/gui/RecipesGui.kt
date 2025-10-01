@@ -39,7 +39,7 @@ class RecipesGui(private val player: Player, private val allItems: List<RecipeIt
     }
 
     fun render(guiItem: GuiItem, position: Int) {
-        val item = guiItem.createItem()
+        val item = guiItem.createItem() ?: return
         item.editPersistentDataContainer { pdc ->
             pdc.set(
                 GuiEventListener.GUI_TYPE,

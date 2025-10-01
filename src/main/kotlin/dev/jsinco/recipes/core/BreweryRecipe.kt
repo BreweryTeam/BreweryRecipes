@@ -17,7 +17,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
-class BreweryRecipe(val identifier: String, private val steps: List<Step>) {
+data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
     fun lootItem(): ItemStack {
         val itemStack = ItemStack(Material.PAPER)

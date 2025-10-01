@@ -5,9 +5,7 @@ import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.core.RecipeWriter
 import dev.jsinco.recipes.gui.RecipeItem
 import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import java.util.*
 
 data class TBPRecipe(val recipeView: RecipeView) : RecipeItem {
 
@@ -22,9 +20,7 @@ data class TBPRecipe(val recipeView: RecipeView) : RecipeItem {
         }
     }
 
-    override fun createItem(): ItemStack {
-        val item = ItemStack(Material.PAPER)
-        RecipeWriter.writeToItem(item, recipeView)
-        return item
+    override fun createItem(): ItemStack? {
+        return RecipeWriter.writeToItem(recipeView)
     }
 }

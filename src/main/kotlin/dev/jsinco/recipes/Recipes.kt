@@ -24,7 +24,7 @@ class Recipes : JavaPlugin() {
     companion object {
         lateinit var instance: Recipes
         lateinit var recipesConfig: RecipesConfig
-        private lateinit var recipeList: List<BreweryRecipe>
+        private lateinit var recipeList: Map<String, BreweryRecipe>
 
         fun key(key: String): NamespacedKey? {
             if (key.contains(":")) {
@@ -33,11 +33,17 @@ class Recipes : JavaPlugin() {
             return NamespacedKey("brewery_recipes", key)
         }
 
-        fun recipes(): List<BreweryRecipe> {
+        /**
+         * TBP can have a very late initialization on some recipes, use only post start
+         */
+        fun recipes(): Map<String, BreweryRecipe> {
             if (this::recipeList.isInitialized && !recipeList.isEmpty()) {
                 return recipeList
             }
             recipeList = instance.loadRecipeProvider()!!
+                .asSequence()
+                .map { it.identifier to it }
+                .toMap()
             return recipeList
         }
     }

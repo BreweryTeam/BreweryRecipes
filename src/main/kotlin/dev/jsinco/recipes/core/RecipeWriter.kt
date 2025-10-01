@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.core
 
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
 import dev.jsinco.recipes.core.process.Step
@@ -7,11 +8,16 @@ import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
+import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
+import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
 
@@ -19,8 +25,22 @@ object RecipeWriter {
     // TODO: Make this convert a BreweryRecipe to readable instructions based on language files and each step's flaws
 
 
-    fun writeToItem(baseItem: ItemStack, recipeView: RecipeView) {
-
+    fun writeToItem(recipeView: RecipeView): ItemStack? {
+        val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
+        val item = ItemStack(Material.PAPER) // TODO better items here
+        item.setData(
+            DataComponentTypes.LORE, ItemLore.lore(
+                recipe.steps
+                    .asSequence()
+                    .mapIndexed { index, value -> renderStep(value, index, recipeView.flaws) }
+                    .map { component ->
+                        component.colorIfAbsent(NamedTextColor.GRAY)
+                            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    }.map { GlobalTranslator.render(it, Locale.ENGLISH) }
+                    .toList()
+            )
+        )
+        return item
     }
 
 

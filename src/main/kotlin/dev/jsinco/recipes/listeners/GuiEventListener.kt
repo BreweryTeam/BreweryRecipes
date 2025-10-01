@@ -3,6 +3,10 @@ package dev.jsinco.recipes.listeners
 import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.BreweryRecipe
+import dev.jsinco.recipes.core.RecipeView
+import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
 import dev.jsinco.recipes.gui.RecipesGui
 import dev.jsinco.recipes.gui.integration.TBPRecipe
 import dev.jsinco.recipes.util.BookUtil
@@ -64,8 +68,11 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
         val chance = Recipes.recipesConfig.recipeSpawning.chance
         if (bound <= 0 || chance <= 0) return
         else if (Random.nextInt(bound) > chance) return
-        val applicableRecipes = (Recipes.recipes()
-            .filter { !Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(it.identifier) })
+        val applicableRecipes = Recipes.recipes()
+            .asSequence()
+            .filter { !Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(it.key) }
+            .map { it.value }
+            .toList()
         val recipe: BreweryRecipe? = if (applicableRecipes.isEmpty()) null else applicableRecipes.random()
         recipe?.let {
             event.loot.add(recipe.lootItem())
@@ -83,8 +90,17 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             val topInventory = view.topInventory
             val gui = RecipesGui(
                 player,
-                Recipes.recipes()
-                    .map { breweryRecipe -> TBPRecipe(breweryRecipe.generateCompletedView()) },
+                Recipes.recipes().values
+                    .map { breweryRecipe ->
+                        if (player.hasPermission("recipes.override.view"))
+                            TBPRecipe(breweryRecipe.generateCompletedView())
+                        else TBPRecipe(
+                            RecipeView(
+                                breweryRecipe.identifier,
+                                listOf(Flaw(ObfuscationFlawType(), FlawExtent.Everywhere()))
+                            )
+                        )
+                    },
                 topInventory
             )
             gui.render()
