@@ -1,14 +1,19 @@
 package dev.jsinco.recipes.gui
 
+import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.listeners.GuiEventListener
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.persistence.PersistentDataType
 
-class RecipesGui(private val player: Player, private val allItems: List<RecipeItem>, private val inventory: Inventory) {
+class RecipesGui(
+    private val player: Player,
+    private val recipeItems: List<GuiIntegration.RecipeItem>,
+    private val inventory: Inventory
+) {
 
     private var page = 0
-    private val maxPages = Math.ceilDiv(allItems.size, 9 * 4)
+    private val maxPages = Math.ceilDiv(recipeItems.size, 9 * 4)
 
     fun nextPage() {
         page = maxPages.coerceAtMost(page + 1)
@@ -22,7 +27,7 @@ class RecipesGui(private val player: Player, private val allItems: List<RecipeIt
 
     fun render() {
         inventory.clear()
-        val recipes = allItems
+        val recipes = recipeItems
         val pageContentSize = inventory.size - 18
         val pages = Math.ceilDiv(recipes.size, pageContentSize)
         if (page < pages) {

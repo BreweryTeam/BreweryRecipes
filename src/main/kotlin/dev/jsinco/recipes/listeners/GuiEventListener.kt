@@ -3,7 +3,7 @@ package dev.jsinco.recipes.listeners
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.gui.RecipesGui
-import dev.jsinco.recipes.gui.integration.TBPRecipe
+import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.BookUtil
 import org.bukkit.NamespacedKey
 import org.bukkit.event.Event
@@ -21,7 +21,7 @@ import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
 
-class GuiEventListener(private val plugin: Recipes) : Listener {
+class GuiEventListener(private val plugin: Recipes, private val guiIntegration: GuiIntegration) : Listener {
 
     companion object {
         val trackedInventories = mutableMapOf<Inventory, RecipesGui>()
@@ -87,7 +87,10 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             else Recipes.recipeViewManager.getViews(player.uniqueId)
             val gui = RecipesGui(
                 player,
-                recipeViews.map { TBPRecipe(it) },
+                recipeViews.mapNotNull {
+                    val item = guiIntegration.createItem(it) ?: return@mapNotNull null
+                    return@mapNotNull GuiIntegration.RecipeItem(it.recipeIdentifier, item)
+                },
                 topInventory
             )
             gui.render()

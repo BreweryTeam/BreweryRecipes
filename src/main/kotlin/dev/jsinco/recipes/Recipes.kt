@@ -8,6 +8,7 @@ import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
+import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
@@ -62,7 +63,7 @@ class Recipes : JavaPlugin() {
         val translator = RecipesTranslator(File(dataFolder, "locale"))
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
-        Bukkit.getPluginManager().registerEvents(GuiEventListener(this), this)
+        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, TbpGuiInterface), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }

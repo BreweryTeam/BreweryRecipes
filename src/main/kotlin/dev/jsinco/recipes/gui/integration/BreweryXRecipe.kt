@@ -1,13 +1,11 @@
 package dev.jsinco.recipes.gui.integration
 
-import com.dre.brewery.recipe.BRecipe
-import dev.jsinco.recipes.gui.RecipeItem
+import dev.jsinco.recipes.core.RecipeView
 import org.bukkit.inventory.ItemStack
 
-data class BreweryXRecipe(val backing: BRecipe) : RecipeItem {
+object BreweryXRecipe : GuiIntegration {
 
-
-    override fun createItem(): ItemStack {
+    override fun createItem(recipeView: RecipeView): ItemStack? {
         TODO("Not yet implemented")
     }
 }
