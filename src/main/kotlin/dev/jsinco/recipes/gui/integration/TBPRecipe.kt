@@ -6,6 +6,7 @@ import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
 import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.core.RecipeWriter
 import dev.jsinco.recipes.gui.RecipeItem
+import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -30,10 +31,11 @@ data class TBPRecipe(val recipeView: RecipeView) : RecipeItem {
     override fun createItem(): ItemStack? {
         val tbp = getApi()
         val recipe = tbp.recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null
-        val displayName = (recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name
+        val brewDisplayName = (recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name
+        val displayName = recipeView.translation(MiniMessage.miniMessage().deserialize(brewDisplayName))
         val item = RecipeWriter.writeToItem(recipeView)
         item?.setData(
-            DataComponentTypes.CUSTOM_NAME, MiniMessage.miniMessage().deserialize(displayName)
+            DataComponentTypes.CUSTOM_NAME, TranslationUtil.render(displayName)
                 .colorIfAbsent(NamedTextColor.WHITE)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
         )
