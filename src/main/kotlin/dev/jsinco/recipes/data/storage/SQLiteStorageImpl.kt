@@ -1,6 +1,5 @@
 package dev.jsinco.recipes.data.storage
 
-import com.google.common.base.Supplier
 import com.google.gson.JsonParser
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -12,6 +11,7 @@ import dev.jsinco.recipes.data.serdes.Serdes
 import dev.jsinco.recipes.util.Logger
 import dev.jsinco.recipes.util.UuidUtil
 import java.io.File
+import java.sql.PreparedStatement
 import java.sql.SQLException
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -66,18 +66,16 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         playerUuid: UUID,
         recipeView: RecipeView
     ): CompletableFuture<Void?> {
-        return runStatement {
-            dataSource.connection.prepareStatement(
-                """
+        return runStatement(
+            """
                 INSERT OR REPLACE INTO recipe_view
                   VALUES(?,?,?);
-            """.trimIndent()
-            ).use {
-                it.setBytes(1, UuidUtil.toBytes(playerUuid))
-                it.setString(2, recipeView.recipeIdentifier)
-                it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serialize).toString())
-                it.execute()
-            }
+            """
+        ) {
+            it.setBytes(1, UuidUtil.toBytes(playerUuid))
+            it.setString(2, recipeView.recipeIdentifier)
+            it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serialize).toString())
+            it.execute()
             return@runStatement null
         }
     }
@@ -86,54 +84,56 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         playerUuid: UUID,
         recipeKey: String
     ): CompletableFuture<Void?> {
-        return runStatement {
-            dataSource.connection.prepareStatement(
-                """
+        return runStatement(
+            """
                 DELETE FROM recipe_view
                     WHERE player_uuid = ? AND recipe_key = ?;
-            """.trimIndent()
-            ).use {
-                it.setBytes(1, UuidUtil.toBytes(playerUuid))
-                it.setString(2, recipeKey)
-                it.execute()
-            }
+            """
+        ) {
+            it.setBytes(1, UuidUtil.toBytes(playerUuid))
+            it.setString(2, recipeKey)
+            it.execute()
             return@runStatement null
         }
     }
 
     override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?> {
-        return runStatement {
-            dataSource.connection.prepareStatement(
-                """
+        return runStatement(
+            """
                 SELECT * FROM recipe_view;
             """.trimIndent()
-            ).use {
-                val result = it.executeQuery()
-                val output = mutableMapOf<UUID, MutableList<RecipeView>>()
-                while (result.next()) {
-                    val recipeViews = output.computeIfAbsent(UuidUtil.asUuid(result.getBytes("player_uuid"))) {
-                        mutableListOf()
-                    }
-                    recipeViews.add(
-                        RecipeView(
-                            result.getString("recipe_key"),
-                            Serdes.deserialize(
-                                JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
-                                FlawSerdes::deserialize
-                            )
+        ) {
+            val result = it.executeQuery()
+            val output = mutableMapOf<UUID, MutableList<RecipeView>>()
+            while (result.next()) {
+                val recipeViews = output.computeIfAbsent(UuidUtil.asUuid(result.getBytes("player_uuid"))) {
+                    mutableListOf()
+                }
+                recipeViews.add(
+                    RecipeView(
+                        result.getString("recipe_key"),
+                        Serdes.deserialize(
+                            JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
+                            FlawSerdes::deserialize
                         )
                     )
-                }
-                return@runStatement output
+                )
             }
+            return@runStatement output
         }
     }
 
-    private fun <T> runStatement(supplier: Supplier<T>): CompletableFuture<T?> {
-        return CompletableFuture.supplyAsync(supplier, executor)
+    private fun <T> runStatement(statement: String, supplier: Function1<PreparedStatement, T>): CompletableFuture<T?> {
+        return CompletableFuture.supplyAsync<T>({
+            dataSource.connection.use {
+                it.prepareStatement(statement).use { preparedStatement ->
+                    return@supplyAsync supplier.invoke(preparedStatement)
+                }
+            }
+        }, executor)
             .handleAsync { t, e ->
                 if (e != null) {
-                    e.printStackTrace()
+                    Logger.logErr(e)
                     return@handleAsync null
                 }
                 return@handleAsync t

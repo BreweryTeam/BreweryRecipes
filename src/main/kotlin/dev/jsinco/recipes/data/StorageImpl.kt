@@ -15,4 +15,5 @@ interface StorageImpl {
     fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?>
 
     fun createTables()
+
 }
