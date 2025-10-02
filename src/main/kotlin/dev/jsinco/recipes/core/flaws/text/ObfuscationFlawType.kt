@@ -1,12 +1,14 @@
 package dev.jsinco.recipes.core.flaws.text
 
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import kotlin.random.Random
 
-class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : TextFlawType {
+class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : FlawType {
 
-    fun apply(text: String, startPos: Int): Component {
+    fun apply(text: String, startPos: Int, extent: FlawExtent): Component {
 
         if (intensity <= 0.0) return Component.text(text) // No obfuscation at 0 intensity, full obfuscation at 100
         if (intensity >= 100.0) return Component.text(text).decoration(TextDecoration.OBFUSCATED, true)
@@ -19,8 +21,8 @@ class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : TextFla
         var pos = startPos
 
         for (ch in text) {
-            val obfuscate = ch != ' ' && seeds.asSequence()
-                .map { Random(it * ch.code * pos) }
+            val obfuscate = ch != ' ' && extent.appliesTo(pos) && seeds.asSequence()
+                .map { Random(it + ch.code + pos) }
                 .all { it.nextDouble() < probability }
             if (obfuscate) {
                 if (!inObf) {
@@ -42,11 +44,14 @@ class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : TextFla
         return result.build()
     }
 
-    override fun applyTo(component: Component): Component {
+    override fun applyTo(component: Component, extent: FlawExtent): Component {
         return component.replaceText {
-            it.match(".*").replacement { matchResult, componentBuilder ->
+            var pos = 0
+            it.match(".+").replacement { matchResult, componentBuilder ->
                 val everything = matchResult.group()
-                return@replacement apply(everything, matchResult.start())
+                val prevPos = pos
+                pos += everything.length
+                return@replacement apply(everything, matchResult.start() + prevPos, extent)
             }
         }
     }

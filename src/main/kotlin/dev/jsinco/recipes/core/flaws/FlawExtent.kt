@@ -2,11 +2,29 @@ package dev.jsinco.recipes.core.flaws
 
 interface FlawExtent {
 
-    class Everywhere : FlawExtent
+    fun obscurationLevel(recipeStepAmount: Int): Double
 
-    data class WholeStep(val stepIndex: Int) : FlawExtent
+    fun appliesTo(pos: Int): Boolean
 
-    data class PartialStep(val stepIndex: Int, val part: String) : FlawExtent
+    class Everywhere : FlawExtent {
+        override fun obscurationLevel(recipeStepAmount: Int): Double {
+            return recipeStepAmount.toDouble()
+        }
 
-    data class ExactIngredient(val stepIndex: Int, val ingredientKey: String) : FlawExtent
+        override fun appliesTo(pos: Int) = true
+    }
+
+    data class WholeStep(val stepIndex: Int) : FlawExtent {
+        override fun obscurationLevel(recipeStepAmount: Int) = 1.0
+
+        override fun appliesTo(pos: Int) = true
+    }
+
+    data class PartialStep(val stepIndex: Int, val start: Int, val stop: Int) : FlawExtent {
+        override fun obscurationLevel(recipeStepAmount: Int) = 0.5
+
+        override fun appliesTo(pos: Int): Boolean {
+            return start <= pos && pos < stop
+        }
+    }
 }

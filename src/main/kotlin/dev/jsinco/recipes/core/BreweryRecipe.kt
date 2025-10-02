@@ -3,6 +3,7 @@ package dev.jsinco.recipes.core
 import com.google.common.collect.ImmutableList
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.number.InaccuracyFlawType
 import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
 import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
 import dev.jsinco.recipes.core.flaws.text.OmissionFlawType
@@ -60,11 +61,18 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
             0 -> ObfuscationFlawType(flawLevel, seeds)
             1 -> AmnesiaFlawType(flawLevel, seeds)
             2 -> OmissionFlawType(flawLevel, seeds)
+            3 -> InaccuracyFlawType(flawLevel, seeds)
             else -> ObfuscationFlawType(flawLevel, seeds)
         }
-        val extent = when (RANDOM.nextInt(2)) {
+        val extent = when (RANDOM.nextInt(3)) {
             0 -> FlawExtent.Everywhere()
             1 -> FlawExtent.WholeStep(RANDOM.nextInt(steps.size))
+            2 -> {
+                val start = RANDOM.nextInt(25)
+                val stop = RANDOM.nextInt(start + 10, start + 25)
+                FlawExtent.PartialStep(RANDOM.nextInt(steps.size), start, stop)
+            }
+
             else -> FlawExtent.Everywhere()
         }
         return RecipeView(this.identifier, listOf(Flaw(type, extent)))

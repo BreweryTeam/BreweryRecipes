@@ -38,13 +38,8 @@ object FlawSerdes {
             is FlawExtent.PartialStep -> {
                 output.addProperty("type", "partial_step")
                 output.addProperty("step-index", extent.stepIndex)
-                output.addProperty("part", extent.part)
-            }
-
-            is FlawExtent.ExactIngredient -> {
-                output.addProperty("type", "ingredient")
-                output.addProperty("step-index", extent.stepIndex)
-                output.addProperty("ingredient-key", extent.ingredientKey)
+                output.addProperty("start", extent.start)
+                output.addProperty("stop", extent.stop)
             }
 
             else -> throw IllegalStateException("Unknown flaw extent")
@@ -90,12 +85,8 @@ object FlawSerdes {
             "whole_step" -> FlawExtent.WholeStep(extentJson.get("step-index").asInt)
             "partial_step" -> FlawExtent.PartialStep(
                 extentJson.get("step-index").asInt,
-                extentJson.get("part").asString
-            )
-
-            "ingredient" -> FlawExtent.ExactIngredient(
-                extentJson.get("step-index").asInt,
-                extentJson.get("ingredient-key").asString
+                extentJson.get("start").asInt,
+                extentJson.get("stop").asInt
             )
 
             else -> null
