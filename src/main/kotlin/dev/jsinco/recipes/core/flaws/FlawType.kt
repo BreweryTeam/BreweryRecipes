@@ -4,4 +4,5 @@ import net.kyori.adventure.text.Component
 
 interface FlawType {
 
+    fun intensity(): Double
 }

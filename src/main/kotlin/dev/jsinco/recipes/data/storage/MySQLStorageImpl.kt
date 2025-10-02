@@ -105,7 +105,7 @@ class MySQLStorageImpl : StorageImpl {
         }, executor)
     }
 
-    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, List<RecipeView>>> {
+    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>> {
         return CompletableFuture.supplyAsync({
             dataSource.connection.prepareStatement(
                 """

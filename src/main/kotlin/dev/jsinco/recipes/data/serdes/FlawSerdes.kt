@@ -2,7 +2,6 @@ package dev.jsinco.recipes.data.serdes
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
 import dev.jsinco.recipes.core.flaws.FlawType
@@ -17,7 +16,7 @@ object FlawSerdes {
 
     fun serialize(flaw: Flaw): JsonElement {
         val output = JsonObject()
-        output.add("type", serializeType(flaw.type))
+        output.add("flaw", serializeType(flaw.type))
         output.add("extent", serializeExtent(flaw.extent))
         // TODO store seed for flaw or something?
         return output
@@ -50,7 +49,9 @@ object FlawSerdes {
     }
 
     private fun serializeType(flawType: FlawType): JsonElement {
-        return JsonPrimitive(
+        val output = JsonObject()
+        output.addProperty(
+            "type",
             when (flawType) {
                 is InaccuracyFlawType -> "inaccuracy"
                 is AmnesiaFlawType -> "amnesia"
@@ -60,13 +61,15 @@ object FlawSerdes {
                 else -> throw IllegalStateException("Unknown flaw type")
             }
         )
+        output.addProperty("intensity", flawType.intensity())
+        return output
     }
 
     fun deserialize(json: JsonElement): Flaw? {
         if (json !is JsonObject) {
             return null
         }
-        val typeJson = json.get("type")
+        val typeJson = json.get("flaw")
         val extentJson = json.get("extent")
         val type = deserializeType(typeJson) ?: return null
         val extent = deserializeExtent(extentJson) ?: return null
@@ -95,12 +98,16 @@ object FlawSerdes {
     }
 
     private fun deserializeType(typeJson: JsonElement): FlawType? {
-        return when (typeJson.asString) {
-            "inaccuracy" -> InaccuracyFlawType()
-            "amnesia" -> AmnesiaFlawType()
-            "obfuscation" -> ObfuscationFlawType()
-            "omission" -> OmissionFlawType()
-            "slurring" -> SlurringFlawType()
+        if (typeJson !is JsonObject) {
+            return null
+        }
+        val intensity = typeJson.get("intensity").asDouble
+        return when (typeJson.get("type").asString) {
+            "inaccuracy" -> InaccuracyFlawType(intensity)
+            "amnesia" -> AmnesiaFlawType(intensity)
+            "obfuscation" -> ObfuscationFlawType(intensity)
+            "omission" -> OmissionFlawType(intensity)
+            "slurring" -> SlurringFlawType(intensity)
             else -> null
         }
     }

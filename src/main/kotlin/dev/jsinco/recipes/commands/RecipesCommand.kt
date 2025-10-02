@@ -24,6 +24,8 @@ object RecipesCommand {
                         return@executes 1
                     }
                     .requires { it.sender.hasPermission("recipes.command.book") }
+            ).then(
+                RecipeAddCommand.command()
             ).build()
     }
 }

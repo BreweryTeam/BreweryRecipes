@@ -14,37 +14,38 @@ class ObfuscationFlawType(val intensity: Double) : TextFlawType {
         val probability = intensity.coerceIn(0.0, 100.0) / 100.0
 
         val result = Component.text()
+        var obfuscatedPart = Component.text().decoration(TextDecoration.OBFUSCATED, true)
         var inObf = false
 
         for (ch in text) {
             val obfuscate = Random.nextDouble() < probability && ch != ' '
             if (obfuscate) {
                 if (!inObf) {
-                    result.decoration(TextDecoration.OBFUSCATED, true)
                     inObf = true
                 }
+                obfuscatedPart.append(Component.text(ch))
             } else {
                 if (inObf) {
-                    result.decoration(TextDecoration.OBFUSCATED, false)
+                    result.append(obfuscatedPart)
+                    obfuscatedPart = Component.text().decoration(TextDecoration.OBFUSCATED, true)
                     inObf = false
                 }
+                result.append(Component.text(ch))
             }
-            result.append(Component.text(ch))
         }
-
-        if (inObf) {
-            result.decoration(TextDecoration.OBFUSCATED, false)
-        }
+        result.decoration(TextDecoration.OBFUSCATED, false)
 
         return result.build()
     }
 
     override fun applyTo(component: Component): Component {
         return component.replaceText {
-            it.replacement { matchResult, componentBuilder ->
+            it.match(".*").replacement { matchResult, componentBuilder ->
                 val everything = matchResult.group()
                 return@replacement apply(everything)
             }
         }
     }
+
+    override fun intensity() = intensity
 }

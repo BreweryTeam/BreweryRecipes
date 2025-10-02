@@ -12,7 +12,7 @@ interface StorageImpl {
 
     fun removeRecipeView(playerUuid: UUID, recipeKey: String): CompletableFuture<Void>
 
-    fun selectAllRecipeViews(): CompletableFuture<Map<UUID, List<RecipeView>>>
+    fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>>
 
     fun createTables()
 }

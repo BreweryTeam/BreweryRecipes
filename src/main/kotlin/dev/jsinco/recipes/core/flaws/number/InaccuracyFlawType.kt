@@ -19,4 +19,6 @@ class InaccuracyFlawType(val intensity: Double) : NumberFlawType {
 
         return Random.nextDouble(min, max).roundToLong()
     }
+
+    override fun intensity() = intensity
 }

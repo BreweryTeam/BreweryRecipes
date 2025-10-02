@@ -1,12 +1,16 @@
 package dev.jsinco.recipes.core
 
 import com.google.common.collect.ImmutableList
+import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
+import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
@@ -19,13 +23,19 @@ import java.util.*
 
 data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
+    companion object {
+        val RANDOM = Random()
+    }
+
     fun lootItem(): ItemStack {
         val itemStack = ItemStack(Material.PAPER)
         itemStack.setData(
             DataComponentTypes.CUSTOM_NAME,
-            Component.translatable("recipes.loot.new.brew.recipe")
-                .colorIfAbsent(NamedTextColor.WHITE)
-                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            TranslationUtil.render(
+                Component.translatable("recipes.loot.new.brew.recipe")
+                    .colorIfAbsent(NamedTextColor.WHITE)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            )
         )
         itemStack.setData(
             DataComponentTypes.LORE, ItemLore.lore(
@@ -40,6 +50,10 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
     fun generateCompletedView(): RecipeView {
         return RecipeView(this.identifier, listOf())
+    }
+
+    fun generate(flawLevel: Double): RecipeView {
+        return RecipeView(this.identifier, listOf(Flaw(ObfuscationFlawType(flawLevel), FlawExtent.Everywhere())))
     }
 
     // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them

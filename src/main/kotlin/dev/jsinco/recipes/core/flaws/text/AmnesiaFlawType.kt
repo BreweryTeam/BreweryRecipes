@@ -25,10 +25,12 @@ class AmnesiaFlawType(val intensity: Double) : TextFlawType {
 
     override fun applyTo(component: Component): Component {
         return component.replaceText {
-            it.replacement { matchResult, componentBuilder ->
+            it.match(".*").replacement { matchResult, componentBuilder ->
                 val everything = matchResult.group()
                 return@replacement Component.text(apply(everything))
             }
         }
     }
+
+    override fun intensity() = intensity
 }

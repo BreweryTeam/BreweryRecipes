@@ -5,6 +5,9 @@ import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.core.BreweryRecipe
+import dev.jsinco.recipes.core.RecipeViewManager
+import dev.jsinco.recipes.data.DataManager
+import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
@@ -24,6 +27,7 @@ class Recipes : JavaPlugin() {
     companion object {
         lateinit var instance: Recipes
         lateinit var recipesConfig: RecipesConfig
+        lateinit var recipeViewManager: RecipeViewManager
         private lateinit var recipeList: Map<String, BreweryRecipe>
 
         fun key(key: String): NamespacedKey? {
@@ -48,8 +52,12 @@ class Recipes : JavaPlugin() {
         }
     }
 
+    lateinit var storageImpl: StorageImpl
+
     override fun onEnable() {
         recipesConfig = readConfig()
+        storageImpl = DataManager(dataFolder).storageImpl
+        recipeViewManager = RecipeViewManager(storageImpl)
 
         val translator = RecipesTranslator(File(dataFolder, "locale"))
         translator.reload()

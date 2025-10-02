@@ -1,18 +1,11 @@
 package dev.jsinco.recipes.listeners
 
-import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.RecipeView
-import dev.jsinco.recipes.core.flaws.Flaw
-import dev.jsinco.recipes.core.flaws.FlawExtent
-import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
 import dev.jsinco.recipes.gui.RecipesGui
 import dev.jsinco.recipes.gui.integration.TBPRecipe
 import dev.jsinco.recipes.util.BookUtil
-import dev.jsinco.recipes.util.RecipesUtil
 import org.bukkit.NamespacedKey
-import org.bukkit.Sound
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -88,19 +81,13 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             val view = MenuType.GENERIC_9X6.builder()
                 .build(player)
             val topInventory = view.topInventory
+            val recipeViews = if (player.hasPermission("recipes.override.view"))
+                Recipes.recipes().values
+                    .map { breweryRecipe -> breweryRecipe.generateCompletedView() }
+            else Recipes.recipeViewManager.getViews(player.uniqueId)
             val gui = RecipesGui(
                 player,
-                Recipes.recipes().values
-                    .map { breweryRecipe ->
-                        if (player.hasPermission("recipes.override.view"))
-                            TBPRecipe(breweryRecipe.generateCompletedView())
-                        else TBPRecipe(
-                            RecipeView(
-                                breweryRecipe.identifier,
-                                listOf(Flaw(ObfuscationFlawType(), FlawExtent.Everywhere()))
-                            )
-                        )
-                    },
+                recipeViews.map { TBPRecipe(it) },
                 topInventory
             )
             gui.render()
@@ -115,14 +102,6 @@ class GuiEventListener(private val plugin: Recipes) : Listener {
             ?: return
         event.isCancelled = true
 
-        if (RecipesUtil.hasRecipe(player, recipeKey)) {
-            Logging.msg(player, Recipes.recipesConfig.messages.alreadyLearned.replace("%recipe%", recipeKey))
-            return
-        }
-
-        event.item!!.amount--
-        RecipesUtil.registerRecipe(player, recipeKey)
-        Logging.msg(player, Recipes.recipesConfig.messages.learned.replace("%recipe%", recipeKey))
-        player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
+        // TODO add recipe
     }
 }

@@ -7,7 +7,7 @@ import java.io.File
 
 class DataManager(val dataFolder: File) {
 
-    private val storageImpl: StorageImpl
+    val storageImpl: StorageImpl
 
     init {
         if (!dataFolder.exists()) dataFolder.mkdirs()

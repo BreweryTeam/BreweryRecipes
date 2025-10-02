@@ -69,7 +69,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         return CompletableFuture.supplyAsync({
             dataSource.connection.prepareStatement(
                 """
-                INSERT OR REPLACE INTO ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view
+                INSERT OR REPLACE INTO recipe_view
                   VALUES(?,?,?);
             """.trimIndent()
             ).use {
@@ -89,7 +89,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         return CompletableFuture.supplyAsync({
             dataSource.connection.prepareStatement(
                 """
-                DELETE FROM ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view
+                DELETE FROM recipe_view
                     WHERE player_uuid = ? AND recipe_key = ?;
             """.trimIndent()
             ).use {
@@ -101,11 +101,11 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         }, executor)
     }
 
-    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, List<RecipeView>>> {
+    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>> {
         return CompletableFuture.supplyAsync({
             dataSource.connection.prepareStatement(
                 """
-                SELECT * FROM ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view;
+                SELECT * FROM recipe_view;
             """.trimIndent()
             ).use {
                 val result = it.executeQuery()
