@@ -23,12 +23,9 @@ import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
+import kotlin.random.Random
 
 data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
-
-    companion object {
-        val RANDOM = Random()
-    }
 
     fun lootItem(): ItemStack {
         val itemStack = ItemStack(Material.PAPER)
@@ -55,27 +52,34 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         return RecipeView(this.identifier, listOf())
     }
 
-    fun generate(flawLevel: Double): RecipeView {
-        val seeds = listOf(RANDOM.nextInt())
-        val type = when (RANDOM.nextInt(4)) {
-            0 -> ObfuscationFlawType(flawLevel, seeds)
-            1 -> AmnesiaFlawType(flawLevel, seeds)
-            2 -> OmissionFlawType(flawLevel, seeds)
-            3 -> InaccuracyFlawType(flawLevel, seeds)
-            else -> ObfuscationFlawType(flawLevel, seeds)
-        }
-        val extent = when (RANDOM.nextInt(3)) {
-            0 -> FlawExtent.Everywhere()
-            1 -> FlawExtent.WholeStep(RANDOM.nextInt(steps.size))
-            2 -> {
-                val start = RANDOM.nextInt(25)
-                val stop = RANDOM.nextInt(start + 10, start + 25)
-                FlawExtent.PartialStep(RANDOM.nextInt(steps.size), start, stop)
+    fun generate(expectedFlawLevel: Double): RecipeView {
+        val flaws = mutableListOf<Flaw>()
+        var flawLevel = 0.0
+        while (expectedFlawLevel > flawLevel) {
+            val intensity = Random.nextDouble(10.0, (expectedFlawLevel - flawLevel).coerceIn(20.0, 100.0))
+            val seeds = listOf(Random.nextInt())
+            val type = when (Random.nextInt(4)) {
+                0 -> ObfuscationFlawType(intensity, seeds)
+                1 -> AmnesiaFlawType(intensity, seeds)
+                2 -> OmissionFlawType(intensity, seeds)
+                3 -> InaccuracyFlawType(intensity, seeds)
+                else -> ObfuscationFlawType(intensity, seeds)
             }
+            val extent = when (Random.nextInt(3)) {
+                0 -> FlawExtent.Everywhere()
+                1 -> FlawExtent.WholeStep(Random.nextInt(steps.size))
+                2 -> {
+                    val start = Random.nextInt(25)
+                    val stop = Random.nextInt(start + 10, start + 25)
+                    FlawExtent.PartialStep(Random.nextInt(steps.size), start, stop)
+                }
 
-            else -> FlawExtent.Everywhere()
+                else -> FlawExtent.Everywhere()
+            }
+            flawLevel += extent.obscurationLevel(steps.size) * intensity
+            flaws.add(Flaw(type, extent))
         }
-        return RecipeView(this.identifier, listOf(Flaw(type, extent)))
+        return RecipeView(this.identifier, flaws)
     }
 
     // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them
