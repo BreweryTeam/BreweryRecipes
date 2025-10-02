@@ -57,7 +57,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
     fun generate(flawLevel: Double): RecipeView {
         val seeds = listOf(RANDOM.nextInt())
-        val type = when (RANDOM.nextInt(3)) {
+        val type = when (RANDOM.nextInt(4)) {
             0 -> ObfuscationFlawType(flawLevel, seeds)
             1 -> AmnesiaFlawType(flawLevel, seeds)
             2 -> OmissionFlawType(flawLevel, seeds)
