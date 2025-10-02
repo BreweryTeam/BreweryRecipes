@@ -12,6 +12,7 @@ class DataManager(val dataFolder: File) {
     init {
         if (!dataFolder.exists()) dataFolder.mkdirs()
         storageImpl = createStorage(StorageType.fromString(Recipes.recipesConfig.storage.type))
+        storageImpl.createTables()
     }
 
     private fun createStorage(type: StorageType): StorageImpl {

@@ -9,7 +9,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
 
     init {
         storageImpl.selectAllRecipeViews()
-            .thenAcceptAsync { backing.putAll(it) }
+            .thenAcceptAsync { it?.let { backing.putAll(it) } }
     }
 
     fun getViews(playerUuid: UUID): List<RecipeView> {

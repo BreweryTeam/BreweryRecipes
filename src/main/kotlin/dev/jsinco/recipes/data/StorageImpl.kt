@@ -8,11 +8,11 @@ interface StorageImpl {
 
     fun getType(): StorageType
 
-    fun insertOrUpdateRecipeView(playerUuid: UUID, recipeView: RecipeView): CompletableFuture<Void>
+    fun insertOrUpdateRecipeView(playerUuid: UUID, recipeView: RecipeView): CompletableFuture<Void?>
 
-    fun removeRecipeView(playerUuid: UUID, recipeKey: String): CompletableFuture<Void>
+    fun removeRecipeView(playerUuid: UUID, recipeKey: String): CompletableFuture<Void?>
 
-    fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>>
+    fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?>
 
     fun createTables()
 }

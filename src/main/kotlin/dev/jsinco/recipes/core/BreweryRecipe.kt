@@ -3,7 +3,9 @@ package dev.jsinco.recipes.core
 import com.google.common.collect.ImmutableList
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
 import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
+import dev.jsinco.recipes.core.flaws.text.OmissionFlawType
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
@@ -53,7 +55,18 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
     }
 
     fun generate(flawLevel: Double): RecipeView {
-        return RecipeView(this.identifier, listOf(Flaw(ObfuscationFlawType(flawLevel), FlawExtent.Everywhere())))
+        val type = when (RANDOM.nextInt(3)) {
+            0 -> ObfuscationFlawType(flawLevel)
+            1 -> AmnesiaFlawType(flawLevel)
+            2 -> OmissionFlawType(flawLevel)
+            else -> ObfuscationFlawType(flawLevel)
+        }
+        val extent = when (RANDOM.nextInt(2)) {
+            0 -> FlawExtent.Everywhere()
+            1 -> FlawExtent.WholeStep(RANDOM.nextInt(steps.size))
+            else -> FlawExtent.Everywhere()
+        }
+        return RecipeView(this.identifier, listOf(Flaw(type, extent)))
     }
 
     // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them

@@ -1,9 +1,9 @@
 package dev.jsinco.recipes.data.storage
 
+import com.google.common.base.Supplier
 import com.google.gson.JsonParser
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.data.StorageType
@@ -65,8 +65,8 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
     override fun insertOrUpdateRecipeView(
         playerUuid: UUID,
         recipeView: RecipeView
-    ): CompletableFuture<Void> {
-        return CompletableFuture.supplyAsync({
+    ): CompletableFuture<Void?> {
+        return runStatement {
             dataSource.connection.prepareStatement(
                 """
                 INSERT OR REPLACE INTO recipe_view
@@ -78,15 +78,15 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
                 it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serialize).toString())
                 it.execute()
             }
-            return@supplyAsync null
-        }, executor)
+            return@runStatement null
+        }
     }
 
     override fun removeRecipeView(
         playerUuid: UUID,
         recipeKey: String
-    ): CompletableFuture<Void> {
-        return CompletableFuture.supplyAsync({
+    ): CompletableFuture<Void?> {
+        return runStatement {
             dataSource.connection.prepareStatement(
                 """
                 DELETE FROM recipe_view
@@ -97,12 +97,12 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
                 it.setString(2, recipeKey)
                 it.execute()
             }
-            return@supplyAsync null
-        }, executor)
+            return@runStatement null
+        }
     }
 
-    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>> {
-        return CompletableFuture.supplyAsync({
+    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?> {
+        return runStatement {
             dataSource.connection.prepareStatement(
                 """
                 SELECT * FROM recipe_view;
@@ -124,8 +124,19 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
                         )
                     )
                 }
-                return@supplyAsync output
+                return@runStatement output
             }
-        }, executor)
+        }
+    }
+
+    private fun <T> runStatement(supplier: Supplier<T>): CompletableFuture<T?> {
+        return CompletableFuture.supplyAsync(supplier, executor)
+            .handleAsync { t, e ->
+                if (e != null) {
+                    e.printStackTrace()
+                    return@handleAsync null
+                }
+                return@handleAsync t
+            }
     }
 }
