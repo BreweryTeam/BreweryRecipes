@@ -6,11 +6,11 @@ import java.net.URI
 
 plugins {
     kotlin("jvm") version "2.2.20"
-    id("io.papermc.hangar-publish-plugin") version "0.1.2"
-    id("com.modrinth.minotaur") version "2.8.7"
-    id("com.gradleup.shadow") version "8.3.5"
-    id("xyz.jpenilla.run-paper") version "2.3.0"
-    id("de.eldoria.plugin-yml.bukkit") version "0.7.1"
+    id("io.papermc.hangar-publish-plugin") version "0.1.3"
+    id("com.modrinth.minotaur") version "2.8.10"
+    id("com.gradleup.shadow") version "9.2.2"
+    id("xyz.jpenilla.run-paper") version "3.0.0"
+    id("de.eldoria.plugin-yml.bukkit") version "0.8.0"
 }
 
 group = "dev.jsinco.recipes"
