@@ -4,9 +4,9 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import kotlin.random.Random
 
-class ObfuscationFlawType(val intensity: Double) : TextFlawType {
+class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : TextFlawType {
 
-    fun apply(text: String): Component {
+    fun apply(text: String, startPos: Int): Component {
 
         if (intensity <= 0.0) return Component.text(text) // No obfuscation at 0 intensity, full obfuscation at 100
         if (intensity >= 100.0) return Component.text(text).decoration(TextDecoration.OBFUSCATED, true)
@@ -16,9 +16,12 @@ class ObfuscationFlawType(val intensity: Double) : TextFlawType {
         val result = Component.text()
         var obfuscatedPart = Component.text().decoration(TextDecoration.OBFUSCATED, true)
         var inObf = false
+        var pos = startPos
 
         for (ch in text) {
-            val obfuscate = Random.nextDouble() < probability && ch != ' '
+            val obfuscate = ch != ' ' && seeds.asSequence()
+                .map { Random(it * ch.code * pos) }
+                .all { it.nextDouble() < probability }
             if (obfuscate) {
                 if (!inObf) {
                     inObf = true
@@ -32,6 +35,7 @@ class ObfuscationFlawType(val intensity: Double) : TextFlawType {
                 }
                 result.append(Component.text(ch))
             }
+            pos++
         }
         result.decoration(TextDecoration.OBFUSCATED, false)
 
@@ -42,10 +46,12 @@ class ObfuscationFlawType(val intensity: Double) : TextFlawType {
         return component.replaceText {
             it.match(".*").replacement { matchResult, componentBuilder ->
                 val everything = matchResult.group()
-                return@replacement apply(everything)
+                return@replacement apply(everything, matchResult.start())
             }
         }
     }
 
     override fun intensity() = intensity
+
+    override fun seeds() = seeds
 }

@@ -1,7 +1,9 @@
 package dev.jsinco.recipes.data.serdes
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawExtent
 import dev.jsinco.recipes.core.flaws.FlawType
@@ -18,7 +20,9 @@ object FlawSerdes {
         val output = JsonObject()
         output.add("flaw", serializeType(flaw.type))
         output.add("extent", serializeExtent(flaw.extent))
-        // TODO store seed for flaw or something?
+        output.add("seeds", Serdes.serialize(flaw.type.seeds()) {
+            JsonPrimitive(it)
+        })
         return output
     }
 
@@ -71,7 +75,8 @@ object FlawSerdes {
         }
         val typeJson = json.get("flaw")
         val extentJson = json.get("extent")
-        val type = deserializeType(typeJson) ?: return null
+        val seeds = Serdes.deserialize(json.getAsJsonArray("seeds") ?: JsonArray(), JsonElement::getAsInt)
+        val type = deserializeType(typeJson, seeds) ?: return null
         val extent = deserializeExtent(extentJson) ?: return null
         return Flaw(type, extent)
     }
@@ -97,17 +102,17 @@ object FlawSerdes {
         }
     }
 
-    private fun deserializeType(typeJson: JsonElement): FlawType? {
+    private fun deserializeType(typeJson: JsonElement, seeds: List<Int>): FlawType? {
         if (typeJson !is JsonObject) {
             return null
         }
         val intensity = typeJson.get("intensity").asDouble
         return when (typeJson.get("type").asString) {
-            "inaccuracy" -> InaccuracyFlawType(intensity)
-            "amnesia" -> AmnesiaFlawType(intensity)
-            "obfuscation" -> ObfuscationFlawType(intensity)
-            "omission" -> OmissionFlawType(intensity)
-            "slurring" -> SlurringFlawType(intensity)
+            "inaccuracy" -> InaccuracyFlawType(intensity, seeds)
+            "amnesia" -> AmnesiaFlawType(intensity, seeds)
+            "obfuscation" -> ObfuscationFlawType(intensity, seeds)
+            "omission" -> OmissionFlawType(intensity, seeds)
+            "slurring" -> SlurringFlawType(intensity, seeds)
             else -> null
         }
     }
