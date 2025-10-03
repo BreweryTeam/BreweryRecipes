@@ -136,7 +136,7 @@ object RecipeWriter {
             }
         }
         return allTextModifications
-            .filter { !it.value.modifiedPoints.isEmpty() }
+            .filter { !it.value.modifiedPoints.isEmpty() && !it.value.modifiedPoints.all { entry -> entry.value is FlawTextModifications.NoModification } }
             .map {
                 it.key to it.value.withMatching { pos ->
                     allFlawPositions?.contains(pos) ?: false
@@ -163,15 +163,26 @@ object RecipeWriter {
     }
 
     fun clearRedundantFlaws(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
+        val applicableFlaws = mutableSetOf<Flaw>()
+        val recipe = Recipes.recipes()[view.recipeIdentifier] ?: return view
+        recipe.steps.forEachIndexed { index, step ->
+            compileTextModifications(resolveTranslatablesForMutation(buildBaseStep(step)), index, view.flaws)
+                .keys.forEach { applicableFlaws.add(it) }
+        }
+
         val bundles = mutableListOf<FlawBundle>()
         for (bundle in view.flaws) {
-
+            bundles.add(
+                FlawBundle(
+                    bundle.flaws
+                        .filter { applicableFlaws.contains(it) })
+            )
         }
         val pct = estimateFragmentation(view)
         return if (pct < thresholdPercent) {
             RecipeView(view.recipeIdentifier, emptyList())
         } else {
-            view
+            RecipeView(view.recipeIdentifier, bundles)
         }
     }
 
