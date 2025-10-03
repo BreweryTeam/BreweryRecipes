@@ -2,7 +2,7 @@ package dev.jsinco.recipes.util
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.translation.GlobalTranslator
-import java.util.*
+import java.util.Locale
 
 object TranslationUtil {
 

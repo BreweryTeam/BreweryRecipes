@@ -26,10 +26,10 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
     companion object {
         val trackedInventories = mutableMapOf<Inventory, RecipesGui>()
 
-        val GUI_TYPE = Recipes.key("gui_type")!!
+        val GUI_TYPE = Recipes.key("gui_type")
     }
 
-    private val RECIPE_KEY: NamespacedKey = Recipes.key("recipe-key")!!
+    private val RECIPE_KEY: NamespacedKey = Recipes.key("recipe-key")
 
     @EventHandler
     fun onGuiClick(event: InventoryClickEvent) {
@@ -94,7 +94,7 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
                 topInventory
             )
             gui.render()
-            trackedInventories.put(topInventory, gui)
+            trackedInventories[topInventory] = gui
             view.open()
             event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)

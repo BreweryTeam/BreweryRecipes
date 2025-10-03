@@ -3,39 +3,31 @@ package dev.jsinco.recipes.util
 import java.util.logging.Level
 import java.util.logging.Logger as JLogger
 
-class Logger private constructor() {
+object Logger {
 
-    companion object {
+    private fun logger(): JLogger = JLogger.getLogger("BreweryRecipes")
 
-        fun log(message: String) {
-            val caller = Thread.currentThread().stackTrace[2]
-            val className = caller.className.substringAfterLast('.')
-            val prefixedMessage = "[BreweryRecipes Info - $className:${caller.lineNumber}] $message"
-            logger().log(Level.INFO, prefixedMessage)
-        }
 
-        fun logErr(message: String) {
-            val caller = Thread.currentThread().stackTrace[2]
-            val className = caller.className.substringAfterLast('.')
-            val prefixedMessage = "[BreweryRecipes Error - $className:${caller.lineNumber}] $message"
-            logger().log(Level.SEVERE, prefixedMessage)
-        }
-
-        fun logErr(throwable: Throwable) {
-            val caller = Thread.currentThread().stackTrace[2]
-            val className = caller.className.substringAfterLast('.')
-            val prefix = "[BreweryRecipes Error - $className:${caller.lineNumber}] "
-            logger().log(Level.SEVERE, prefix + (throwable.message ?: ""), throwable)
-        }
-
-        fun logDev(message: String) {
-            val caller = Thread.currentThread().stackTrace[2]
-            val className = caller.className.substringAfterLast('.')
-            val prefixedMessage = "[BreweryRecipes DevDebug - $className:${caller.lineNumber}] $message"
-            logger().log(Level.WARNING, prefixedMessage)
-        }
-
-        private fun logger(): JLogger =
-            JLogger.getLogger("BreweryRecipes")
+    fun prefix(s: String, m: String): String {
+        val caller = Thread.currentThread().stackTrace[2]
+        val className = caller.className.substringAfterLast('.')
+        return "[BreweryRecipes $s - $className:${caller.lineNumber}] $m"
     }
+
+    fun log(message: String) {
+        logger().log(Level.INFO, prefix("Info", message))
+    }
+
+    fun logErr(message: String) {
+        logger().log(Level.SEVERE, prefix("Error", message))
+    }
+
+    fun logErr(throwable: Throwable) {
+        logger().log(Level.SEVERE, prefix("Error", (throwable.message ?: "")), throwable)
+    }
+
+    fun logDev(message: String) {
+        logger().log(Level.WARNING, prefix("Debug", message))
+    }
+
 }
