@@ -25,13 +25,11 @@ object FlawTextModificationWriter {
             var pos = 0
             it.match(".+").replacement { matchResult, _ ->
                 val everything = matchResult.group()
-                val prevPos = pos
-                pos += everything.length
                 regex.findAll(everything)
                     .forEach { matchResult1 ->
                         consumer.accept(matchResult1.value, matchResult1.range.start + pos)
                     }
-                consumer.accept(everything, matchResult.start() + prevPos)
+                pos += everything.length
                 return@replacement Component.text(everything)
             }
         }
@@ -50,21 +48,25 @@ object FlawTextModificationWriter {
                 val everything = matchResult.group()
                 val prevPos = pos
                 pos += everything.length
-                var currentPos = pos
+                var currentPos = prevPos
                 val builder = Component.text()
                 var modifiedText = ""
                 var unmodifiedText = ""
-                while (currentPos < everything.length) {
-                    val offsetPos = currentPos - (offset[offset.filter { offsetPos -> offsetPos.key < currentPos }
-                        .maxOf { offsetPos -> offsetPos.key }] ?: 0)
-                    if (textModifications.contains(currentPos)) {
+                while (currentPos < pos) {
+                    val filteredOffsets = offset.filter { offsetPos -> offsetPos.key < currentPos }
+                    val currentOffsetPos = if (!filteredOffsets.isEmpty()) {
+                        currentPos - (offset[filteredOffsets.maxOf { offsetPos -> offsetPos.key }] ?: 0)
+                    } else {
+                        currentPos
+                    }
+                    if (textModifications.contains(currentOffsetPos)) {
                         if (modifiedText.isEmpty()) {
                             builder.append(
                                 Component.text(unmodifiedText)
                             )
                             unmodifiedText = ""
                         }
-                        modifiedText += textModifications.get(currentPos)!!
+                        modifiedText += textModifications.get(currentOffsetPos)!!
                     } else {
                         if (!modifiedText.isEmpty()) {
                             builder.append(
@@ -72,7 +74,7 @@ object FlawTextModificationWriter {
                             )
                             modifiedText = ""
                         }
-                        unmodifiedText += everything[currentPos]
+                        unmodifiedText += everything[currentPos - prevPos]
                     }
                     currentPos++
                 }

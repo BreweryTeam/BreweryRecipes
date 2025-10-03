@@ -109,6 +109,9 @@ object RecipeWriter {
         flaws: List<FlawBundle>
     ): Map<Flaw, FlawTextModifications> {
         val allTextModifications = mutableMapOf<Flaw, FlawTextModifications>()
+        if (flaws.isEmpty()) {
+            return allTextModifications
+        }
         var allFlawPositions: MutableSet<Int>? = null
         for (bundle in flaws) {
             val flawPositions = mutableSetOf<Int>()
@@ -117,7 +120,11 @@ object RecipeWriter {
                     val textModifications = flaw.type.findFlawModifications(step, flaw.config) {
                         !flawPositions.contains(it)
                     }
-                    textModifications
+                    flawPositions.addAll(
+                        textModifications.modifiedPoints
+                            .keys
+                    )
+                    allTextModifications[flaw] = textModifications
                 }
             }
             if (allFlawPositions == null) {
@@ -127,6 +134,7 @@ object RecipeWriter {
             }
         }
         return allTextModifications
+            .filter { !it.value.modifiedPoints.isEmpty() }
             .map {
                 it.key to it.value.withMatching { pos ->
                     allFlawPositions?.contains(pos) ?: false
@@ -149,7 +157,11 @@ object RecipeWriter {
         return fragmentation / recipe.steps.size * 100.0
     }
 
-    fun normalizeFlawsIfLowFragmentation(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
+    fun clearRedundantFlaws(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
+        val bundles = mutableListOf<FlawBundle>()
+        for (bundle in view.flaws) {
+
+        }
         val pct = estimateFragmentation(view)
         return if (pct < thresholdPercent) {
             RecipeView(view.recipeIdentifier, emptyList())

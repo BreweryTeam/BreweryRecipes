@@ -47,7 +47,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         val existing = list[idx]
         val mergedBundles = dedupeBundles(existing.flaws + incoming.flaws)
         val merged = RecipeView(existing.recipeIdentifier, mergedBundles)
-        val normalizedView = RecipeWriter.normalizeFlawsIfLowFragmentation(merged)
+        val normalizedView = RecipeWriter.clearRedundantFlaws(merged)
         list[idx] = normalizedView // replace in memory, just to be sure
         storageImpl.insertOrUpdateRecipeView(playerUuid, normalizedView)
     }
@@ -75,6 +75,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
     }
 
     private data class FlawKey(val typeId: String, val config: FlawConfig)
+
     private fun flawKey(f: Flaw): FlawKey = FlawKey(typeId(f.type), f.config)
     private fun typeId(ft: FlawType): String = when (ft) {
         is InaccuracyFlawType -> "inaccuracy"
