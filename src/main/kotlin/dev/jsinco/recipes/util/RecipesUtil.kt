@@ -5,7 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.persistence.PersistentDataType
 
 object RecipesUtil {
-    val RECIPES_KEY = Recipes.key("recipes")!!
+    val RECIPES_KEY = Recipes.key("recipes")
     val RECIPES_PDC_TYPE = PersistentDataType.LIST.listTypeFrom(PersistentDataType.STRING)
 
 

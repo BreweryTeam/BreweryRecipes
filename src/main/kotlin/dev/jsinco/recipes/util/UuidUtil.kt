@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.util
 
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.UUID
 
 object UuidUtil {
 

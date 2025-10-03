@@ -31,9 +31,9 @@ class Recipes : JavaPlugin() {
         lateinit var recipeViewManager: RecipeViewManager
         private lateinit var recipeList: Map<String, BreweryRecipe>
 
-        fun key(key: String): NamespacedKey? {
+        fun key(key: String): NamespacedKey {
             if (key.contains(":")) {
-                return NamespacedKey.fromString(key)
+                return NamespacedKey.fromString(key) ?: NamespacedKey("brewery_recipes", key)
             }
             return NamespacedKey("brewery_recipes", key)
         }
