@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack
 
 object BreweryXRecipe : GuiIntegration {
 
-    override fun createItem(recipeView: RecipeView): ItemStack? {
+    override fun createItem(recipeView: RecipeView): ItemStack {
         TODO("Not yet implemented")
     }
 }
