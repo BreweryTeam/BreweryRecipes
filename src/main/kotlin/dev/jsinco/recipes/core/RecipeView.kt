@@ -6,8 +6,6 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 
 class RecipeView(val recipeIdentifier: String, val flaws: List<FlawBundle>) {
 
-    var steps: Int? = null
-
     fun translation(brewDisplayName: Component): Component {
         val fragmentation = RecipeWriter.estimateFragmentation(this)
         val translationName = if (fragmentation == 0.0) {

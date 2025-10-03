@@ -227,6 +227,7 @@ object RecipeWriter {
         visit(component, Style.empty(), 0)
         return out
     }
+
     private fun buildComponentFromStyledChars(chars: List<StyledChar>): Component {
         if (chars.isEmpty()) return Component.empty()
         val builder = Component.text()

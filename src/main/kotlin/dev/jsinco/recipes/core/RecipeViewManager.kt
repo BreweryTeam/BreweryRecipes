@@ -47,8 +47,9 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         val existing = list[idx]
         val mergedBundles = dedupeBundles(existing.flaws + incoming.flaws)
         val merged = RecipeView(existing.recipeIdentifier, mergedBundles)
-        list[idx] = merged // replace in memory, just to be sure
-        storageImpl.insertOrUpdateRecipeView(playerUuid, merged)
+        val normalizedView = RecipeWriter.normalizeFlawsIfLowFragmentation(merged)
+        list[idx] = normalizedView // replace in memory, just to be sure
+        storageImpl.insertOrUpdateRecipeView(playerUuid, normalizedView)
     }
 
     fun removeView(playerUuid: UUID, recipeKey: String) {

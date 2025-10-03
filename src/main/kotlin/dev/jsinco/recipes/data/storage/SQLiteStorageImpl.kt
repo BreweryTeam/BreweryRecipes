@@ -67,7 +67,6 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         playerUuid: UUID,
         recipeView: RecipeView
     ): CompletableFuture<Void?> {
-        val normalizedView = RecipeWriter.normalizeFlawsIfLowFragmentation(recipeView)
         return runStatement(
             """
                 INSERT OR REPLACE INTO recipe_view
@@ -75,8 +74,8 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
             """
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
-            it.setString(2, normalizedView.recipeIdentifier)
-            it.setString(3, Serdes.serialize(normalizedView.flaws, FlawSerdes::serializeFlawBundle).toString())
+            it.setString(2, recipeView.recipeIdentifier)
+            it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serializeFlawBundle).toString())
             it.execute()
             return@runStatement null
         }
