@@ -119,6 +119,8 @@ object RecipeWriter {
                 if (flawApplies(stepIndex, flaw)) {
                     val textModifications = flaw.type.findFlawModifications(step, flaw.config) {
                         !flawPositions.contains(it)
+                    }.withEmptyReplacements {
+                        allFlawPositions?.contains(it) ?: false
                     }
                     flawPositions.addAll(
                         textModifications.modifiedPoints
@@ -151,6 +153,9 @@ object RecipeWriter {
         recipe.steps.forEachIndexed { idx, step ->
             val base = resolveTranslatablesForMutation(buildBaseStep(step))
             val modifications = compileTextModifications(base, idx, recipeView.flaws)
+            if (modifications.isEmpty()) {
+                return@forEachIndexed
+            }
             fragmentation += modifications.values.sumOf { it.intensity() }
         }
 

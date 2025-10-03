@@ -59,7 +59,7 @@ object FlawTextModificationWriter {
                     } else {
                         currentPos
                     }
-                    if (textModifications.contains(currentOffsetPos)) {
+                    if (textModifications.modifies(currentOffsetPos)) {
                         if (modifiedText.isEmpty()) {
                             builder.append(
                                 Component.text(unmodifiedText)
