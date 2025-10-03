@@ -22,7 +22,7 @@ object RecipeAddCommand {
                                 val recipe = context.getArgument("recipe-key", BreweryRecipe::class.java)
                                 val flawLevel = context.getArgument("flaw-level", Double::class.java)
                                 val sender = context.source.sender as Player
-                                Recipes.recipeViewManager.insertOrUpdateView(
+                                Recipes.recipeViewManager.insertOrMergeView(
                                     sender.uniqueId,
                                     recipe.generate(flawLevel)
                                 )

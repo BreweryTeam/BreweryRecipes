@@ -4,9 +4,5 @@ import net.kyori.adventure.text.Component
 
 interface FlawType {
 
-    fun intensity(): Double
-
-    fun seeds(): List<Int>
-
-    fun applyTo(component: Component, extent: FlawExtent): Component
+    fun applyTo(component: Component, config: FlawConfig): Component
 }

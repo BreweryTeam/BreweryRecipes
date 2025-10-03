@@ -4,6 +4,7 @@ import com.google.gson.JsonParser
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.jsinco.recipes.core.RecipeView
+import dev.jsinco.recipes.core.RecipeWriter
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.data.StorageType
 import dev.jsinco.recipes.data.serdes.FlawSerdes
@@ -66,6 +67,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         playerUuid: UUID,
         recipeView: RecipeView
     ): CompletableFuture<Void?> {
+        val normalizedView = RecipeWriter.normalizeFlawsIfLowFragmentation(recipeView)
         return runStatement(
             """
                 INSERT OR REPLACE INTO recipe_view
@@ -73,8 +75,8 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
             """
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
-            it.setString(2, recipeView.recipeIdentifier)
-            it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serialize).toString())
+            it.setString(2, normalizedView.recipeIdentifier)
+            it.setString(3, Serdes.serialize(normalizedView.flaws, FlawSerdes::serializeFlawBundle).toString())
             it.execute()
             return@runStatement null
         }
@@ -114,7 +116,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
                         result.getString("recipe_key"),
                         Serdes.deserialize(
                             JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
-                            FlawSerdes::deserialize
+                            FlawSerdes::deserializeFlawBundle
                         )
                     )
                 )

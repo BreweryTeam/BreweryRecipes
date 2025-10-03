@@ -1,17 +1,13 @@
 package dev.jsinco.recipes.core.flaws.text
 
-import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
 
-class SlurringFlawType(val intensity: Double, val seeds: List<Int>) : FlawType {
+class SlurringFlawType : FlawType {
 
-    override fun intensity() = intensity
-    override fun applyTo(
-        component: Component, extent: FlawExtent
-    ): Component {
+    override fun applyTo(component: Component, config: FlawConfig): Component {
         TODO("Not yet implemented")
     }
 
-    override fun seeds() = seeds
 }

@@ -2,6 +2,8 @@ package dev.jsinco.recipes.core
 
 import com.google.common.collect.ImmutableList
 import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawBundle
+import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawExtent
 import dev.jsinco.recipes.core.flaws.number.InaccuracyFlawType
 import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
@@ -52,19 +54,23 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         return RecipeView(this.identifier, listOf())
     }
 
+    // TODO: This doesn't feel sophisticated enough yet
     fun generate(expectedFlawLevel: Double): RecipeView {
         val flaws = mutableListOf<Flaw>()
         var flawLevel = 0.0
+
         while (expectedFlawLevel > flawLevel) {
             val intensity = Random.nextDouble(10.0, (expectedFlawLevel - flawLevel).coerceIn(20.0, 100.0))
-            val seeds = listOf(Random.nextInt())
+            val seed = Random.nextInt()
+
             val type = when (Random.nextInt(4)) {
-                0 -> ObfuscationFlawType(intensity, seeds)
-                1 -> AmnesiaFlawType(intensity, seeds)
-                2 -> OmissionFlawType(intensity, seeds)
-                3 -> InaccuracyFlawType(intensity, seeds)
-                else -> ObfuscationFlawType(intensity, seeds)
+                0 -> ObfuscationFlawType()
+                1 -> AmnesiaFlawType()
+                2 -> OmissionFlawType()
+                3 -> InaccuracyFlawType()
+                else -> ObfuscationFlawType()
             }
+
             val extent = when (Random.nextInt(3)) {
                 0 -> FlawExtent.Everywhere()
                 1 -> FlawExtent.WholeStep(Random.nextInt(steps.size))
@@ -73,13 +79,15 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
                     val stop = Random.nextInt(start + 10, start + 25)
                     FlawExtent.PartialStep(Random.nextInt(steps.size), start, stop)
                 }
-
                 else -> FlawExtent.Everywhere()
             }
+
+            val config = FlawConfig(extent, seed, intensity)
+
             flawLevel += extent.obscurationLevel(steps.size) * intensity
-            flaws.add(Flaw(type, extent))
+            flaws.add(Flaw(type, config))
         }
-        return RecipeView(this.identifier, flaws)
+        return RecipeView(this.identifier, listOf(FlawBundle(flaws)))
     }
 
     // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them

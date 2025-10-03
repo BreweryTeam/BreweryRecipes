@@ -9,7 +9,7 @@ class StorageConfig : OkaeriConfig() {
         "Pick the storage method that suits you best:",
         " - SQLite -> Lightweight, best for single-server use (default)",
         " - MySQL -> Ideal for syncing across multiple servers",
-        " - YAML -> Human-readable, great for debugging",
+        //" - YAML -> Human-readable, great for debugging",
         "Leave at SQLite if unsure"
     )
     var type: String? = "SQLite"

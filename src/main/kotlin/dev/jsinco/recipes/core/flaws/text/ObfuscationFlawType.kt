@@ -1,62 +1,79 @@
 package dev.jsinco.recipes.core.flaws.text
 
-import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import kotlin.random.Random
 
-class ObfuscationFlawType(val intensity: Double, val seeds: List<Int>) : FlawType {
+class ObfuscationFlawType : FlawType {
 
-    fun apply(text: String, startPos: Int, extent: FlawExtent): Component {
+    private fun apply(text: String, startPos: Int, config: FlawConfig): Component {
+        val extent = config.extent
+        val intensity = config.intensity
+        val seed = config.seed
 
-        if (intensity <= 0.0) return Component.text(text) // No obfuscation at 0 intensity, full obfuscation at 100
+        if (intensity <= 0.0) return Component.text(text)
         if (intensity >= 100.0) return Component.text(text).decoration(TextDecoration.OBFUSCATED, true)
 
-        val probability = intensity.coerceIn(0.0, 100.0) / 100.0
+        val probability = (intensity.coerceIn(0.0, 100.0)) / 100.0
 
-        val result = Component.text()
-        var obfuscatedPart = Component.text().decoration(TextDecoration.OBFUSCATED, true)
+        val result = Component.text() // TextComponent.Builder
+        val plain = StringBuilder()
+        val obf = StringBuilder()
         var inObf = false
         var pos = startPos
 
+        fun flushPlain() {
+            if (plain.isNotEmpty()) {
+                result.append(Component.text(plain.toString()))
+                plain.setLength(0)
+            }
+        }
+        fun flushObf() {
+            if (obf.isNotEmpty()) {
+                result.append(
+                    Component.text(obf.toString())
+                        .decoration(TextDecoration.OBFUSCATED, true)
+                )
+                obf.setLength(0)
+            }
+        }
+
         for (ch in text) {
-            val obfuscate = ch != ' ' && extent.appliesTo(pos) && seeds.asSequence()
-                .map { Random(it + ch.code + pos) }
-                .all { it.nextDouble() < probability }
+            val obfuscate = ch != ' ' &&
+                    extent.appliesTo(pos) &&
+                    Random(seed + ch.code + pos).nextDouble() < probability
+
             if (obfuscate) {
                 if (!inObf) {
+                    flushPlain()
                     inObf = true
                 }
-                obfuscatedPart.append(Component.text(ch))
+                obf.append(ch)
             } else {
                 if (inObf) {
-                    result.append(obfuscatedPart)
-                    obfuscatedPart = Component.text().decoration(TextDecoration.OBFUSCATED, true)
+                    flushObf()
                     inObf = false
                 }
-                result.append(Component.text(ch))
+                plain.append(ch)
             }
             pos++
         }
-        result.decoration(TextDecoration.OBFUSCATED, false)
+        if (inObf) flushObf() else flushPlain()
 
         return result.build()
     }
 
-    override fun applyTo(component: Component, extent: FlawExtent): Component {
+    override fun applyTo(component: Component, config: FlawConfig): Component {
         return component.replaceText {
             var pos = 0
-            it.match(".+").replacement { matchResult, componentBuilder ->
+            it.match(".+").replacement { matchResult, _ ->
                 val everything = matchResult.group()
                 val prevPos = pos
                 pos += everything.length
-                return@replacement apply(everything, matchResult.start() + prevPos, extent)
+                apply(everything, matchResult.start() + prevPos, config)
             }
         }
     }
-
-    override fun intensity() = intensity
-
-    override fun seeds() = seeds
 }
