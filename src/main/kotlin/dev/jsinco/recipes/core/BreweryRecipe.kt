@@ -64,11 +64,11 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
             val seed = Random.nextInt()
 
             val type = when (Random.nextInt(4)) {
-                0 -> ObfuscationFlawType()
-                1 -> AmnesiaFlawType()
-                2 -> OmissionFlawType()
-                3 -> InaccuracyFlawType()
-                else -> ObfuscationFlawType()
+                0 -> ObfuscationFlawType
+                1 -> AmnesiaFlawType
+                2 -> OmissionFlawType
+                3 -> InaccuracyFlawType
+                else -> ObfuscationFlawType
             }
 
             val extent = when (Random.nextInt(3)) {

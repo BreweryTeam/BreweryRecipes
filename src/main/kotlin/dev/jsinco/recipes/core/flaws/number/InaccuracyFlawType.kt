@@ -1,49 +1,30 @@
 package dev.jsinco.recipes.core.flaws.number
 
 import dev.jsinco.recipes.core.flaws.FlawConfig
+import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+import dev.jsinco.recipes.core.flaws.FlawTextModifications
 import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
+import java.util.function.Predicate
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-class InaccuracyFlawType : FlawType {
+object InaccuracyFlawType : FlawType {
 
-    companion object {
-        val NUMBER_REGEX = "[+-]?([0-9]*[.])?[0-9]+".toRegex()
-    }
+    val NUMBER_REGEX = "[+-]?([0-9]*[.])?[0-9]+".toRegex()
 
-    override fun applyTo(component: Component, config: FlawConfig): Component {
-        return component.replaceText {
-            var pos = 0
-            it.match(".+").replacement { matchResult, _ ->
-                val everything = matchResult.group()
-                val prevPos = pos
-                pos += everything.length
 
-                Component.text(
-                    NUMBER_REGEX.replace(everything) { numberMatch ->
-                        val numberString = numberMatch.value
-                        val numberStart = matchResult.start() + prevPos
-
-                        // only apply if extent applies
-                        if (!config.extent.appliesTo(numberStart)) {
-                            return@replace numberString
-                        }
-
-                        val newNumber = changeNumber(numberString.toDouble(), numberStart, config)
-                        if (numberString.contains(".")) {
-                            newNumber.toString()
-                        } else {
-                            newNumber.roundToInt().toString()
-                        }
-                    }
-                )
-            }
+    fun transformNumber(text: String, pos: Int, config: FlawConfig): Number {
+        val newNumber = changeNumber(text.toDouble(), pos, config)
+        return if (text.contains(".")) {
+            newNumber
+        } else {
+            newNumber.roundToInt()
         }
     }
 
     private fun changeNumber(original: Double, numberStart: Int, config: FlawConfig): Double {
-
         val intensity = config.intensity
         val seed = config.seed
 
@@ -56,5 +37,46 @@ class InaccuracyFlawType : FlawType {
         val offset = rng.nextDouble(-range, range)
 
         return original + offset
+    }
+
+    override fun postProcess(
+        text: String,
+        pos: Int,
+        seed: Int
+    ): Component {
+        return Component.text(text)
+    }
+
+    override fun findFlawModifications(
+        component: Component,
+        config: FlawConfig,
+        filter: Predicate<Int>
+    ): FlawTextModifications {
+        val flawTextModifications = FlawTextModifications()
+        FlawTextModificationWriter.traverse(component, NUMBER_REGEX) { text, startPos ->
+            if (!config.extent.appliesTo(startPos) || (0..<text.length)
+                    .map { startPos }
+                    .any { !filter.test(it) }
+                ) {
+                return@traverse
+            }
+            val newNumber = transformNumber(text, startPos, config)
+            val numberString = newNumber.toString()
+            if (text == numberString) {
+                return@traverse
+            }
+            for (i in 0..<text.length) {
+                var content = if (i < numberString.length) numberString[i].toString() else ""
+                if (i == text.length - 1 && numberString.length > text.length) {
+                    content += numberString.substring(i)
+                }
+                flawTextModifications.write(
+                    i + startPos,
+                    content,
+                    abs(text.toDouble() - newNumber.toDouble()) / newNumber.toDouble()
+                )
+            }
+        }
+        return flawTextModifications
     }
 }

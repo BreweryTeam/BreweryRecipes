@@ -106,11 +106,11 @@ object FlawSerdes {
     private fun deserializeFlawType(json: JsonElement): FlawType? {
         if (json !is JsonObject) return null
         return when (json.get("type").asString) {
-            "inaccuracy" -> InaccuracyFlawType()
-            "amnesia" -> AmnesiaFlawType()
-            "obfuscation" -> ObfuscationFlawType()
-            "omission" -> OmissionFlawType()
-            "slurring" -> SlurringFlawType()
+            "inaccuracy" -> InaccuracyFlawType
+            "amnesia" -> AmnesiaFlawType
+            "obfuscation" -> ObfuscationFlawType
+            "omission" -> OmissionFlawType
+            "slurring" -> SlurringFlawType
             else -> null
         }
     }
