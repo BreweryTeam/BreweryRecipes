@@ -39,17 +39,18 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         val idx = list.indexOfFirst { it.recipeIdentifier == incoming.recipeIdentifier }
 
         if (idx < 0) {
-            list.add(incoming) // No existing view for this recipe yet, add one
-            storageImpl.insertOrUpdateRecipeView(playerUuid, incoming)
+            val minimalized = RecipeWriter.clearRedundantFlaws(incoming)
+            list.add(minimalized) // No existing view for this recipe yet, add one
+            storageImpl.insertOrUpdateRecipeView(playerUuid, minimalized)
             return
         }
 
         val existing = list[idx]
         val mergedBundles = dedupeBundles(existing.flaws + incoming.flaws)
         val merged = RecipeView(existing.recipeIdentifier, mergedBundles)
-        val normalizedView = RecipeWriter.clearRedundantFlaws(merged)
-        list[idx] = normalizedView // replace in memory, just to be sure
-        storageImpl.insertOrUpdateRecipeView(playerUuid, normalizedView)
+        val minimalized = RecipeWriter.clearRedundantFlaws(merged)
+        list[idx] = minimalized // replace in memory, just to be sure
+        storageImpl.insertOrUpdateRecipeView(playerUuid, minimalized)
     }
 
     fun removeView(playerUuid: UUID, recipeKey: String) {

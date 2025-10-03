@@ -35,7 +35,7 @@ class FlawTextModifications {
         return out
     }
 
-    fun withEmptyReplacements(theFilter: Predicate<Int>): FlawTextModifications {
+    fun withNoReplacementsOn(theFilter: Predicate<Int>): FlawTextModifications {
         val out = FlawTextModifications()
         out.modifiedPoints.putAll(
             modifiedPoints.map { entry ->

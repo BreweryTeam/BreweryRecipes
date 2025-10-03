@@ -119,7 +119,7 @@ object RecipeWriter {
                 if (flawApplies(stepIndex, flaw)) {
                     val textModifications = flaw.type.findFlawModifications(step, flaw.config) {
                         !flawPositions.contains(it)
-                    }.withEmptyReplacements {
+                    }.withNoReplacementsOn {
                         allFlawPositions?.contains(it) ?: false
                     }
                     flawPositions.addAll(
