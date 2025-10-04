@@ -45,11 +45,14 @@ object CorrectionFlawType : FlawType {
         config: FlawConfig
     ): Component {
         val valid = FIRST_NUMBER_REGEX.replace(text, "")
-        val invalid = FIRST_NUMBER_REGEX.find(text)?.toString()
+        val invalid = FIRST_NUMBER_REGEX.find(text)?.value
         return invalid?.let {
-            Component.text(valid)
-                .decoration(TextDecoration.STRIKETHROUGH, false)
-                .append(Component.text(invalid))
+            Component.text(invalid)
+                .decoration(TextDecoration.STRIKETHROUGH, true)
+                .append(
+                    Component.text(valid)
+                        .decoration(TextDecoration.STRIKETHROUGH, false)
+                )
         } ?: Component.text(text)
     }
 
@@ -61,7 +64,7 @@ object CorrectionFlawType : FlawType {
         val flawTextModifications = FlawTextModifications()
         FlawTextModificationWriter.traverse(component, NUMBER_REGEX) { text, startPos ->
             if (!config.extent.appliesTo(startPos) || (0..<text.length)
-                    .map { startPos }
+                    .map { startPos + it }
                     .any { !filter.test(it) }
             ) {
                 return@traverse
@@ -70,13 +73,14 @@ object CorrectionFlawType : FlawType {
             if (invalidNumber == text) {
                 return@traverse
             }
-            for (i in 0..<text.length) {
-                var content = text[i].toString()
-                if (i == text.length - 1) {
-                    if (invalidNumber.length > text.length) {
-                        content += invalidNumber.substring(i)
+            for (i in 0..<invalidNumber.length) {
+                var content = invalidNumber[i].toString()
+                if (i == invalidNumber.length - 1) {
+                    content += if (text.length > invalidNumber.length) {
+                        " " + invalidNumber.substring(text.length - invalidNumber.length)
+                    } else {
+                        " $text"
                     }
-                    content += " $text"
                 }
                 flawTextModifications.write(
                     i + startPos,

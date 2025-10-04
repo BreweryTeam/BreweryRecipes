@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.tree.LiteralCommandNode
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.util.BookUtil
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
@@ -26,6 +27,16 @@ object RecipesCommand {
                     .requires { it.sender.hasPermission("recipes.command.book") }
             ).then(
                 RecipeAddCommand.command()
+            ).then(
+                Commands.literal("clear")
+                    .executes { context ->
+                        val sender = context.source.sender
+                        if (sender !is Player) {
+                            return@executes 1
+                        }
+                        Recipes.recipeViewManager.clearAll(sender.uniqueId)
+                        1
+                    }
             ).build()
     }
 }

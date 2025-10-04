@@ -39,10 +39,12 @@ object FlawTextModificationWriter {
         text: Component,
         textModifications: FlawTextModifications,
         flaw: Flaw,
-        offset: Map<Int, Int>
+        offsets: Map<Int, Int>
     ): Component {
         return text.replaceText {
             var pos = 0
+            val invertedOffsets = invertOffsets(offsets)
+            var offset = 0
             it.match(".+").replacement { matchResult, _ ->
                 val everything = matchResult.group()
                 val prevPos = pos
@@ -52,12 +54,10 @@ object FlawTextModificationWriter {
                 var modifiedText = ""
                 var unmodifiedText = ""
                 while (currentPos < pos) {
-                    val filteredOffsets = offset.filter { offsetPos -> offsetPos.key < currentPos }
-                    val currentOffsetPos = if (!filteredOffsets.isEmpty()) {
-                        currentPos - (offset[filteredOffsets.maxOf { offsetPos -> offsetPos.key }] ?: 0)
-                    } else {
-                        currentPos
+                    if (invertedOffsets.contains(currentPos)) {
+                        offset = invertedOffsets[currentPos]!!
                     }
+                    val currentOffsetPos = currentPos + offset
                     if (textModifications.modifies(currentOffsetPos)) {
                         if (modifiedText.isEmpty()) {
                             builder.append(
@@ -106,8 +106,15 @@ object FlawTextModificationWriter {
                 }
                 pos++
             }
-            flawTextModifications.totalLength = startPos + string.length
         }
         return flawTextModifications
+    }
+
+    private fun invertOffsets(offsets: Map<Int, Int>): Map<Int, Int> {
+        val output = mutableMapOf<Int, Int>()
+        for (entry in offsets) {
+            output[entry.key + entry.value] = -entry.value
+        }
+        return output
     }
 }

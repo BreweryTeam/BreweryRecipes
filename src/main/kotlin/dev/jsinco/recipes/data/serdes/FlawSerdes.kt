@@ -97,6 +97,7 @@ object FlawSerdes {
 
             is ObfuscationFlawType -> output.addProperty("type", "obfuscation")
             is SlurringFlawType -> output.addProperty("type", "slurring")
+            is CorrectionFlawType -> output.addProperty("type", "correction")
             else -> throw IllegalStateException("Unknown flaw type")
         }
         return output
@@ -113,6 +114,7 @@ object FlawSerdes {
 
             "obfuscation" -> ObfuscationFlawType
             "slurring" -> SlurringFlawType
+            "correction" -> CorrectionFlawType
             else -> null
         }
     }

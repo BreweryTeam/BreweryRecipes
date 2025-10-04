@@ -54,7 +54,7 @@ object InaccuracyFlawType : FlawType {
         val flawTextModifications = FlawTextModifications()
         FlawTextModificationWriter.traverse(component, NUMBER_REGEX) { text, startPos ->
             if (!config.extent.appliesTo(startPos) || (0..<text.length)
-                    .map { startPos }
+                    .map { startPos + it }
                     .any { !filter.test(it) }
             ) {
                 return@traverse

@@ -18,6 +18,7 @@ import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -152,11 +153,12 @@ object RecipeWriter {
 
         recipe.steps.forEachIndexed { idx, step ->
             val base = resolveTranslatablesForMutation(buildBaseStep(step))
+            val approxBaseLength = PlainTextComponentSerializer.plainText().serialize(base).length
             val modifications = compileTextModifications(base, idx, recipeView.flaws)
             if (modifications.isEmpty()) {
                 return@forEachIndexed
             }
-            fragmentation += modifications.values.sumOf { it.intensity() }
+            fragmentation += modifications.values.sumOf { it.intensity(approxBaseLength) }
         }
 
         return fragmentation / recipe.steps.size * 100.0

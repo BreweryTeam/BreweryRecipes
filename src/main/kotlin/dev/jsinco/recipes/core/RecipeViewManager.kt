@@ -56,6 +56,13 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         storageImpl.removeRecipeView(playerUuid, recipeKey)
     }
 
+    fun clearAll(playerUuid: UUID) {
+        val views = backing.remove(playerUuid)
+        views?.forEach {
+            storageImpl.removeRecipeView(playerUuid, it.recipeIdentifier)
+        }
+    }
+
     // Prevent duplicate bundles, even if we mess up somewhere
     private fun dedupeBundles(bundles: List<FlawBundle>): List<FlawBundle> {
         if (bundles.isEmpty()) return bundles

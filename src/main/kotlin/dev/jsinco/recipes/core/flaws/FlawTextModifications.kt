@@ -5,9 +5,8 @@ import java.util.function.Predicate
 class FlawTextModifications {
 
     val modifiedPoints = mutableMapOf<Int, TextModification>()
-    var totalLength = 1
 
-    fun intensity(): Double {
+    fun intensity(totalLength: Int): Double {
         return modifiedPoints.values.sumOf { it.intensity() } / totalLength
     }
 
@@ -31,7 +30,6 @@ class FlawTextModifications {
     fun withMatching(theFilter: Predicate<Int>): FlawTextModifications {
         val out = FlawTextModifications()
         out.modifiedPoints.putAll(modifiedPoints.filter { theFilter.test(it.key) })
-        out.totalLength = totalLength
         return out
     }
 
@@ -47,26 +45,23 @@ class FlawTextModifications {
                         }
             }
         )
-        out.totalLength = totalLength
         return out
     }
 
     fun offsets(previous: Map<Int, Int>): Map<Int, Int> {
-        val output = previous.toMutableMap()
-        for (i in 0..<totalLength) {
-            val offset = (modifiedPoints[i]?.content()?.length ?: 1) - 1
-            if (offset == 0) {
+        val output = mutableMapOf<Int, Int>()
+        if (modifiedPoints.isEmpty()) {
+            return previous
+        }
+        var offset = 0
+        for (i in 0..<(modifiedPoints.keys.max() + 1)) {
+            val newOffset = (modifiedPoints[i]?.content()?.length ?: 1) - 1
+            if (newOffset == 0 && !previous.contains(i)) {
                 continue
             }
-            val changedOffset = if (output.isEmpty()) {
-                offset
-            } else {
-                offset + (output[output.filter { it.key < i }.maxOf { it.key }] ?: 0)
-            }
-            if (changedOffset == 0) {
-                output.remove(i)
-            } else {
-                output[i] = changedOffset
+            offset = (previous[i] ?: offset) + newOffset
+            if (offset != 0) {
+                output[i] = offset
             }
         }
         return output
