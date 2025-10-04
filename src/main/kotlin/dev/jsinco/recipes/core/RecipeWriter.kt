@@ -97,7 +97,7 @@ object RecipeWriter {
         var offsets = mapOf<Int, Int>()
         for (entry in textModifications) {
             output =
-                FlawTextModificationWriter.process(output, entry.value, entry.key.type, entry.key.config.seed, offsets)
+                FlawTextModificationWriter.process(output, entry.value, entry.key, offsets)
             offsets = entry.value.offsets(offsets)
         }
         return output

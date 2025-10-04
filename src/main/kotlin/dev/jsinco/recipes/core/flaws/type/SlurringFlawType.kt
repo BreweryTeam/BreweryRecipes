@@ -1,17 +1,19 @@
-package dev.jsinco.recipes.core.flaws.text
+package dev.jsinco.recipes.core.flaws.type
 
 import dev.jsinco.recipes.core.flaws.FlawConfig
+import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
-import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextDecoration
 import java.util.function.Predicate
+import kotlin.math.roundToInt
+import kotlin.random.Random
 
 object SlurringFlawType : FlawType {
-
     override fun postProcess(
         text: String,
         pos: Int,
-        seed: Int
+        config: FlawConfig
     ): Component {
         TODO("Not yet implemented")
     }
@@ -23,5 +25,6 @@ object SlurringFlawType : FlawType {
     ): FlawTextModifications {
         TODO("Not yet implemented")
     }
+
 
 }

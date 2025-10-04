@@ -3,12 +3,11 @@ package dev.jsinco.recipes.data.serdes
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import dev.jsinco.recipes.core.flaws.*
-import dev.jsinco.recipes.core.flaws.number.InaccuracyFlawType
-import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
-import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
-import dev.jsinco.recipes.core.flaws.text.OmissionFlawType
-import dev.jsinco.recipes.core.flaws.text.SlurringFlawType
+import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawBundle
+import dev.jsinco.recipes.core.flaws.FlawConfig
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.type.*
 
 object FlawSerdes {
 
@@ -89,17 +88,17 @@ object FlawSerdes {
 
     private fun serializeFlawType(flawType: FlawType): JsonElement {
         val output = JsonObject()
-        output.addProperty(
-            "type",
-            when (flawType) {
-                is InaccuracyFlawType -> "inaccuracy"
-                is AmnesiaFlawType -> "amnesia"
-                is ObfuscationFlawType -> "obfuscation"
-                is OmissionFlawType -> "omission"
-                is SlurringFlawType -> "slurring"
-                else -> throw IllegalStateException("Unknown flaw type")
+        when (flawType) {
+            is InaccuracyFlawType -> output.addProperty("type", "inaccuracy")
+            is ReplacementFlawType -> {
+                output.addProperty("type", "replacement")
+                output.addProperty("chars", flawType.replacement)
             }
-        )
+
+            is ObfuscationFlawType -> output.addProperty("type", "obfuscation")
+            is SlurringFlawType -> output.addProperty("type", "slurring")
+            else -> throw IllegalStateException("Unknown flaw type")
+        }
         return output
     }
 
@@ -107,9 +106,12 @@ object FlawSerdes {
         if (json !is JsonObject) return null
         return when (json.get("type").asString) {
             "inaccuracy" -> InaccuracyFlawType
-            "amnesia" -> AmnesiaFlawType
+            "replacement" -> {
+                val replacement = json.get("chars") ?: return null
+                ReplacementFlawType(replacement.asString)
+            }
+
             "obfuscation" -> ObfuscationFlawType
-            "omission" -> OmissionFlawType
             "slurring" -> SlurringFlawType
             else -> null
         }

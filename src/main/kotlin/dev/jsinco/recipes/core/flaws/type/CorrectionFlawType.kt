@@ -1,18 +1,18 @@
-package dev.jsinco.recipes.core.flaws.number
+package dev.jsinco.recipes.core.flaws.type
 
 import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
-import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextDecoration
 import java.util.function.Predicate
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-object InaccuracyFlawType : FlawType {
+object CorrectionFlawType : FlawType {
 
     val NUMBER_REGEX = "[+-]?([0-9]*[.])?[0-9]+".toRegex()
+    val FIRST_NUMBER_REGEX = "^$NUMBER_REGEX".toRegex()
 
 
     fun transformNumber(text: String, pos: Int, config: FlawConfig): Number {
@@ -42,9 +42,15 @@ object InaccuracyFlawType : FlawType {
     override fun postProcess(
         text: String,
         pos: Int,
-        seed: Int
+        config: FlawConfig
     ): Component {
-        return Component.text(text)
+        val valid = FIRST_NUMBER_REGEX.replace(text, "")
+        val invalid = FIRST_NUMBER_REGEX.find(text)?.toString()
+        return invalid?.let {
+            Component.text(valid)
+                .decoration(TextDecoration.STRIKETHROUGH, false)
+                .append(Component.text(invalid))
+        } ?: Component.text(text)
     }
 
     override fun findFlawModifications(
@@ -57,23 +63,25 @@ object InaccuracyFlawType : FlawType {
             if (!config.extent.appliesTo(startPos) || (0..<text.length)
                     .map { startPos }
                     .any { !filter.test(it) }
-                ) {
+            ) {
                 return@traverse
             }
-            val newNumber = transformNumber(text, startPos, config)
-            val numberString = newNumber.toString()
-            if (text == numberString) {
+            val invalidNumber = transformNumber(text, startPos, config).toString()
+            if (invalidNumber == text) {
                 return@traverse
             }
             for (i in 0..<text.length) {
-                var content = if (i < numberString.length) numberString[i].toString() else ""
-                if (i == text.length - 1 && numberString.length > text.length) {
-                    content += numberString.substring(i)
+                var content = text[i].toString()
+                if (i == text.length - 1) {
+                    if (invalidNumber.length > text.length) {
+                        content += invalidNumber.substring(i)
+                    }
+                    content += " $text"
                 }
                 flawTextModifications.write(
                     i + startPos,
                     content,
-                    abs(text.toDouble() - newNumber.toDouble()) / newNumber.toDouble()
+                    0.2
                 )
             }
         }

@@ -5,10 +5,7 @@ import dev.jsinco.recipes.core.flaws.Flaw
 import dev.jsinco.recipes.core.flaws.FlawBundle
 import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawExtent
-import dev.jsinco.recipes.core.flaws.number.InaccuracyFlawType
-import dev.jsinco.recipes.core.flaws.text.AmnesiaFlawType
-import dev.jsinco.recipes.core.flaws.text.ObfuscationFlawType
-import dev.jsinco.recipes.core.flaws.text.OmissionFlawType
+import dev.jsinco.recipes.core.flaws.type.FlawTypeCollection
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
@@ -58,18 +55,12 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
     fun generate(expectedFlawLevel: Double): RecipeView {
         val flaws = mutableListOf<Flaw>()
         var flawLevel = 0.0
+        val collection = FlawTypeCollection.entries.toTypedArray().random()
 
         while (expectedFlawLevel > flawLevel) {
             val intensity = Random.nextDouble(10.0, (expectedFlawLevel - flawLevel).coerceIn(20.0, 100.0))
             val seed = Random.nextInt()
-
-            val type = when (Random.nextInt(4)) {
-                0 -> ObfuscationFlawType
-                1 -> AmnesiaFlawType
-                2 -> OmissionFlawType
-                3 -> InaccuracyFlawType
-                else -> ObfuscationFlawType
-            }
+            val type = collection.flawTypes.random()
 
             val extent = when (Random.nextInt(3)) {
                 0 -> FlawExtent.Everywhere()
@@ -79,6 +70,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
                     val stop = Random.nextInt(start + 10, start + 25)
                     FlawExtent.PartialStep(Random.nextInt(steps.size), start, stop)
                 }
+
                 else -> FlawExtent.Everywhere()
             }
 

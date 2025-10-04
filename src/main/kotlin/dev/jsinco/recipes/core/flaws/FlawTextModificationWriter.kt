@@ -38,8 +38,7 @@ object FlawTextModificationWriter {
     fun process(
         text: Component,
         textModifications: FlawTextModifications,
-        flawType: FlawType,
-        seed: Int,
+        flaw: Flaw,
         offset: Map<Int, Int>
     ): Component {
         return text.replaceText {
@@ -70,7 +69,7 @@ object FlawTextModificationWriter {
                     } else {
                         if (!modifiedText.isEmpty()) {
                             builder.append(
-                                flawType.postProcess(modifiedText, matchResult.start() + prevPos, seed)
+                                flaw.type.postProcess(modifiedText, matchResult.start() + prevPos, flaw.config)
                             )
                             modifiedText = ""
                         }

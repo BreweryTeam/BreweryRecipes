@@ -1,15 +1,14 @@
-package dev.jsinco.recipes.core.flaws.text
+package dev.jsinco.recipes.core.flaws.type
 
 import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
-import dev.jsinco.recipes.core.flaws.FlawType
 import net.kyori.adventure.text.Component
 import java.util.function.Predicate
 
-object OmissionFlawType : FlawType {
+data class ReplacementFlawType(val replacement: String) : FlawType {
 
-    override fun postProcess(text: String, pos: Int, seed: Int): Component {
+    override fun postProcess(text: String, pos: Int, config: FlawConfig): Component {
         return Component.text(text)
     }
 
@@ -19,7 +18,7 @@ object OmissionFlawType : FlawType {
         filter: Predicate<Int>
     ): FlawTextModifications {
         return FlawTextModificationWriter.randomPositionReplacement(component, config, 1.0, filter) {
-            " ".repeat(it.length)
+            replacement.repeat(it.length)
         }
     }
 
