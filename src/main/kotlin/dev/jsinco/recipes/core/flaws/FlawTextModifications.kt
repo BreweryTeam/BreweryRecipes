@@ -54,7 +54,13 @@ class FlawTextModifications {
             return previous
         }
         var offset = 0
-        for (i in 0..<(modifiedPoints.keys.max() + 1)) {
+        val stopPoint = if (previous.isEmpty()) {
+            modifiedPoints.keys.max() + 1
+        } else {
+            modifiedPoints.keys.max()
+                .coerceAtLeast(previous.keys.max()) + 1
+        }
+        for (i in 0..<stopPoint) {
             val newOffset = (modifiedPoints[i]?.content()?.length ?: 1) - 1
             if (newOffset == 0 && !previous.contains(i)) {
                 continue

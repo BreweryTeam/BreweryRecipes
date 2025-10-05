@@ -91,4 +91,8 @@ object CorrectionFlawType : FlawType {
         }
         return flawTextModifications
     }
+
+    override fun estimatedObscurationIntensity(intensity: Double): Double {
+        return intensity * 0.2
+    }
 }

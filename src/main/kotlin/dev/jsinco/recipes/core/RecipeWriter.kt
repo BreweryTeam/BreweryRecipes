@@ -96,10 +96,13 @@ object RecipeWriter {
         val textModifications = compileTextModifications(base, stepIndex, flaws)
         var output = base
         var offsets = mapOf<Int, Int>()
-        for (entry in textModifications) {
-            output =
-                FlawTextModificationWriter.process(output, entry.value, entry.key, offsets)
-            offsets = entry.value.offsets(offsets)
+        for (bundle in flaws) {
+            for (flaw in bundle.flaws) {
+                val textModification = textModifications[flaw] ?: continue
+                output =
+                    FlawTextModificationWriter.process(output, textModification, flaw, offsets)
+                offsets = textModification.offsets(offsets)
+            }
         }
         return output
     }

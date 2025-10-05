@@ -44,21 +44,19 @@ object FlawTextModificationWriter {
         return text.replaceText {
             var pos = 0
             val invertedOffsets = invertOffsets(offsets)
+            val invalidPoints = findInvalid(offsets)
             var offset = 0
             it.match(".+").replacement { matchResult, _ ->
                 val everything = matchResult.group()
                 val prevPos = pos
-                pos += everything.length
                 var currentPos = prevPos
+                pos += everything.length
                 val builder = Component.text()
                 var modifiedText = ""
                 var unmodifiedText = ""
                 while (currentPos < pos) {
-                    if (invertedOffsets.contains(currentPos)) {
-                        offset = invertedOffsets[currentPos]!!
-                    }
                     val currentOffsetPos = currentPos + offset
-                    if (textModifications.modifies(currentOffsetPos)) {
+                    if (textModifications.modifies(currentOffsetPos) && !invalidPoints.contains(currentPos)) {
                         if (modifiedText.isEmpty()) {
                             builder.append(
                                 Component.text(unmodifiedText)
@@ -69,11 +67,14 @@ object FlawTextModificationWriter {
                     } else {
                         if (!modifiedText.isEmpty()) {
                             builder.append(
-                                flaw.type.postProcess(modifiedText, matchResult.start() + prevPos, flaw.config)
+                                flaw.type.postProcess(modifiedText, currentPos, flaw.config)
                             )
                             modifiedText = ""
                         }
                         unmodifiedText += everything[currentPos - prevPos]
+                    }
+                    if (invertedOffsets.contains(currentPos)) {
+                        offset = invertedOffsets[currentPos]!!
                     }
                     currentPos++
                 }
@@ -81,6 +82,23 @@ object FlawTextModificationWriter {
                 return@replacement builder.build()
             }
         }
+    }
+
+    private fun findInvalid(offsets: Map<Int, Int>): Set<Int> {
+        if (offsets.isEmpty()) {
+            return setOf()
+        }
+        val output = mutableSetOf<Int>()
+        var currentOffset = 0
+        for (i in 0..<(offsets.keys.max() + 1)) {
+            val offset = offsets[i] ?: continue
+            val currentPos = i + currentOffset
+            for (pos in currentPos..<(currentPos + offset)) {
+                output.add(pos + 1)
+            }
+            currentOffset += offset
+        }
+        return output
     }
 
     fun randomPositionReplacement(

@@ -26,5 +26,9 @@ object SlurringFlawType : FlawType {
         TODO("Not yet implemented")
     }
 
+    override fun estimatedObscurationIntensity(intensity: Double): Double {
+        TODO("Not yet implemented")
+    }
+
 
 }

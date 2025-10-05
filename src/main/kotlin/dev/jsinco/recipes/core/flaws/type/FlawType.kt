@@ -10,4 +10,6 @@ interface FlawType {
     fun postProcess(text: String, pos: Int, config: FlawConfig): Component
 
     fun findFlawModifications(component: Component, config: FlawConfig, filter: Predicate<Int>): FlawTextModifications
+
+    fun estimatedObscurationIntensity(intensity: Double): Double
 }

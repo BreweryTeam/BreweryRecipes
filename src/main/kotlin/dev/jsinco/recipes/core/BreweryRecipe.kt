@@ -76,7 +76,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
             val config = FlawConfig(extent, seed, intensity)
 
-            flawLevel += extent.obscurationLevel(steps.size) * intensity
+            flawLevel += extent.obscurationLevel(steps.size) * type.estimatedObscurationIntensity(intensity)
             flaws.add(Flaw(type, config))
         }
         return RecipeView(this.identifier, listOf(FlawBundle(flaws)))
