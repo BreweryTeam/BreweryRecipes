@@ -187,7 +187,7 @@ object RecipeWriter {
             )
         }
         val pct = estimateFragmentation(view)
-        return if (pct < thresholdPercent) {
+        return if (false) {
             RecipeView(view.recipeIdentifier, emptyList())
         } else {
             RecipeView(view.recipeIdentifier, bundles)
