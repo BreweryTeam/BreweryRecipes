@@ -59,7 +59,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         var flawLevel = 0.0
         val remainingFlaws = collection.flawTypes.toMutableList()
         while (expectedFlawLevel > flawLevel && !remainingFlaws.isEmpty()) {
-            val targetIntensity = Random.nextDouble(10.0, (expectedFlawLevel - flawLevel).coerceIn(20.0, 100.0))
+            val targetIntensity = Random.nextDouble(expectedFlawLevel.coerceIn(0.0, 90.0), 100.0)
             val type = collection.flawTypes.random()
             remainingFlaws.remove(type)
 
