@@ -1,33 +1,68 @@
 package dev.jsinco.recipes.core.flaws.type
 
+import com.google.gson.JsonParser
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
+import dev.jsinco.recipes.core.flaws.drunkentext.DrunkenTextReplacement
+import dev.jsinco.recipes.data.serdes.DrunkenTextSerdes
+import dev.jsinco.recipes.data.serdes.Serdes
+import dev.jsinco.recipes.util.FileUtil
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.TextDecoration
-import java.util.function.Predicate
-import kotlin.math.roundToInt
-import kotlin.random.Random
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
 
 object SlurringFlawType : FlawType {
+
+    private lateinit var drunkenReplacements: List<DrunkenTextReplacement>
+
+    private fun retrieveDrunkenReplacements(): List<DrunkenTextReplacement> {
+        if (this::drunkenReplacements.isInitialized) {
+            return drunkenReplacements
+        }
+        val destinationFile = File(Recipes.instance.dataFolder, "locale/en.drunk_text.json")
+        FileUtil.saveResourceIfExists("/locale/en.drunk_text.json", destinationFile, false)
+        FileInputStream(destinationFile).use { inputStream ->
+            InputStreamReader(inputStream).use { reader ->
+                drunkenReplacements =
+                    Serdes.deserialize(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)
+            }
+        }
+        return drunkenReplacements
+    }
+
     override fun postProcess(
         text: String,
         pos: Int,
         config: FlawConfig
     ): Component {
-        TODO("Not yet implemented")
+        return Component.text(text)
     }
 
     override fun findFlawModifications(
         component: Component,
-        config: FlawConfig,
-        filter: Predicate<Int>
+        session: FlawType.ModificationFindSession
     ): FlawTextModifications {
-        TODO("Not yet implemented")
+        val flawTextModifications = FlawTextModifications()
+        val config = session.config
+        FlawTextModificationWriter.traverse(component) { text, startPos ->
+            val replacements = retrieveDrunkenReplacements()
+            for (replacement in replacements) {
+                val found = replacement.replacements(text, config.seed, startPos) { pos ->
+                    session.appliesTo(pos)
+                }
+                found.forEach {
+                    flawTextModifications.write(it.pos, it.replacement, replacement.faultLevel)
+                }
+            }
+        }
+        return flawTextModifications
     }
 
     override fun estimatedObscurationIntensity(intensity: Double): Double {
-        TODO("Not yet implemented")
+        return intensity
     }
 
 

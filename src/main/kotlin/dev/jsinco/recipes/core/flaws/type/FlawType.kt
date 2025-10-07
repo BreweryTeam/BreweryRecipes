@@ -9,7 +9,18 @@ interface FlawType {
 
     fun postProcess(text: String, pos: Int, config: FlawConfig): Component
 
-    fun findFlawModifications(component: Component, config: FlawConfig, filter: Predicate<Int>): FlawTextModifications
+    fun findFlawModifications(component: Component, session: ModificationFindSession): FlawTextModifications
 
     fun estimatedObscurationIntensity(intensity: Double): Double
+
+    data class ModificationFindSession(
+        val stepIndex: Int,
+        val config: FlawConfig,
+        val filter: Predicate<Int>
+    ) {
+
+        fun appliesTo(pos: Int): Boolean {
+            return config.extent.appliesTo(stepIndex, pos) && filter.test(pos)
+        }
+    }
 }

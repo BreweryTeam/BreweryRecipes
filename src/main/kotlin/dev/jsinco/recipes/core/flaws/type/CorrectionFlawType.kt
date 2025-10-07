@@ -5,7 +5,6 @@ import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
-import java.util.function.Predicate
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -58,14 +57,14 @@ object CorrectionFlawType : FlawType {
 
     override fun findFlawModifications(
         component: Component,
-        config: FlawConfig,
-        filter: Predicate<Int>
+        session: FlawType.ModificationFindSession
     ): FlawTextModifications {
         val flawTextModifications = FlawTextModifications()
+        val config = session.config
         FlawTextModificationWriter.traverse(component, NUMBER_REGEX) { text, startPos ->
-            if (!config.extent.appliesTo(startPos) || (0..<text.length)
+            if ((0..<text.length)
                     .map { startPos + it }
-                    .any { !filter.test(it) }
+                    .any { !session.appliesTo(startPos) }
             ) {
                 return@traverse
             }

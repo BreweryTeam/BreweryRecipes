@@ -59,7 +59,7 @@ object FlawSerdes {
                 output.addProperty("step-index", extent.stepIndex)
             }
 
-            is FlawExtent.PartialStep -> {
+            is FlawExtent.StepRange -> {
                 output.addProperty("type", "partial_step")
                 output.addProperty("step-index", extent.stepIndex)
                 output.addProperty("start", extent.start)
@@ -76,7 +76,7 @@ object FlawSerdes {
         return when (json.get("type").asString) {
             "everywhere" -> FlawExtent.Everywhere()
             "whole_step" -> FlawExtent.WholeStep(json.get("step-index").asInt)
-            "partial_step" -> FlawExtent.PartialStep(
+            "partial_step" -> FlawExtent.StepRange(
                 json.get("step-index").asInt,
                 json.get("start").asInt,
                 json.get("stop").asInt

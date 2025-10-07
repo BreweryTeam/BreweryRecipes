@@ -4,7 +4,6 @@ import dev.jsinco.recipes.core.flaws.FlawConfig
 import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.core.flaws.FlawTextModifications
 import net.kyori.adventure.text.Component
-import java.util.function.Predicate
 
 data class ReplacementFlawType(val replacement: String) : FlawType {
 
@@ -14,10 +13,9 @@ data class ReplacementFlawType(val replacement: String) : FlawType {
 
     override fun findFlawModifications(
         component: Component,
-        config: FlawConfig,
-        filter: Predicate<Int>
+        session: FlawType.ModificationFindSession
     ): FlawTextModifications {
-        return FlawTextModificationWriter.randomPositionReplacement(component, config, 1.0, filter) {
+        return FlawTextModificationWriter.randomPositionReplacement(component, session, 1.0) {
             replacement.repeat(it.length)
         }
     }

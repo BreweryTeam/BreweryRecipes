@@ -1,8 +1,8 @@
 package dev.jsinco.recipes.core.flaws
 
+import dev.jsinco.recipes.core.flaws.type.FlawType
 import net.kyori.adventure.text.Component
 import java.util.function.BiConsumer
-import java.util.function.Predicate
 import kotlin.random.Random
 
 object FlawTextModificationWriter {
@@ -103,12 +103,12 @@ object FlawTextModificationWriter {
 
     fun randomPositionReplacement(
         text: Component,
-        config: FlawConfig,
+        modificationFindSession: FlawType.ModificationFindSession,
         individualFlawIntensity: Double,
-        filter: Predicate<Int>,
         textInfo: Function1<String, String>
     ): FlawTextModifications {
         val flawTextModifications = FlawTextModifications()
+        val config = modificationFindSession.config
         if (config.intensity == 0.0) {
             return flawTextModifications
         }
@@ -116,9 +116,7 @@ object FlawTextModificationWriter {
             var pos = startPos
             for (character in string) {
                 val rng = Random(config.seed + pos + character.code)
-                if (character != ' ' && config.extent.appliesTo(pos) && rng.nextDouble() < config.intensity / 100 && filter.test(
-                        pos
-                    )
+                if (character != ' ' && modificationFindSession.appliesTo(pos) && rng.nextDouble() < config.intensity / 100
                 ) {
                     flawTextModifications.write(pos, textInfo(character.toString()), individualFlawIntensity)
                 }

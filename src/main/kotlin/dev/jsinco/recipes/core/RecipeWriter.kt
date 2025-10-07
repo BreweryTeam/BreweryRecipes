@@ -2,6 +2,7 @@ package dev.jsinco.recipes.core
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.*
+import dev.jsinco.recipes.core.flaws.type.FlawType
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
@@ -121,11 +122,13 @@ object RecipeWriter {
             val flawPositions = mutableSetOf<Int>()
             for (flaw in bundle.flaws) {
                 if (flawApplies(stepIndex, flaw)) {
-                    val textModifications = flaw.type.findFlawModifications(step, flaw.config) {
+                    val session = FlawType.ModificationFindSession(stepIndex, flaw.config) {
                         !flawPositions.contains(it)
-                    }.withNoReplacementsOn {
-                        allFlawPositions?.contains(it) ?: false
                     }
+                    val textModifications = flaw.type.findFlawModifications(step, session)
+                        .withNoReplacementsOn {
+                            allFlawPositions?.contains(it) ?: false
+                        }
                     flawPositions.addAll(
                         textModifications.modifiedPoints
                             .keys
@@ -204,7 +207,7 @@ object RecipeWriter {
         return when (flaw.config.extent) {
             is FlawExtent.Everywhere -> true
             is FlawExtent.WholeStep -> stepIndex == flaw.config.extent.stepIndex
-            is FlawExtent.PartialStep -> stepIndex == flaw.config.extent.stepIndex
+            is FlawExtent.StepRange -> stepIndex == flaw.config.extent.stepIndex
             else -> false
         }
     }
