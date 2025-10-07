@@ -179,41 +179,20 @@
     "percentage": 10
   },
   {
-    "to": "lu",
-    "percentage": 10
-  },
-  {
-    "to": "lug",
-    "alcohol": 50,
-    "percentage": 10
-  },
-  {
-    "to": "blub",
-    "alcohol": 80,
-    "percentage": 20
-  },
-  {
-    "to": "lerg",
-    "alcohol": 85,
-    "percentage": 40
-  },
-  {
-    "to": "gul",
-    "alcohol": 80,
-    "percentage": 40
-  },
-  {
-    "to": " ",
+    "from": " ",
+    "to": "  ",
     "alcohol": 70,
     "percentage": 100
   },
   {
-    "to": " ",
+    "from": " ",
+    "to": "  ",
     "alcohol": 40,
     "percentage": 60
   },
   {
-    "to": " ",
+    "from": " ",
+    "to": "  ",
     "alcohol": 30,
     "percentage": 50
   },

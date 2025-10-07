@@ -16,21 +16,16 @@ import java.io.InputStreamReader
 
 object SlurringFlawType : FlawType {
 
-    private lateinit var drunkenReplacements: List<DrunkenTextReplacement>
+    private val drunkenReplacements = retrieveDrunkenReplacements()
 
     private fun retrieveDrunkenReplacements(): List<DrunkenTextReplacement> {
-        if (this::drunkenReplacements.isInitialized) {
-            return drunkenReplacements
-        }
         val destinationFile = File(Recipes.instance.dataFolder, "locale/en.drunk_text.json")
         FileUtil.saveResourceIfExists("/locale/en.drunk_text.json", destinationFile, false)
         FileInputStream(destinationFile).use { inputStream ->
             InputStreamReader(inputStream).use { reader ->
-                drunkenReplacements =
-                    Serdes.deserialize(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)
+                return Serdes.deserialize(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)
             }
         }
-        return drunkenReplacements
     }
 
     override fun postProcess(
@@ -48,7 +43,7 @@ object SlurringFlawType : FlawType {
         val flawTextModifications = FlawTextModifications()
         val config = session.config
         FlawTextModificationWriter.traverse(component) { text, startPos ->
-            val replacements = retrieveDrunkenReplacements()
+            val replacements = drunkenReplacements
             for (replacement in replacements) {
                 val found = replacement.replacements(text, config.seed, startPos) { pos ->
                     session.appliesTo(pos)

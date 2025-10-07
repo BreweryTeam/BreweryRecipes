@@ -19,7 +19,7 @@ interface FlawExtent {
     }
 
     data class StepRange(val stepIndex: Int, val start: Int, val stop: Int) : FlawExtent {
-        override fun obscurationLevel(recipeStepAmount: Int) = 0.5 / recipeStepAmount
+        override fun obscurationLevel(recipeStepAmount: Int) = 0.3 / recipeStepAmount
 
         override fun appliesTo(stepIndex: Int, pos: Int): Boolean {
             return start <= pos && pos < stop && this.stepIndex == stepIndex
@@ -27,7 +27,8 @@ interface FlawExtent {
     }
 
     data class AfterPoint(val stepIndex: Int, val start: Int) : FlawExtent {
-        override fun obscurationLevel(recipeStepAmount: Int) = (stepIndex - recipeStepAmount) / recipeStepAmount - 0.5
+        override fun obscurationLevel(recipeStepAmount: Int) =
+            (recipeStepAmount - stepIndex).toDouble() / recipeStepAmount
 
         override fun appliesTo(stepIndex: Int, pos: Int): Boolean {
             return this.stepIndex < stepIndex || (stepIndex == this.stepIndex && start <= pos)

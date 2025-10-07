@@ -49,15 +49,19 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         return RecipeView(this.identifier, listOf())
     }
 
-    // TODO: This doesn't feel sophisticated enough yet
     fun generate(expectedFlawLevel: Double): RecipeView {
+        val collection = FlawTypeCollection.entries.toTypedArray().random()
+        return generate(expectedFlawLevel, collection)
+    }
+
+    fun generate(expectedFlawLevel: Double, collection: FlawTypeCollection): RecipeView {
         val flaws = mutableListOf<Flaw>()
         var flawLevel = 0.0
-        val collection = FlawTypeCollection.entries.toTypedArray().random()
-
-        while (expectedFlawLevel > flawLevel) {
+        val remainingFlaws = collection.flawTypes.toMutableList()
+        while (expectedFlawLevel > flawLevel && !remainingFlaws.isEmpty()) {
             val targetIntensity = Random.nextDouble(10.0, (expectedFlawLevel - flawLevel).coerceIn(20.0, 100.0))
             val type = collection.flawTypes.random()
+            remainingFlaws.remove(type)
 
             val extent = collection.compileExtent(type, steps.size)
             val config = collection.compileConfig(type, extent, targetIntensity)
@@ -68,7 +72,6 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         return RecipeView(this.identifier, listOf(FlawBundle(flaws)))
     }
 
-    // TODO: Make the BX and TBP integrations use this builder to construct all of their registered recipes, so we can make recipes for them
     class Builder(private val identifier: String) {
         private val stepsBuilder = ImmutableList.Builder<Step>()
 

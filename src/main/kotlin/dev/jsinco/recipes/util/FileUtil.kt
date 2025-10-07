@@ -10,10 +10,10 @@ object FileUtil {
         try {
             FileUtil.javaClass.getResourceAsStream(internalLocation)
                 ?.use { inputStream ->
-                    makeFile(destinationFile)
                     if (!replace && destinationFile.exists()) {
                         return
                     }
+                    makeFile(destinationFile)
                     FileOutputStream(destinationFile).use { outputStream ->
                         inputStream.transferTo(outputStream)
                     }

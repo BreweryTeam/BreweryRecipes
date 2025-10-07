@@ -13,7 +13,7 @@ object DrunkenTextSerdes {
         }
         val to = json.get("to").asString
         val from = json.get("from").asString.toRegex()
-        val intensity = json.get("alcohol").asDouble
+        val intensity = if (json.has("alcohol")) json.get("alcohol").asDouble else 5.0
         val percentage = json.get("percentage").asDouble
         return DrunkenTextReplacement(from, intensity, percentage / 100, to, 0.2)
     }
