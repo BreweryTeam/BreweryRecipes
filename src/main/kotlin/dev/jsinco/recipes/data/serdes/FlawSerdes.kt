@@ -66,6 +66,12 @@ object FlawSerdes {
                 output.addProperty("stop", extent.stop)
             }
 
+            is FlawExtent.AfterPoint -> {
+                output.addProperty("type", "after")
+                output.addProperty("step-index", extent.stepIndex)
+                output.addProperty("start", extent.start)
+            }
+
             else -> throw IllegalStateException("Unknown flaw extent")
         }
         return output
@@ -80,6 +86,11 @@ object FlawSerdes {
                 json.get("step-index").asInt,
                 json.get("start").asInt,
                 json.get("stop").asInt
+            )
+
+            "after" -> FlawExtent.AfterPoint(
+                json.get("step-index").asInt,
+                json.get("start").asInt
             )
 
             else -> null

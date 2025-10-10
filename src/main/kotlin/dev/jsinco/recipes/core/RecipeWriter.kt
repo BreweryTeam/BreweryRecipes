@@ -208,6 +208,7 @@ object RecipeWriter {
             is FlawExtent.Everywhere -> true
             is FlawExtent.WholeStep -> stepIndex == flaw.config.extent.stepIndex
             is FlawExtent.StepRange -> stepIndex == flaw.config.extent.stepIndex
+            is FlawExtent.AfterPoint -> stepIndex >= flaw.config.extent.stepIndex
             else -> false
         }
     }

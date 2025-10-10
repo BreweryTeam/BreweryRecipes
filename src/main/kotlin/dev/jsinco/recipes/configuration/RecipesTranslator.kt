@@ -99,13 +99,13 @@ class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslat
         require(localeDirectory.isDirectory()) { "Locale directory is not a directory!" }
         val translationsBuilder = ImmutableMap.Builder<Locale, Properties>()
         for (translationFile in localeDirectory.listFiles { file: File? ->
-            file?.getName()?.endsWith(".properties") ?: false
+            file?.getName()?.endsWith(".lang.properties") ?: false
         }) {
             try {
                 FileInputStream(translationFile).use { inputStream ->
                     val translation = Properties()
                     translation.load(InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                    val locale = Locale.forLanguageTag(translationFile.getName().replace(".properties$".toRegex(), ""))
+                    val locale = Locale.forLanguageTag(translationFile.getName().replace(".lang.properties$".toRegex(), ""))
                     if (locale != null) {
                         translationsBuilder.put(locale, translation)
                     }
