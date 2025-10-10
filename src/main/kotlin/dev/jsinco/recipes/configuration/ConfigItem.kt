@@ -1,10 +1,10 @@
 package dev.jsinco.recipes.configuration
 
-import com.dre.brewery.depend.okaeri.configs.annotation.CustomKey
 import eu.okaeri.configs.OkaeriConfig
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
 import io.papermc.paper.datacomponent.item.ItemLore
+import io.papermc.paper.datacomponent.item.TooltipDisplay.tooltipDisplay
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -54,11 +54,11 @@ class ConfigItem : OkaeriConfig() {
                     .addFloat(it.toFloat())
             )
         }
-        itemModel?.let{
+        itemModel?.let {
             item.setData(DataComponentTypes.ITEM_MODEL, it)
         }
-        if(noText) {
-            item.setData(DataComponentTypes.HIDE_TOOLTIP)
+        if (noText) {
+            item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltipDisplay().hideTooltip(true))
         }
         return item
     }
@@ -71,12 +71,14 @@ class ConfigItem : OkaeriConfig() {
         fun name(name: String) = apply { configItemSection.name = MiniMessage.miniMessage().deserialize(name) }
         fun name(name: Component) = apply { configItemSection.name = name }
         fun lore(vararg lore: String) = apply {
-            configItemSection.lore = Lore(*lore
-                .map { MiniMessage.miniMessage().deserialize(it) }
-                .toList()
-                .toTypedArray()
+            configItemSection.lore = Lore(
+                *lore
+                    .map { MiniMessage.miniMessage().deserialize(it) }
+                    .toList()
+                    .toTypedArray()
             )
         }
+
         fun lore(lore: List<Component>) = apply { configItemSection.lore = Lore(*lore.toTypedArray()) }
 
         fun glint(glint: Boolean) = apply { configItemSection.glint = glint }

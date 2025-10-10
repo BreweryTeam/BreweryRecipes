@@ -43,8 +43,6 @@ class RecipesGui(
 
     fun render() {
         inventory.clear()
-        val pageContentSize = inventory.size - 18
-        val pages = Math.ceilDiv(recipes.size, pageContentSize)
         for (borderEntry in Recipes.guiConfig.borders) {
             val borderType = borderEntry.key
             val palette = borderEntry.value
@@ -63,8 +61,10 @@ class RecipesGui(
             }
             renderItem(GuiItem(override.item.generateItem(), override.type), override.pos)
         }
-        val startPageContentIndex = Math.floorDiv(recipes.size, pageContentSize) * recipes.size
-        val recipesToRead = recipes.size - startPageContentIndex
+        val startPageContentIndex = if(page == 0) 0 else {
+            Math.floorDiv(recipes.size, pageRecipeCapacity * page) * pageRecipeCapacity
+        }
+        val recipesToRead = pageRecipeCapacity.coerceAtMost(recipes.size - page * pageRecipeCapacity)
         for (i in 0 until recipesToRead) {
             renderItem(recipes[i + startPageContentIndex], recipesSlots[i])
         }

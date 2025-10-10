@@ -12,7 +12,7 @@ class GuiConfig : OkaeriConfig() {
     @Comment("Define the exact slot you want an item at in the GUI")
     var overrides: List<GuiOverride> = listOf(
         GuiOverride.Builder()
-            .pos(51)
+            .pos(50)
             .item(
                 ConfigItem.Builder().material(Material.ARROW)
                     .name("<gray>Next")
@@ -20,7 +20,7 @@ class GuiConfig : OkaeriConfig() {
             ).type(GuiItem.Type.NEXT_PAGE)
             .build(),
         GuiOverride.Builder()
-            .pos(49)
+            .pos(48)
             .item(
                 ConfigItem.Builder().material(Material.ARROW)
                     .name("<gray>Previous")
