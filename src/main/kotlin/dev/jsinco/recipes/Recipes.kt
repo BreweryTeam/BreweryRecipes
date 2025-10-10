@@ -6,7 +6,10 @@ import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.serialize.ComponentSerializer
+import dev.jsinco.recipes.configuration.serialize.ConfigItemCollectionSerializer
+import dev.jsinco.recipes.configuration.serialize.ConfigItemSerializer
 import dev.jsinco.recipes.configuration.serialize.KeySerializer
+import dev.jsinco.recipes.configuration.serialize.LoreSerializer
 import dev.jsinco.recipes.configuration.serialize.SerdesPackBuilder
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
@@ -95,6 +98,9 @@ class Recipes : JavaPlugin() {
         val serdesBuilder = SerdesPackBuilder()
             .add(ComponentSerializer)
             .add(KeySerializer)
+            .add(ConfigItemSerializer)
+            .add(ConfigItemCollectionSerializer)
+            .add(LoreSerializer)
         return ConfigManager.create(RecipesConfig::class.java) {
             it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
             it.withBindFile(File(this.dataFolder, "config.yml"))
@@ -108,6 +114,9 @@ class Recipes : JavaPlugin() {
         val serdesBuilder = SerdesPackBuilder()
             .add(ComponentSerializer)
             .add(KeySerializer)
+            .add(ConfigItemSerializer)
+            .add(ConfigItemCollectionSerializer)
+            .add(LoreSerializer)
         return ConfigManager.create(GuiConfig::class.java) {
             it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
             it.withBindFile(File(this.dataFolder, "gui.yml"))

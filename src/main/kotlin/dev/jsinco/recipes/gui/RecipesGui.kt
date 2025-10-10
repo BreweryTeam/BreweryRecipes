@@ -1,22 +1,23 @@
 package dev.jsinco.recipes.gui
 
+import dev.jsinco.recipes.Recipes
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.InventoryHolder
-import org.bukkit.inventory.ItemStack
 
 class RecipesGui(
     private val player: Player,
-    private val recipeItems: List<RecipeItem>,
-    title: String = "Recipes",
+    private val recipes: List<GuiItem>,
     size: Int = 54
 ) : InventoryHolder {
 
-    private val inventory = Bukkit.createInventory(this, size, Component.text(title))
+    private val inventory = Bukkit.createInventory(this, size, Component.translatable("recipes.display.gui.name"))
     private val renderedGuiItems = mutableSetOf<GuiItem>()
 
-    private val maxPages = Math.ceilDiv(recipeItems.size, 9 * 4)
+    private val recipesSlots = findRecipeSlots()
+    private val pageRecipeCapacity = recipesSlots.size
+    private val maxPages = Math.ceilDiv(recipes.size, pageRecipeCapacity)
     private var page = 0
 
     fun nextPage() {
@@ -29,35 +30,52 @@ class RecipesGui(
         render()
     }
 
+    fun findRecipeSlots(): List<Int> {
+        val output = (0..<54).toMutableList()
+        for (borderEntry in Recipes.guiConfig.borders) {
+            output.removeAll(borderEntry.key.positions.toList())
+        }
+        for (guiOverride in Recipes.guiConfig.overrides) {
+            output.remove(guiOverride.pos)
+        }
+        return output.toList()
+    }
+
     fun render() {
         inventory.clear()
-        val recipes = recipeItems
         val pageContentSize = inventory.size - 18
         val pages = Math.ceilDiv(recipes.size, pageContentSize)
-        if (page < pages) {
-            renderItem(NextPage, 6)
+        for (borderEntry in Recipes.guiConfig.borders) {
+            val borderType = borderEntry.key
+            val palette = borderEntry.value
+            for (i in 0..<borderType.positions.size) {
+                val pos = borderType.positions[i]
+                val item = palette.content[i % palette.content.size].generateItem()
+                renderItem(GuiItem(item, GuiItem.Type.NO_ACTION), pos)
+            }
         }
-        if (page > 0) {
-            renderItem(PreviousPage, 4)
+        for (override in Recipes.guiConfig.overrides) {
+            if (override.type == GuiItem.Type.PREVIOUS_PAGE && page <= 0) {
+                continue
+            }
+            if (override.type == GuiItem.Type.NEXT_PAGE && page + 1 >= maxPages) {
+                continue
+            }
+            renderItem(GuiItem(override.item.generateItem(), override.type), override.pos)
         }
         val startPageContentIndex = Math.floorDiv(recipes.size, pageContentSize) * recipes.size
         val recipesToRead = recipes.size - startPageContentIndex
         for (i in 0 until recipesToRead) {
-            renderItem(recipes[i + startPageContentIndex], i + 9)
+            renderItem(recipes[i + startPageContentIndex], recipesSlots[i])
         }
     }
 
     fun renderItem(guiItem: GuiItem, position: Int) {
-        val item = guiItem.getItem()
+        val item = guiItem.item()
         if (!renderedGuiItems.contains(guiItem)) {
             renderedGuiItems.add(guiItem)
         }
         inventory.setItem(position, item)
-    }
-
-    fun fromItemStack(itemStack: ItemStack): GuiItem? {
-        val guiItem = renderedGuiItems.find { it.getItem() == itemStack }
-        return guiItem
     }
 
     fun open() = open(player)

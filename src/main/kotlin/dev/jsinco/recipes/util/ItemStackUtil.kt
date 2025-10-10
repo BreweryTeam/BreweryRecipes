@@ -22,6 +22,4 @@ object ItemStackUtil {
         }
     }
 
-    fun hasPersistentKey(itemStack: ItemStack, key: NamespacedKey): Boolean = itemStack.itemMeta.persistentDataContainer.has(key,)
-
 }

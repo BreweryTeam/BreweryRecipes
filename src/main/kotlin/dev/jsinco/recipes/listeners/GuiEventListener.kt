@@ -2,11 +2,10 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.gui.RecipeItem
+import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.gui.RecipesGui
 import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.BookUtil
-import dev.jsinco.recipes.util.ItemStackUtil
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -16,17 +15,15 @@ import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.LootGenerateEvent
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
 
 class GuiEventListener(private val plugin: Recipes, private val guiIntegration: GuiIntegration) : Listener {
 
     companion object {
-        // maybe private
         val GUI_ITEM_TYPE = Recipes.key("gui_item_type")
     }
-
-    //private val RECIPE_KEY: NamespacedKey = Recipes.key("recipe-key")
 
     @EventHandler
     fun onGuiClick(event: InventoryClickEvent) {
@@ -34,9 +31,14 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
         val clickedItem: ItemStack = event.currentItem ?: return
         event.isCancelled = true
 
-        if (ItemStackUtil.hasPersistentKey(clickedItem, GUI_ITEM_TYPE)) {
-            val guiItem = gui.fromItemStack(clickedItem) ?: return
-            guiItem.handle(event, gui)
+        if (clickedItem.persistentDataContainer.has(GUI_ITEM_TYPE, PersistentDataType.STRING)) {
+            val value = clickedItem.persistentDataContainer.get(GUI_ITEM_TYPE, PersistentDataType.STRING) ?: return
+            val type = GuiItem.Type.entries.first { it.identifier() == value } ?: return
+            when (type) {
+                GuiItem.Type.NEXT_PAGE -> gui.nextPage()
+                GuiItem.Type.PREVIOUS_PAGE -> gui.previousPage()
+                else -> {} // NO-OP
+            }
         }
     }
 
@@ -82,8 +84,7 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
         val gui = RecipesGui(
             player,
             recipeViews.mapNotNull {
-                val item = guiIntegration.createItem(it) ?: return@mapNotNull null
-                return@mapNotNull RecipeItem(item)
+                guiIntegration.createItem(it)
             }
         )
         gui.render()

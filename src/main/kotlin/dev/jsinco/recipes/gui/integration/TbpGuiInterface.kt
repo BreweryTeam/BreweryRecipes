@@ -5,13 +5,13 @@ import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
 import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.core.RecipeWriter
+import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
-import org.bukkit.inventory.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
 object TbpGuiInterface : GuiIntegration {
@@ -25,7 +25,7 @@ object TbpGuiInterface : GuiIntegration {
         return tbpApi
     }
 
-    override fun createItem(recipeView: RecipeView): ItemStack? {
+    override fun createItem(recipeView: RecipeView): GuiItem? {
         val tbp = getApi()
         val recipe = tbp.recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null
         val brewDisplayName = (recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name
@@ -36,6 +36,6 @@ object TbpGuiInterface : GuiIntegration {
                 .colorIfAbsent(NamedTextColor.WHITE)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
         )
-        return item;
+        return item?.let { GuiItem(it, GuiItem.Type.NO_ACTION) };
     }
 }

@@ -1,27 +1,28 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.util.ItemStackUtil
-import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import java.util.*
 
-abstract class GuiItem {
-
+data class GuiItem(private val item: ItemStack, val type: Type) {
     companion object {
-        private val KEY = Recipes.key("gui_item_type")
+        private val TYPE_KEY = Recipes.key("gui_item_type")
     }
 
-    fun getItem(): ItemStack {
-        return ItemStackUtil.setPersistentData(createItem(), KEY, PersistentDataType.STRING, type())
+    fun item(): ItemStack {
+        val output = item.clone()
+        output.editPersistentDataContainer { persistentDataContainer ->
+            persistentDataContainer.set(TYPE_KEY, PersistentDataType.STRING, type.identifier())
+        }
+        return output
     }
 
-    fun type(): String {
-        // This could be set manually by child class instead
-        return this::class.java.simpleName.lowercase()
+    enum class Type {
+        NEXT_PAGE,
+        PREVIOUS_PAGE,
+        NO_ACTION;
+
+        fun identifier() = name.lowercase(Locale.ROOT)
     }
-
-    protected abstract fun createItem(): ItemStack
-
-    abstract fun handle(event: InventoryClickEvent, gui: RecipesGui)
 }

@@ -1,32 +1,27 @@
 package dev.jsinco.recipes.configuration.gui
 
-import dev.jsinco.recipes.configuration.ConfigItemSection
+import dev.jsinco.recipes.configuration.ConfigItem
+import dev.jsinco.recipes.gui.GuiItem
 import eu.okaeri.configs.OkaeriConfig
 import org.bukkit.Material
 
 class GuiOverride : OkaeriConfig() {
 
-    var type = GuiOverrideType.NO_BEHAVIOR
-    var item: ConfigItemSection = ConfigItemSection.Builder()
+    var type = GuiItem.Type.NO_ACTION
+    var item: ConfigItem = ConfigItem.Builder()
         .material(Material.RED_STAINED_GLASS_PANE)
         .build()
     var pos: Int = 0
 
 
-    enum class GuiOverrideType {
-        NEXT_BUTTON,
-        PREVIOUS_BUTTON,
-        NO_BEHAVIOR
-    }
-
     class Builder {
         private val guiOverride = GuiOverride()
 
-        fun type(type: GuiOverrideType) = apply { guiOverride.type = type }
+        fun type(type:  GuiItem.Type) = apply { guiOverride.type = type }
 
         fun pos(pos: Int) = apply { guiOverride.pos = pos }
 
-        fun item(item: ConfigItemSection) = apply { guiOverride.item = item }
+        fun item(item: ConfigItem) = apply { guiOverride.item = item }
 
         fun build() = guiOverride
     }
