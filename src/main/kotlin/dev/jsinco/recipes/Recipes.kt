@@ -2,8 +2,12 @@ package dev.jsinco.recipes
 
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.commands.RecipesCommand
+import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
+import dev.jsinco.recipes.configuration.serialize.ComponentSerializer
+import dev.jsinco.recipes.configuration.serialize.KeySerializer
+import dev.jsinco.recipes.configuration.serialize.SerdesPackBuilder
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
@@ -28,6 +32,7 @@ class Recipes : JavaPlugin() {
     companion object {
         lateinit var instance: Recipes
         lateinit var recipesConfig: RecipesConfig
+        lateinit var guiConfig: GuiConfig
         lateinit var recipeViewManager: RecipeViewManager
         private lateinit var recipeList: Map<String, BreweryRecipe>
 
@@ -57,6 +62,7 @@ class Recipes : JavaPlugin() {
 
     override fun onEnable() {
         recipesConfig = readConfig()
+        guiConfig = readGuiConfig()
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
 
@@ -86,9 +92,25 @@ class Recipes : JavaPlugin() {
     }
 
     private fun readConfig(): RecipesConfig {
+        val serdesBuilder = SerdesPackBuilder()
+            .add(ComponentSerializer)
+            .add(KeySerializer)
         return ConfigManager.create(RecipesConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer())
+            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
             it.withBindFile(File(this.dataFolder, "config.yml"))
+            it.saveDefaults()
+            it.load(true)
+            it.save()
+        }
+    }
+
+    private fun readGuiConfig(): GuiConfig {
+        val serdesBuilder = SerdesPackBuilder()
+            .add(ComponentSerializer)
+            .add(KeySerializer)
+        return ConfigManager.create(GuiConfig::class.java) {
+            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
+            it.withBindFile(File(this.dataFolder, "gui.yml"))
             it.saveDefaults()
             it.load(true)
             it.save()
@@ -101,5 +123,6 @@ class Recipes : JavaPlugin() {
 
     fun reload() {
         recipesConfig = readConfig()
+        guiConfig = readGuiConfig()
     }
 }
