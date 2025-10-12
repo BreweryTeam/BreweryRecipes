@@ -1,12 +1,14 @@
 package dev.jsinco.recipes.core.flaws
 
+import kotlin.random.Random
+
 interface FlawExtent {
 
     fun obscurationLevel(recipeStepAmount: Int): Double
 
     fun appliesTo(stepIndex: Int, pos: Int): Boolean
 
-    class Everywhere : FlawExtent {
+    object Everywhere : FlawExtent {
         override fun obscurationLevel(recipeStepAmount: Int) = 1.0
 
         override fun appliesTo(stepIndex: Int, pos: Int) = true
@@ -32,6 +34,21 @@ interface FlawExtent {
 
         override fun appliesTo(stepIndex: Int, pos: Int): Boolean {
             return this.stepIndex < stepIndex || (stepIndex == this.stepIndex && start <= pos)
+        }
+    }
+
+    companion object {
+        fun compileWholeStep(steps: Int): WholeStep {
+            return WholeStep(Random.nextInt(steps))
+        }
+
+        fun compileStepRange(steps: Int): StepRange {
+            val from = Random.nextInt(10)
+            return StepRange(Random.nextInt(steps), from, from + Random.nextInt(10) + 10)
+        }
+
+        fun compileAfterPoint(steps: Int): AfterPoint {
+            return AfterPoint(Random.nextInt(steps), Random.nextInt(10))
         }
     }
 }

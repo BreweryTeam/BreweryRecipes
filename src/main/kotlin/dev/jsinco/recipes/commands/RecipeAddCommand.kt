@@ -6,7 +6,7 @@ import dev.jsinco.brewery.bukkit.command.argument.EnumArgument
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.commands.argument.RecipeArgumentType
 import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.flaws.type.FlawTypeCollection
+import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import org.bukkit.entity.Player
@@ -19,7 +19,7 @@ object RecipeAddCommand {
             .then(
                 Commands.argument("recipe-key", RecipeArgumentType)
                     .then(
-                        Commands.argument("flaw-type", EnumArgument(FlawTypeCollection::class.java))
+                        Commands.argument("flaw-type", EnumArgument(RecipeViewCreator.Type::class.java))
                             .then(
                                 Commands.argument(
                                     "flaw-level", DoubleArgumentType.doubleArg(0.0, 100.0)
@@ -31,7 +31,7 @@ object RecipeAddCommand {
                                         sender.uniqueId,
                                         recipe.generate(
                                             flawLevel,
-                                            context.getArgument("flaw-type", FlawTypeCollection::class.java)
+                                            context.getArgument("flaw-type", RecipeViewCreator.Type::class.java)
                                         )
                                     )
                                     1

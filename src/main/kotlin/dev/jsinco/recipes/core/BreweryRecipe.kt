@@ -1,9 +1,7 @@
 package dev.jsinco.recipes.core
 
 import com.google.common.collect.ImmutableList
-import dev.jsinco.recipes.core.flaws.Flaw
-import dev.jsinco.recipes.core.flaws.FlawBundle
-import dev.jsinco.recipes.core.flaws.type.FlawTypeCollection
+import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
 import dev.jsinco.recipes.core.process.steps.AgeStep
@@ -20,7 +18,6 @@ import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
-import kotlin.random.Random
 
 data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
@@ -50,26 +47,12 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
     }
 
     fun generate(expectedFlawLevel: Double): RecipeView {
-        val collection = FlawTypeCollection.entries.toTypedArray().random()
+        val collection = RecipeViewCreator.Type.entries.random()
         return generate(expectedFlawLevel, collection)
     }
 
-    fun generate(expectedFlawLevel: Double, collection: FlawTypeCollection): RecipeView {
-        val flaws = mutableListOf<Flaw>()
-        var flawLevel = 0.0
-        val remainingFlaws = collection.flawTypes.toMutableList()
-        while (expectedFlawLevel > flawLevel && !remainingFlaws.isEmpty()) {
-            val targetIntensity = Random.nextDouble(expectedFlawLevel.coerceIn(0.0, 90.0), 100.0)
-            val type = collection.flawTypes.random()
-            remainingFlaws.remove(type)
-
-            val extent = collection.compileExtent(type, steps.size)
-            val config = collection.compileConfig(type, extent, targetIntensity)
-
-            flawLevel += extent.obscurationLevel(steps.size) * type.estimatedObscurationIntensity(targetIntensity)
-            flaws.add(Flaw(type, config))
-        }
-        return RecipeView(this.identifier, listOf(FlawBundle(flaws)))
+    fun generate(expectedFlawLevel: Double, flawViewType: RecipeViewCreator.Type): RecipeView {
+        return flawViewType.recipeViewCreator.create(this, expectedFlawLevel)
     }
 
     class Builder(private val identifier: String) {

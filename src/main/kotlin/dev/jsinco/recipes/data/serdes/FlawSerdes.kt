@@ -80,7 +80,7 @@ object FlawSerdes {
     private fun deserializeFlawExtent(json: JsonElement): FlawExtent? {
         if (json !is JsonObject) return null
         return when (json.get("type").asString) {
-            "everywhere" -> FlawExtent.Everywhere()
+            "everywhere" -> FlawExtent.Everywhere
             "whole_step" -> FlawExtent.WholeStep(json.get("step-index").asInt)
             "partial_step" -> FlawExtent.StepRange(
                 json.get("step-index").asInt,
