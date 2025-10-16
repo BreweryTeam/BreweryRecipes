@@ -1,6 +1,9 @@
 package dev.jsinco.recipes.core
 
+import dev.jsinco.brewery.api.brew.BrewQuality
+import dev.jsinco.brewery.api.brew.BrewScore
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.core.flaws.*
 import dev.jsinco.recipes.core.flaws.type.FlawType
 import dev.jsinco.recipes.core.process.Ingredient
@@ -9,6 +12,7 @@ import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
+import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
@@ -32,7 +36,8 @@ object RecipeWriter {
 
     fun writeToItem(recipeView: RecipeView): ItemStack? {
         val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
-        val item = ItemStack(Material.PAPER) // TODO better items here
+        val item = if (GuiConfig().recipes.enabled) GuiConfig().recipes.item.generateItem()
+        else ItemStack(Material.PAPER) // TODO: Use actual potion items from BX/TBP here
         item.setData(
             DataComponentTypes.LORE, ItemLore.lore(
                 recipe.steps

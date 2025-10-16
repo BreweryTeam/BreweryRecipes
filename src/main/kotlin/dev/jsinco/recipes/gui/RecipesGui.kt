@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.util.GUIUtil
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -36,7 +37,9 @@ class RecipesGui(
             output.removeAll(borderEntry.key.positions.toList())
         }
         for (guiOverride in Recipes.guiConfig.overrides) {
-            output.remove(guiOverride.pos)
+            for (slot in GUIUtil.getValidSlots(guiOverride.pos)) {
+                output.remove(slot)
+            }
         }
         return output.toList()
     }
@@ -59,7 +62,9 @@ class RecipesGui(
             if (override.type == GuiItem.Type.NEXT_PAGE && page + 1 >= maxPages) {
                 continue
             }
-            renderItem(GuiItem(override.item.generateItem(), override.type), override.pos)
+            for (slot in GUIUtil.getValidSlots(override.pos)) {
+                renderItem(GuiItem(override.item.generateItem(), override.type), slot)
+            }
         }
         val startPageContentIndex = if(page == 0) 0 else {
             Math.floorDiv(recipes.size, pageRecipeCapacity * page) * pageRecipeCapacity

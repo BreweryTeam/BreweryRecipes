@@ -11,7 +11,7 @@ class GuiOverride : OkaeriConfig() {
     var item: ConfigItem = ConfigItem.Builder()
         .material(Material.RED_STAINED_GLASS_PANE)
         .build()
-    var pos: Int = 0
+    var pos: String = "0"
 
 
     class Builder {
@@ -19,7 +19,7 @@ class GuiOverride : OkaeriConfig() {
 
         fun type(type:  GuiItem.Type) = apply { guiOverride.type = type }
 
-        fun pos(pos: Int) = apply { guiOverride.pos = pos }
+        fun pos(pos: String) = apply { guiOverride.pos = pos }
 
         fun item(item: ConfigItem) = apply { guiOverride.item = item }
 
