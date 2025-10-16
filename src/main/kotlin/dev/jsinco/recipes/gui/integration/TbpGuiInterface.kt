@@ -1,17 +1,20 @@
 package dev.jsinco.recipes.gui.integration
 
+import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
 import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.core.RecipeWriter
 import dev.jsinco.recipes.gui.GuiItem
+import dev.jsinco.recipes.util.Logger
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
+import org.bukkit.inventory.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
 object TbpGuiInterface : GuiIntegration {
@@ -37,5 +40,12 @@ object TbpGuiInterface : GuiIntegration {
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
         )
         return item?.let { GuiItem(it, GuiItem.Type.NO_ACTION) };
+    }
+
+    fun createItem(identifier: String): ItemStack? {
+        val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
+        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
+        val brew = getApi().brewManager.createBrew(recipe.steps)
+        return result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
     }
 }
