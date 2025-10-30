@@ -5,18 +5,21 @@ import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
+import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.ComponentSerializer
 import dev.jsinco.recipes.configuration.serialize.ConfigItemCollectionSerializer
 import dev.jsinco.recipes.configuration.serialize.ConfigItemSerializer
 import dev.jsinco.recipes.configuration.serialize.KeySerializer
 import dev.jsinco.recipes.configuration.serialize.LoreSerializer
 import dev.jsinco.recipes.configuration.serialize.SerdesPackBuilder
+import dev.jsinco.recipes.configuration.serialize.SpawnConfigSerializer
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
+import dev.jsinco.recipes.listeners.RecipeSpawningListener
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
@@ -36,6 +39,7 @@ class Recipes : JavaPlugin() {
         lateinit var instance: Recipes
         lateinit var recipesConfig: RecipesConfig
         lateinit var guiConfig: GuiConfig
+        lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
         private lateinit var recipeList: Map<String, BreweryRecipe>
 
@@ -66,6 +70,7 @@ class Recipes : JavaPlugin() {
     override fun onEnable() {
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
+        spawnConfig = readSpawnConfig()
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
 
@@ -74,6 +79,7 @@ class Recipes : JavaPlugin() {
         GlobalTranslator.translator().addSource(translator)
         // TODO: Add BreweryX integration
         Bukkit.getPluginManager().registerEvents(GuiEventListener(this, TbpGuiInterface), this)
+        Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
@@ -126,6 +132,18 @@ class Recipes : JavaPlugin() {
         }
     }
 
+    private fun readSpawnConfig(): SpawnConfig {
+        val serdesBuilder = SerdesPackBuilder()
+            .add(SpawnConfigSerializer)
+        return ConfigManager.create(SpawnConfig::class.java) {
+            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
+            it.withBindFile(File(this.dataFolder, "spawning.yml"))
+            it.saveDefaults()
+            it.load(true)
+            it.save()
+        }
+    }
+
     override fun onLoad() {
         instance = this
     }
@@ -133,5 +151,6 @@ class Recipes : JavaPlugin() {
     fun reload() {
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
+        spawnConfig = readSpawnConfig()
     }
 }

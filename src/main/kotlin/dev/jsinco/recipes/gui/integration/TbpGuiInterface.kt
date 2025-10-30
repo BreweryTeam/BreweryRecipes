@@ -7,7 +7,6 @@ import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
 import dev.jsinco.recipes.core.RecipeView
 import dev.jsinco.recipes.core.RecipeWriter
 import dev.jsinco.recipes.gui.GuiItem
-import dev.jsinco.recipes.util.Logger
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.format.NamedTextColor
