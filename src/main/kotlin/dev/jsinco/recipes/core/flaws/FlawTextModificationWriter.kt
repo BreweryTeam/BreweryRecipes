@@ -78,7 +78,13 @@ object FlawTextModificationWriter {
                     }
                     currentPos++
                 }
-                builder.append(Component.text(modifiedText.ifEmpty { unmodifiedText }))
+                builder.append(
+                    if (modifiedText.isEmpty()) {
+                        Component.text(unmodifiedText)
+                    } else {
+                        flaw.type.postProcess(modifiedText, currentPos, flaw.config)
+                    }
+                )
                 return@replacement builder.build()
             }
         }

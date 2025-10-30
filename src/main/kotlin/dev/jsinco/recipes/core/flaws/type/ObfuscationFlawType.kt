@@ -18,7 +18,7 @@ object ObfuscationFlawType : FlawType {
         session: FlawType.ModificationFindSession
     ): FlawTextModifications {
         return FlawTextModificationWriter.randomPositionReplacement(component, session, 1.0) {
-            it
+            "?".repeat(it.length)
         }
     }
 }
