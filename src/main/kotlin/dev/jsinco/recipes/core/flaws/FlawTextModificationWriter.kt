@@ -105,6 +105,7 @@ object FlawTextModificationWriter {
         text: Component,
         modificationFindSession: FlawType.ModificationFindSession,
         individualFlawIntensity: Double,
+        overwriteSpace: Boolean = false,
         textInfo: Function1<String, String>
     ): FlawTextModifications {
         val flawTextModifications = FlawTextModifications()
@@ -116,7 +117,7 @@ object FlawTextModificationWriter {
             var pos = startPos
             for (character in string) {
                 val rng = Random(config.seed + pos + character.code)
-                if (character != ' ' && modificationFindSession.appliesTo(pos) && rng.nextDouble() < config.intensity / 100
+                if ((character != ' ' || overwriteSpace) && modificationFindSession.appliesTo(pos) && rng.nextDouble() < config.intensity / 100
                 ) {
                     flawTextModifications.write(pos, textInfo(character.toString()), individualFlawIntensity)
                 }
