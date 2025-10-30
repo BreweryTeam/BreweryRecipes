@@ -71,12 +71,10 @@ object InaccuracyFlawType : FlawType {
                 flawTextModifications.write(
                     i + startPos,
                     content,
-                    abs(text.toDouble() - newNumber.toDouble()) / newNumber.toDouble() * 2
+                    abs(text.toDouble() - newNumber.toDouble()) / newNumber.toDouble() * 4
                 )
             }
         }
         return flawTextModifications
     }
-
-    override fun estimatedObscurationIntensity(intensity: Double) = intensity * 0.4
 }

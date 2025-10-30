@@ -56,9 +56,4 @@ object SlurringFlawType : FlawType {
         return flawTextModifications
     }
 
-    override fun estimatedObscurationIntensity(intensity: Double): Double {
-        return intensity
-    }
-
-
 }

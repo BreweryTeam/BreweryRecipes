@@ -21,6 +21,4 @@ object ObfuscationFlawType : FlawType {
             it
         }
     }
-
-    override fun estimatedObscurationIntensity(intensity: Double) = intensity
 }

@@ -20,6 +20,4 @@ data class ReplacementFlawType(val replacement: String, val overwriteSpace: Bool
         }
     }
 
-    override fun estimatedObscurationIntensity(intensity: Double) = intensity
-
 }

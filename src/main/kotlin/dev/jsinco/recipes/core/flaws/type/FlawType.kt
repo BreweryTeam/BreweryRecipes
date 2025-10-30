@@ -11,8 +11,6 @@ interface FlawType {
 
     fun findFlawModifications(component: Component, session: ModificationFindSession): FlawTextModifications
 
-    fun estimatedObscurationIntensity(intensity: Double): Double
-
     data class ModificationFindSession(
         val stepIndex: Int,
         val config: FlawConfig,
