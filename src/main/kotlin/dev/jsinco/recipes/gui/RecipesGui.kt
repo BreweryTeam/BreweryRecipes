@@ -22,12 +22,12 @@ class RecipesGui(
     private var page = 0
 
     fun nextPage() {
-        page = maxPages.coerceAtMost(page + 1)
+        page = (page + 1).coerceAtMost(maxPages - 1)
         render()
     }
 
     fun previousPage() {
-        page = 0.coerceAtLeast(page - 1)
+        page = (page - 1).coerceAtLeast(0)
         render()
     }
 
@@ -55,21 +55,19 @@ class RecipesGui(
                 renderItem(GuiItem(item, GuiItem.Type.NO_ACTION), pos)
             }
         }
+
         for (override in Recipes.guiConfig.overrides) {
-            if (override.type == GuiItem.Type.PREVIOUS_PAGE && page <= 0) {
-                continue
-            }
-            if (override.type == GuiItem.Type.NEXT_PAGE && page + 1 >= maxPages) {
-                continue
-            }
+            if (override.type == GuiItem.Type.PREVIOUS_PAGE && page == 0) continue
+            if (override.type == GuiItem.Type.NEXT_PAGE && page + 1 >= maxPages) continue
+
             for (slot in GUIUtil.getValidSlots(override.pos)) {
                 renderItem(GuiItem(override.item.generateItem(), override.type), slot)
             }
         }
-        val startPageContentIndex = if(page == 0) 0 else {
-            Math.floorDiv(recipes.size, pageRecipeCapacity * page) * pageRecipeCapacity
-        }
-        val recipesToRead = pageRecipeCapacity.coerceAtMost(recipes.size - page * pageRecipeCapacity)
+
+        val startPageContentIndex = page * pageRecipeCapacity
+        val recipesToRead = minOf(pageRecipeCapacity, recipes.size - startPageContentIndex)
+
         for (i in 0 until recipesToRead) {
             renderItem(recipes[i + startPageContentIndex], recipesSlots[i])
         }
