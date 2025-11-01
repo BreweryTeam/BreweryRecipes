@@ -48,24 +48,6 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
         event.isCancelled = true
     }
 
-    // TODO: Move to different listener class
-    @EventHandler
-    fun onLootGenerate(event: LootGenerateEvent) {
-        val bound = Recipes.recipesConfig.recipeSpawning.bound
-        val chance = Recipes.recipesConfig.recipeSpawning.chance
-        if (bound <= 0 || chance <= 0) return
-        else if (Random.nextInt(bound) > chance) return
-        val applicableRecipes = Recipes.recipes()
-            .asSequence()
-            .filter { !Recipes.recipesConfig.recipeSpawning.blacklistedRecipes.contains(it.key) }
-            .map { it.value }
-            .toList()
-        val recipe: BreweryRecipe? = if (applicableRecipes.isEmpty()) null else applicableRecipes.random()
-        recipe?.let {
-            event.loot.add(recipe.lootItem())
-        }
-    }
-
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
         if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.RIGHT_CLICK_AIR) return
