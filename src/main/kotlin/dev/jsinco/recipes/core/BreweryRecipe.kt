@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.core
 
 import com.google.common.collect.ImmutableList
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
@@ -17,7 +18,6 @@ import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import java.util.*
 
 data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
@@ -36,7 +36,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
                 listOf(Component.translatable("recipes.loot.right.click.to.discover"))
                     .map { it.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE) }
                     .map { it.colorIfAbsent(NamedTextColor.GRAY) }
-                    .map { GlobalTranslator.render(it, Locale.ENGLISH) }
+                    .map(TranslationUtil::render)
             )
         )
         return itemStack

@@ -19,8 +19,11 @@ object SlurringFlawType : FlawType {
     private val drunkenReplacements = retrieveDrunkenReplacements()
 
     private fun retrieveDrunkenReplacements(): List<DrunkenTextReplacement> {
-        val destinationFile = File(Recipes.instance.dataFolder, "locale/en.drunk_text.json")
-        FileUtil.saveResourceIfExists("/locale/en.drunk_text.json", destinationFile, false)
+        val destinationFile = File(
+            Recipes.instance.dataFolder,
+            "locale/${Recipes.recipesConfig.language.toLanguageTag()}.drunk_text.json"
+        )
+        FileUtil.saveResourceIfExists("/locale/en-US.drunk_text.json", destinationFile, false)
         FileInputStream(destinationFile).use { inputStream ->
             InputStreamReader(inputStream).use { reader ->
                 return Serdes.deserialize(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)

@@ -13,7 +13,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
-class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslator() {
+class RecipesTranslator(private val localeDirectory: File, private var lang: Locale) : MiniMessageTranslator() {
 
     private var translations: Map<Locale, Properties>
 
@@ -40,7 +40,7 @@ class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslat
                     mutableMapOf<String?, Any?>()
                 ) else null).use { fs ->
                     val internalLocaleDir = Paths.get(url.toURI())
-                    Files.newDirectoryStream(internalLocaleDir, "*.properties").use { stream ->
+                    Files.newDirectoryStream(internalLocaleDir, "*.lang.properties").use { stream ->
                         for (path in stream) {
                             mergeAndStoreProperties(path)
                         }
@@ -116,8 +116,8 @@ class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslat
         }
         val output = translationsBuilder.build()
         Preconditions.checkArgument(
-            output.containsKey(Locale.ENGLISH),
-            "Unknown translation: " + Locale.ENGLISH
+            output.containsKey(lang),
+            "Unknown translation: $lang"
         )
         return output
     }
@@ -127,7 +127,7 @@ class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslat
     }
 
     public override fun getMiniMessageString(key: String, locale: Locale): String? {
-        val translation: Properties? = this.translations[Locale.ENGLISH]
+        val translation: Properties? = this.translations[lang]
         Preconditions.checkState(translation != null, "Should have found a translation!")
         return translation!!.getProperty(key)
     }

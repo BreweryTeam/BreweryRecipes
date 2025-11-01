@@ -6,13 +6,7 @@ import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
-import dev.jsinco.recipes.configuration.serialize.ComponentSerializer
-import dev.jsinco.recipes.configuration.serialize.ConfigItemCollectionSerializer
-import dev.jsinco.recipes.configuration.serialize.ConfigItemSerializer
-import dev.jsinco.recipes.configuration.serialize.KeySerializer
-import dev.jsinco.recipes.configuration.serialize.LoreSerializer
-import dev.jsinco.recipes.configuration.serialize.SerdesPackBuilder
-import dev.jsinco.recipes.configuration.serialize.SpawnConfigSerializer
+import dev.jsinco.recipes.configuration.serialize.*
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
@@ -74,7 +68,7 @@ class Recipes : JavaPlugin() {
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
 
-        val translator = RecipesTranslator(File(dataFolder, "locale"))
+        val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
         // TODO: Add BreweryX integration
@@ -101,14 +95,8 @@ class Recipes : JavaPlugin() {
     }
 
     private fun readConfig(): RecipesConfig {
-        val serdesBuilder = SerdesPackBuilder()
-            .add(ComponentSerializer)
-            .add(KeySerializer)
-            .add(ConfigItemSerializer)
-            .add(ConfigItemCollectionSerializer)
-            .add(LoreSerializer)
         return ConfigManager.create(RecipesConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
+            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
             it.withBindFile(File(this.dataFolder, "config.yml"))
             it.saveDefaults()
             it.load(true)
@@ -117,19 +105,23 @@ class Recipes : JavaPlugin() {
     }
 
     private fun readGuiConfig(): GuiConfig {
-        val serdesBuilder = SerdesPackBuilder()
-            .add(ComponentSerializer)
-            .add(KeySerializer)
-            .add(ConfigItemSerializer)
-            .add(ConfigItemCollectionSerializer)
-            .add(LoreSerializer)
         return ConfigManager.create(GuiConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
+            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
             it.withBindFile(File(this.dataFolder, "gui.yml"))
             it.saveDefaults()
             it.load(true)
             it.save()
         }
+    }
+
+    private fun configSerializers(): SerdesPackBuilder {
+        return SerdesPackBuilder()
+            .add(ComponentSerializer)
+            .add(KeySerializer)
+            .add(ConfigItemSerializer)
+            .add(ConfigItemCollectionSerializer)
+            .add(LoreSerializer)
+            .add(LocaleSerializer)
     }
 
     private fun readSpawnConfig(): SpawnConfig {

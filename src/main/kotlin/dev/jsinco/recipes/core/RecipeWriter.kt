@@ -47,7 +47,7 @@ object RecipeWriter {
                     .map { component ->
                         component.colorIfAbsent(NamedTextColor.GRAY)
                             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                    }.map { GlobalTranslator.render(it, Locale.ENGLISH) }
+                    }.map(TranslationUtil::render)
                     .toList()
             )
         )
