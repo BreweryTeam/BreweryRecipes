@@ -18,9 +18,11 @@ import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import org.bukkit.block.BlockType
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -123,6 +125,8 @@ class Recipes : JavaPlugin() {
             .add(LoreSerializer)
             .add(LocaleSerializer)
             .add(ConditionsDefinitionSerializer)
+            .add(TriggersDefinitionSerializer)
+            .add(KeyedSerializer(RegistryKey.BLOCK, BlockType::class.java))
     }
 
     private fun readSpawnConfig(): SpawnConfig {

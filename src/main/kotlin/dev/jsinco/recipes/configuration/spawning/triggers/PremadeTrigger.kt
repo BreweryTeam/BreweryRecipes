@@ -8,5 +8,5 @@ enum class PremadeTrigger(val spawnTrigger: SpawnTrigger) {
     BARREL(InventoryFillTrigger(InventoryType.BARREL)),
     MINECART(LootSpawnTrigger.fromStrings("chests/abandoned_mineshaft")),
     FISHING(LootSpawnTrigger.fromStrings("gameplay/fishing/treasure")),
-    
+
 }
