@@ -1,13 +1,14 @@
 package dev.jsinco.recipes.configuration.serialize
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.spawning.BlockDropSpawnConfig
-import dev.jsinco.recipes.spawning.LootSpawnConfig
-import dev.jsinco.recipes.spawning.MobDropSpawnConfig
-import dev.jsinco.recipes.spawning.SpawnConfig
-import dev.jsinco.recipes.spawning.conditions.BiomeCondition
-import dev.jsinco.recipes.spawning.conditions.SpawnCondition
-import dev.jsinco.recipes.spawning.conditions.WorldCondition
+import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
+import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+import dev.jsinco.recipes.configuration.spawning.conditions.BiomeCondition
+import dev.jsinco.recipes.configuration.spawning.conditions.SpawnCondition
+import dev.jsinco.recipes.configuration.spawning.conditions.WorldCondition
 import dev.jsinco.recipes.util.Logger
 import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
@@ -16,14 +17,14 @@ import eu.okaeri.configs.serdes.SerializationData
 import org.bukkit.NamespacedKey
 import org.bukkit.loot.LootTable
 
-object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
+object SpawnConfigSerializer : ObjectSerializer<SpawnDefinition> {
 
-    override fun supports(type: Class<in SpawnConfig>): Boolean {
-        return SpawnConfig::class.java.isAssignableFrom(type)
+    override fun supports(type: Class<in SpawnDefinition>): Boolean {
+        return SpawnDefinition::class.java.isAssignableFrom(type)
     }
 
     override fun serialize(
-        `object`: SpawnConfig,
+        `object`: SpawnDefinition,
         data: SerializationData,
         generics: GenericsDeclaration
     ) {
@@ -35,6 +36,10 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
 
         if (!`object`.whitelist.isNullOrEmpty()) data.add("whitelist", `object`.whitelist)
         if (!`object`.blacklist.isNullOrEmpty()) data.add("blacklist", `object`.blacklist)
+        data.add("flawless", `object`.flawless)
+        `object`.flaw ?: let {
+            data.add("flaw", it)
+        }
 
         if (!`object`.conditions.isNullOrEmpty()) {
             val serializedConditions = `object`.conditions.mapNotNull {
@@ -48,16 +53,16 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
         }
 
         when (`object`) {
-            is LootSpawnConfig -> {
+            is LootSpawnTrigger -> {
                 if (`object`.lootTables.isNotEmpty()) {
                     val lootTableKeys = `object`.lootTables.mapNotNull { it.key?.asString() }
                     if (lootTableKeys.isNotEmpty()) data.add("lootTables", lootTableKeys)
                 }
             }
-            is MobDropSpawnConfig -> {
+            is MobDropTrigger -> {
                 if (`object`.entities.isNotEmpty()) data.add("entities", `object`.entities)
             }
-            is BlockDropSpawnConfig -> {
+            is BlockDropTrigger -> {
                 if (`object`.blocks.isNotEmpty()) data.add("blocks", `object`.blocks)
             }
         }
@@ -66,20 +71,22 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
     override fun deserialize(
         data: DeserializationData,
         generics: GenericsDeclaration
-    ): SpawnConfig? {
+    ): SpawnDefinition? {
         val typeName = data.get("type", String::class.java) ?: return null
         val type = try {
-            SpawnConfig.SpawnConfigType.valueOf(typeName.uppercase())
-        } catch (ex: IllegalArgumentException) {
+            SpawnDefinition.SpawnConfigType.valueOf(typeName.uppercase())
+        } catch (_: IllegalArgumentException) {
             Logger.logErr("Unknown SpawnConfigType: $typeName")
             return null
         }
 
-        val enabled = data.get("enabled", Boolean::class.javaObjectType)
+        val enabled = data.get("enabled", Boolean::class.java) ?: true
         val attempts = data.get("attempts", Int::class.javaObjectType)
         val chance = data.get("chance", Double::class.javaObjectType)
         val whitelist = data.getAsList("whitelist", String::class.java) ?: listOf()
         val blacklist = data.getAsList("blacklist", String::class.java) ?: listOf()
+        val flawless = data.get("flawless", Boolean::class.java) ?: false
+        val flaw = data.get("flaw", RecipeViewCreator.Type::class.java)
 
         @Suppress("UNCHECKED_CAST") // No custom condition serializer, as new conditions might look different
         val rawConditions = data.get("conditions", Any::class.java) as? List<Map<String, Any>> ?: listOf()
@@ -94,7 +101,7 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
         }
 
         return when (type) {
-            SpawnConfig.SpawnConfigType.LOOT -> {
+            SpawnDefinition.SpawnConfigType.LOOT -> {
                 val lootTableStrings = data.getAsList("lootTables", String::class.java) ?: listOf()
                 val lootTables = mutableListOf<LootTable>()
 
@@ -112,7 +119,7 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
                     lootTables.add(lootTable)
                 }
 
-                LootSpawnConfig(
+                LootSpawnTrigger(
                     type = type,
                     enabled = enabled,
                     attempts = attempts,
@@ -124,9 +131,9 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
                 )
             }
 
-            SpawnConfig.SpawnConfigType.MOB_DROP -> {
+            SpawnDefinition.SpawnConfigType.MOB_DROP -> {
                 val entities = data.getAsList("entities", String::class.java) ?: listOf()
-                MobDropSpawnConfig(
+                MobDropTrigger(
                     enabled = enabled,
                     attempts = attempts,
                     chance = chance,
@@ -137,9 +144,9 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
                 )
             }
 
-            SpawnConfig.SpawnConfigType.BLOCK_DROP -> {
+            SpawnDefinition.SpawnConfigType.BLOCK_DROP -> {
                 val blocks = data.getAsList("blocks", String::class.java) ?: listOf()
-                BlockDropSpawnConfig(
+                BlockDropTrigger(
                     enabled = enabled,
                     attempts = attempts,
                     chance = chance,
@@ -150,7 +157,7 @@ object SpawnConfigSerializer : ObjectSerializer<SpawnConfig> {
                 )
             }
 
-            else -> SpawnConfig(
+            else -> SpawnDefinition(
                 type = type,
                 enabled = enabled,
                 attempts = attempts,

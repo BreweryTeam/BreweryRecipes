@@ -1,10 +1,10 @@
 package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.spawning.BlockDropSpawnConfig
-import dev.jsinco.recipes.spawning.LootSpawnConfig
-import dev.jsinco.recipes.spawning.MobDropSpawnConfig
-import dev.jsinco.recipes.spawning.SpawnConfig
+import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
+import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Entity
@@ -22,7 +22,7 @@ import org.bukkit.inventory.ItemStack
 
 class RecipeSpawningListener : Listener {
 
-    private fun getRecipes(spawnConfig: SpawnConfig): MutableList<ItemStack> {
+    private fun getRecipes(spawnConfig: SpawnDefinition): MutableList<ItemStack> {
         val attempts = (spawnConfig.attempts ?: 1).coerceAtLeast(1)
         val chance = (spawnConfig.chance ?: 1.0).coerceIn(0.0, 1.0)
         val applicableRecipes = Recipes.recipes().asSequence()
@@ -45,26 +45,26 @@ class RecipeSpawningListener : Listener {
         for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
             if (spawnConfig.enabled == false) continue
             if (!conditionsMatch(spawnConfig, event.lootContext.location, event.lootContext.lootedEntity)) continue
-            if (spawnConfig is LootSpawnConfig) {
+            if (spawnConfig is LootSpawnTrigger) {
                 for (lootTable in spawnConfig.lootTables) {
                     if (lootTable.key != event.lootTable.key) continue
                     event.loot.addAll(getRecipes(spawnConfig))
                 }
             } else {
                 when (spawnConfig.type) {
-                    SpawnConfig.SpawnConfigType.CONTAINER -> {
+                    SpawnDefinition.SpawnConfigType.CONTAINER -> {
                         if (event.lootContext.location.block.state !is InventoryHolder) continue
                         event.loot.addAll(getRecipes(spawnConfig))
                     }
-                    SpawnConfig.SpawnConfigType.CHEST -> {
+                    SpawnDefinition.SpawnConfigType.CHEST -> {
                         if (event.lootContext.location.block.type != Material.CHEST) continue
                         event.loot.addAll(getRecipes(spawnConfig))
                     }
-                    SpawnConfig.SpawnConfigType.BARREL -> {
+                    SpawnDefinition.SpawnConfigType.BARREL -> {
                         if (event.lootContext.location.block.type != Material.BARREL) continue
                         event.loot.addAll(getRecipes(spawnConfig))
                     }
-                    SpawnConfig.SpawnConfigType.MINECART -> {
+                    SpawnDefinition.SpawnConfigType.MINECART -> {
                         if (event.lootContext.lootedEntity !is Minecart) continue
                         event.loot.addAll(getRecipes(spawnConfig))
                     }
@@ -74,7 +74,7 @@ class RecipeSpawningListener : Listener {
         }
     }
 
-    private fun getRecipe(spawnConfig: SpawnConfig): ItemStack? {
+    private fun getRecipe(spawnConfig: SpawnDefinition): ItemStack? {
         val attempts = (spawnConfig.attempts ?: 1).coerceAtLeast(1)
         val chance = (spawnConfig.chance ?: 1.0).coerceIn(0.0, 1.0)
         val applicableRecipes = Recipes.recipes().asSequence()
@@ -96,7 +96,7 @@ class RecipeSpawningListener : Listener {
         if (caught is Item) {
             for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
                 if (spawnConfig.enabled == false) continue
-                if (spawnConfig.type != SpawnConfig.SpawnConfigType.FISHING) continue
+                if (spawnConfig.type != SpawnDefinition.SpawnConfigType.FISHING) continue
                 if (!conditionsMatch(spawnConfig, event.caught?.location ?: event.player.location, event.caught)) continue
                 val recipe = getRecipe(spawnConfig)
                 if (recipe != null) caught.itemStack = recipe
@@ -109,8 +109,8 @@ class RecipeSpawningListener : Listener {
         val entity = event.entity
 
         for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
-            if (spawnConfig.enabled == false || spawnConfig.type != SpawnConfig.SpawnConfigType.MOB_DROP) continue
-            val mobConfig = spawnConfig as? MobDropSpawnConfig ?: continue
+            if (spawnConfig.enabled == false || spawnConfig.type != SpawnDefinition.SpawnConfigType.MOB_DROP) continue
+            val mobConfig = spawnConfig as? MobDropTrigger ?: continue
             if (!mobConfig.contains(entity.type)) continue
             if (!conditionsMatch(mobConfig, event.entity.location, event.entity)) continue
 
@@ -122,8 +122,8 @@ class RecipeSpawningListener : Listener {
     @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onBlockDrop(event: BlockDropItemEvent) {
         for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
-            if (spawnConfig.enabled == false || spawnConfig.type != SpawnConfig.SpawnConfigType.BLOCK_DROP) continue
-            val blockConfig = spawnConfig as? BlockDropSpawnConfig ?: continue
+            if (spawnConfig.enabled == false || spawnConfig.type != SpawnDefinition.SpawnConfigType.BLOCK_DROP) continue
+            val blockConfig = spawnConfig as? BlockDropTrigger ?: continue
             if (!blockConfig.contains(event.blockState.blockData.material)) continue
             if (!conditionsMatch(blockConfig, event.blockState.location, null)) continue
 
@@ -135,8 +135,8 @@ class RecipeSpawningListener : Listener {
         }
     }
 
-    private fun conditionsMatch(spawnConfig: SpawnConfig, location: Location, entity: Entity? = null): Boolean {
-        val context = dev.jsinco.recipes.spawning.conditions.SpawnCondition.SpawnContext(location, entity)
+    private fun conditionsMatch(spawnConfig: SpawnDefinition, location: Location, entity: Entity? = null): Boolean {
+        val context = dev.jsinco.recipes.configuration.spawning.conditions.SpawnCondition.SpawnContext(location, entity)
         val conditions = spawnConfig.conditions ?: return true
         return conditions.all { it.matches(context) }
     }

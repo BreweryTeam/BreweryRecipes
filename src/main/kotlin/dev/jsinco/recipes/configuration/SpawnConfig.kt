@@ -1,16 +1,22 @@
 package dev.jsinco.recipes.configuration
 
-import dev.jsinco.recipes.spawning.BlockDropSpawnConfig
-import dev.jsinco.recipes.spawning.MobDropSpawnConfig
-import dev.jsinco.recipes.spawning.SpawnConfig
-import dev.jsinco.recipes.spawning.conditions.BiomeCondition
-import dev.jsinco.recipes.spawning.conditions.WorldCondition
+import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+import dev.jsinco.recipes.configuration.spawning.conditions.BiomeCondition
+import dev.jsinco.recipes.configuration.spawning.conditions.WorldCondition
+import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.InventoryFillTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
+import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
+import org.bukkit.entity.EntityType
+import org.bukkit.event.inventory.InventoryType
 
 class SpawnConfig : OkaeriConfig() {
 
+    //TODO: Rewrite comment
     @CustomKey("recipe-spawning")
     @Comment(
         "+-------------------------------------------------------------------------------------------+",
@@ -59,28 +65,98 @@ class SpawnConfig : OkaeriConfig() {
         " ",
         "Your time to shine:"
     )
-    var recipeSpawning: ArrayList<SpawnConfig> = arrayListOf(
-        SpawnConfig.Builder(SpawnConfig.SpawnConfigType.CONTAINER)
-            .addCondition(WorldCondition(listOf(), listOf("norecipesworld")))
-            .addToBlacklist("ex")
-            .setChance(0.15)
-            .setAttempts(1)
-            .build(),
-        BlockDropSpawnConfig.Builder()
-            .addBlock("mushroom_stem")
-            .addBlock("red_mushroom_block")
-            .addBlock("brown_mushroom_block")
-            .addToWhitelist("shroom_vodka")
-            .setChance(0.075)
-            .setAttempts(1)
-            .build(),
-        MobDropSpawnConfig.Builder()
-            .addEntity("blaze")
-            .addCondition(BiomeCondition(listOf("nether_wastes", "crimson_forest")))
-            .addToWhitelist("fire_whiskey")
-            .setAttempts(1)
-            .setChance(1.0)
-            .build(),
+    var recipeSpawning: ArrayList<SpawnDefinition> = arrayListOf(
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.15,
+            flaw = RecipeViewCreator.Type.DRUNK,
+            triggers = listOf(
+                LootSpawnTrigger.fromStrings(
+                    "chests/shipwreck_supply",
+                    "chests/abandoned_mineshaft"
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.15,
+            flaw = RecipeViewCreator.Type.UNCERTAIN,
+            triggers = listOf(
+                LootSpawnTrigger.fromStrings(
+                    "chests/village/village_fisher",
+                    "chests/village/shepherd",
+                    "chests/village/village_temple",
+                    "chests/village/tannery",
+                    "chests/village/village_plains_house",
+                    "chests/village/village_savanna_house"
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.15,
+            flaw = RecipeViewCreator.Type.ENCRYPTED,
+            triggers = listOf(
+                InventoryFillTrigger(
+                    InventoryType.CHEST,
+                    InventoryType.BARREL
+                )
+            ),
+            conditions = listOf(
+                WorldCondition(
+                    "the_end"
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.075,
+            triggers = listOf(
+                InventoryFillTrigger(
+                    InventoryType.CHEST,
+                    InventoryType.BARREL
+                )
+            ),
+            conditionBlacklist = listOf(
+                WorldCondition(
+                    "overworld"
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeWhitelist = listOf("shroom_vodka"),
+            attempts = 1,
+            chance = 0.0125,
+            flaw = RecipeViewCreator.Type.DRUNK,
+            triggers = listOf(
+                BlockDropTrigger(
+                    "mushroom_stem",
+                    "red_mushroom_block",
+                    "brown_mushroom_block"
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeWhitelist = listOf("fire_whiskey"),
+            attempts = 1,
+            chance = 0.075,
+            flaw = RecipeViewCreator.Type.ENCRYPTED,
+            triggers = listOf(
+                MobDropTrigger(
+                    EntityType.BLAZE
+                )
+            ),
+            conditions = listOf(
+                BiomeCondition(
+                    "nether_wastes",
+                    "crimson_forest"
+                )
+            )
+        )
     )
 
 }

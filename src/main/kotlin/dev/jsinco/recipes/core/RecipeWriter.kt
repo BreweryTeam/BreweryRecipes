@@ -1,9 +1,6 @@
 package dev.jsinco.recipes.core
 
-import dev.jsinco.brewery.api.brew.BrewQuality
-import dev.jsinco.brewery.api.brew.BrewScore
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.core.flaws.*
 import dev.jsinco.recipes.core.flaws.type.FlawType
 import dev.jsinco.recipes.core.process.Ingredient
@@ -13,7 +10,6 @@ import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
-import dev.jsinco.recipes.util.Logger
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
@@ -25,7 +21,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import java.util.*
@@ -38,7 +33,8 @@ object RecipeWriter {
     fun writeToItem(recipeView: RecipeView): ItemStack? {
         val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
         val item = if (Recipes.guiConfig.recipes.enabled) Recipes.guiConfig.recipes.item.generateItem()
-        else TbpGuiInterface.createItem(recipeView.recipeIdentifier) ?: ItemStack(Material.BARRIER) // TODO: BreweryX compat
+        else TbpGuiInterface.createItem(recipeView.recipeIdentifier)
+            ?: ItemStack(Material.BARRIER) // TODO: BreweryX compat
         item.setData(
             DataComponentTypes.LORE, ItemLore.lore(
                 recipe.steps
