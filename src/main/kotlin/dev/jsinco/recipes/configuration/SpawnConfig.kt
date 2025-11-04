@@ -1,14 +1,13 @@
 package dev.jsinco.recipes.configuration
 
+import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
-import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.InventoryFillTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
+import dev.jsinco.recipes.configuration.spawning.triggers.*
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
+import org.bukkit.block.BlockType
 import org.bukkit.entity.EntityType
 import org.bukkit.event.inventory.InventoryType
 
@@ -68,21 +67,22 @@ class SpawnConfig : OkaeriConfig() {
             recipeBlacklist = listOf("ex"),
             attempts = 1,
             chance = 0.15,
-            flaw = RecipeViewCreator.Type.DRUNK,
-            triggers = listOf(
-                LootSpawnTrigger.fromStrings(
+            flaws = listOf(RecipeViewCreator.Type.DRUNK),
+            triggers = TriggersDefinition(
+                lootSpawnTrigger = LootSpawnTrigger.fromStrings(
                     "chests/shipwreck_supply",
                     "chests/abandoned_mineshaft"
-                )
+                ),
+                premadeTrigger = listOf(PremadeTrigger.FISHING)
             )
         ),
         SpawnDefinition(
             recipeBlacklist = listOf("ex"),
             attempts = 1,
             chance = 0.15,
-            flaw = RecipeViewCreator.Type.UNCERTAIN,
-            triggers = listOf(
-                LootSpawnTrigger.fromStrings(
+            flaws = listOf(RecipeViewCreator.Type.UNCERTAIN),
+            triggers = TriggersDefinition(
+                lootSpawnTrigger = LootSpawnTrigger.fromStrings(
                     "chests/village/village_fisher",
                     "chests/village/shepherd",
                     "chests/village/village_temple",
@@ -96,45 +96,41 @@ class SpawnConfig : OkaeriConfig() {
             recipeBlacklist = listOf("ex"),
             attempts = 1,
             chance = 0.15,
-            flaw = RecipeViewCreator.Type.ENCRYPTED,
-            triggers = listOf(
-                InventoryFillTrigger(
+            flaws = listOf(RecipeViewCreator.Type.ENCRYPTED),
+            triggers = TriggersDefinition(
+                inventoryFillTrigger = InventoryFillTrigger(
                     InventoryType.CHEST,
                     InventoryType.BARREL
                 )
             ),
-            conditions = listOf(
-                WorldCondition(
-                    "the_end"
-                )
+            conditions = ConditionsDefinition(
+                worldCondition = listOf("the_end")
             )
         ),
         SpawnDefinition(
             recipeBlacklist = listOf("ex"),
             attempts = 1,
             chance = 0.075,
-            triggers = listOf(
-                InventoryFillTrigger(
+            triggers = TriggersDefinition(
+                inventoryFillTrigger = InventoryFillTrigger(
                     InventoryType.CHEST,
                     InventoryType.BARREL
                 )
             ),
-            conditionBlacklist = listOf(
-                WorldCondition(
-                    "overworld"
-                )
+            conditionBlacklist = ConditionsDefinition(
+                worldCondition = listOf("overworld")
             )
         ),
         SpawnDefinition(
             recipeWhitelist = listOf("shroom_vodka"),
             attempts = 1,
             chance = 0.0125,
-            flaw = RecipeViewCreator.Type.DRUNK,
-            triggers = listOf(
-                BlockDropTrigger(
-                    "mushroom_stem",
-                    "red_mushroom_block",
-                    "brown_mushroom_block"
+            flaws = listOf(RecipeViewCreator.Type.DRUNK),
+            triggers = TriggersDefinition(
+                blockDropTrigger = BlockDropTrigger(
+                    BlockType.MUSHROOM_STEM,
+                    BlockType.RED_MUSHROOM_BLOCK,
+                    BlockType.BROWN_MUSHROOM_BLOCK
                 )
             )
         ),
@@ -142,14 +138,14 @@ class SpawnConfig : OkaeriConfig() {
             recipeWhitelist = listOf("fire_whiskey"),
             attempts = 1,
             chance = 0.075,
-            flaw = RecipeViewCreator.Type.ENCRYPTED,
-            triggers = listOf(
-                MobDropTrigger(
+            flaws = listOf(RecipeViewCreator.Type.ENCRYPTED),
+            triggers = TriggersDefinition(
+                mobDropTrigger = MobDropTrigger(
                     EntityType.BLAZE
                 )
             ),
-            conditions = listOf(
-                BiomeCondition(
+            conditions = ConditionsDefinition(
+                biomeCondition = listOf(
                     "nether_wastes",
                     "crimson_forest"
                 )

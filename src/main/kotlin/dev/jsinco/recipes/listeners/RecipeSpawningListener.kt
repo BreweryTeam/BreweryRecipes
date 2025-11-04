@@ -1,15 +1,13 @@
 package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+import dev.jsinco.recipes.configuration.spawning.triggers.*
 import org.bukkit.Location
-import org.bukkit.Material
+import org.bukkit.block.Container
 import org.bukkit.entity.Entity
+import org.bukkit.entity.EntityType
 import org.bukkit.entity.Item
-import org.bukkit.entity.Minecart
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -17,7 +15,6 @@ import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.player.PlayerFishEvent
 import org.bukkit.event.world.LootGenerateEvent
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 
 class RecipeSpawningListener : Listener {
@@ -26,8 +23,8 @@ class RecipeSpawningListener : Listener {
         val attempts = (spawnConfig.attempts ?: 1).coerceAtLeast(1)
         val chance = (spawnConfig.chance ?: 1.0).coerceIn(0.0, 1.0)
         val applicableRecipes = Recipes.recipes().asSequence()
-            .filter { spawnConfig.whitelist == null || !spawnConfig.whitelist.contains(it.key) }
-            .filter { spawnConfig.blacklist == null || !spawnConfig.blacklist.contains(it.key) }
+            .filter { spawnConfig.recipeWhitelist == null || !spawnConfig.recipeWhitelist.contains(it.key) }
+            .filter { spawnConfig.recipeBlacklist == null || !spawnConfig.recipeBlacklist.contains(it.key) }
             .map { it.value }
             .toList()
         if (applicableRecipes.isEmpty()) return mutableListOf()
@@ -40,36 +37,33 @@ class RecipeSpawningListener : Listener {
         return results
     }
 
-    @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onLootGenerate(event: LootGenerateEvent) {
-        for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
-            if (spawnConfig.enabled == false) continue
-            if (!conditionsMatch(spawnConfig, event.lootContext.location, event.lootContext.lootedEntity)) continue
-            if (spawnConfig is LootSpawnTrigger) {
-                for (lootTable in spawnConfig.lootTables) {
-                    if (lootTable.key != event.lootTable.key) continue
-                    event.loot.addAll(getRecipes(spawnConfig))
-                }
-            } else {
-                when (spawnConfig.type) {
-                    SpawnDefinition.SpawnConfigType.CONTAINER -> {
-                        if (event.lootContext.location.block.state !is InventoryHolder) continue
-                        event.loot.addAll(getRecipes(spawnConfig))
+        for (spawnDefinition in Recipes.spawnConfig.recipeSpawning) {
+            if (spawnDefinition.enabled == false) {
+                continue
+            }
+            if (!conditionsMatch(spawnDefinition, event.lootContext.location, event.lootContext.lootedEntity)) {
+                continue
+            }
+            if (spawnDefinition.triggers?.asList()?.any {
+                    when (it) {
+                        is LootSpawnTrigger -> it.lootTables.contains(event.lootTable)
+                        is InventoryFillTrigger -> event.inventoryHolder is Container
+                        is MobDropTrigger -> event.entity?.type?.let(it.entities::contains) ?: false
+                        else -> false
                     }
-                    SpawnDefinition.SpawnConfigType.CHEST -> {
-                        if (event.lootContext.location.block.type != Material.CHEST) continue
-                        event.loot.addAll(getRecipes(spawnConfig))
+                } ?: false) {
+                event.loot.addAll(spawnDefinition.generateItems())
+                continue
+            }
+            if (spawnDefinition.triggers?.premadeTrigger?.any {
+                    when (it) {
+                        PremadeTrigger.MINECART -> event.entity?.type?.equals(EntityType.MINECART) ?: false
+                        else -> false
                     }
-                    SpawnDefinition.SpawnConfigType.BARREL -> {
-                        if (event.lootContext.location.block.type != Material.BARREL) continue
-                        event.loot.addAll(getRecipes(spawnConfig))
-                    }
-                    SpawnDefinition.SpawnConfigType.MINECART -> {
-                        if (event.lootContext.lootedEntity !is Minecart) continue
-                        event.loot.addAll(getRecipes(spawnConfig))
-                    }
-                    else -> continue
-                }
+                } ?: false) {
+                event.loot.addAll(spawnDefinition.generateItems())
             }
         }
     }
@@ -89,7 +83,7 @@ class RecipeSpawningListener : Listener {
         return null
     }
 
-    @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onFishCatch(event: PlayerFishEvent) {
         if (event.state != PlayerFishEvent.State.CAUGHT_FISH) return
         val caught = event.caught ?: return
@@ -97,14 +91,19 @@ class RecipeSpawningListener : Listener {
             for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
                 if (spawnConfig.enabled == false) continue
                 if (spawnConfig.type != SpawnDefinition.SpawnConfigType.FISHING) continue
-                if (!conditionsMatch(spawnConfig, event.caught?.location ?: event.player.location, event.caught)) continue
+                if (!conditionsMatch(
+                        spawnConfig,
+                        event.caught?.location ?: event.player.location,
+                        event.caught
+                    )
+                ) continue
                 val recipe = getRecipe(spawnConfig)
                 if (recipe != null) caught.itemStack = recipe
             }
         }
     }
 
-    @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onEntityDeath(event: EntityDeathEvent) {
         val entity = event.entity
 
@@ -119,7 +118,7 @@ class RecipeSpawningListener : Listener {
         }
     }
 
-    @EventHandler (ignoreCancelled = true, priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onBlockDrop(event: BlockDropItemEvent) {
         for (spawnConfig in Recipes.spawnConfig.recipeSpawning) {
             if (spawnConfig.enabled == false || spawnConfig.type != SpawnDefinition.SpawnConfigType.BLOCK_DROP) continue
