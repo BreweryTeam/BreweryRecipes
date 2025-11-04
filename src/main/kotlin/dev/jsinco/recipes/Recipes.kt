@@ -122,11 +122,12 @@ class Recipes : JavaPlugin() {
             .add(ConfigItemCollectionSerializer)
             .add(LoreSerializer)
             .add(LocaleSerializer)
+            .add(ConditionsDefinitionSerializer)
     }
 
     private fun readSpawnConfig(): SpawnConfig {
         val serdesBuilder = SerdesPackBuilder()
-            .add(SpawnConfigSerializer)
+            .add(SpawnDefinitionSerializer)
         return ConfigManager.create(SpawnConfig::class.java) {
             it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
             it.withBindFile(File(this.dataFolder, "spawning.yml"))

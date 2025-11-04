@@ -1,8 +1,6 @@
 package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
-import dev.jsinco.recipes.configuration.spawning.conditions.BiomeCondition
-import dev.jsinco.recipes.configuration.spawning.conditions.WorldCondition
 import dev.jsinco.recipes.configuration.spawning.triggers.BlockDropTrigger
 import dev.jsinco.recipes.configuration.spawning.triggers.InventoryFillTrigger
 import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
