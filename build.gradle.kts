@@ -86,7 +86,11 @@ tasks {
     runServer {
         minecraftVersion("1.21.10")
         downloadPlugins {
-            modrinth("thebrewingproject", "2.3.0")
+            if (project.findProperty("testing.with.tbp")!! == "true") {
+                modrinth("thebrewingproject", "2.3.0")
+            } else {
+                modrinth("breweryx", "3.6.0")
+            }
             url("https://download.luckperms.net/1600/bukkit/loader/LuckPerms-Bukkit-5.5.14.jar")
         }
     }
