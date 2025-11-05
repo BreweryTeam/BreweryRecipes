@@ -35,7 +35,6 @@ class RecipeSpawningListener : Listener {
                     when (it) {
                         is LootSpawnTrigger -> it.lootTables.contains(event.lootTable)
                         is InventoryFillTrigger -> event.inventoryHolder is Container
-                        is MobDropTrigger -> event.entity?.type?.let(it.entities::contains) ?: false
                         else -> false
                     }
                 } ?: false) {
