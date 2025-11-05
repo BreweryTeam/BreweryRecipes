@@ -14,7 +14,7 @@ data class TriggersDefinition(
             lootSpawnTrigger?.let { add(it) }
             mobDropTrigger?.let { add(it) }
             premadeTrigger?.let {
-                addAll(it.map(PremadeTrigger::spawnTrigger))
+                addAll(it.mapNotNull(PremadeTrigger::spawnTrigger))
             }
         }
     }

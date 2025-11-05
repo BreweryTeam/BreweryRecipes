@@ -22,6 +22,7 @@ import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -127,6 +128,7 @@ class Recipes : JavaPlugin() {
             .add(ConditionsDefinitionSerializer)
             .add(TriggersDefinitionSerializer)
             .add(KeyedSerializer(RegistryKey.BLOCK, BlockType::class.java))
+            .add(KeyedSerializer(RegistryKey.BIOME, Biome::class.java))
     }
 
     private fun readSpawnConfig(): SpawnConfig {
