@@ -49,6 +49,14 @@ object RecipeWriter {
                     .toList()
             )
         )
+        val displayName = guiIntegration.brewDisplayName(recipeView.recipeIdentifier)
+            ?.let { recipeView.translation(it) } ?: return null
+        item?.setData(
+            DataComponentTypes.CUSTOM_NAME,
+            TranslationUtil.render(displayName)
+                .colorIfAbsent(NamedTextColor.WHITE)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+        )
         return item
     }
 

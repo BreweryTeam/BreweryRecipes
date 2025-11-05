@@ -2,8 +2,8 @@ package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
-import dev.jsinco.brewery.bukkit.command.argument.EnumArgument
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.commands.argument.EnumArgument
 import dev.jsinco.recipes.commands.argument.RecipeArgumentType
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
@@ -19,7 +19,10 @@ object RecipeAddCommand {
             .then(
                 Commands.argument("recipe-key", RecipeArgumentType)
                     .then(
-                        Commands.argument("flaw-type", EnumArgument(RecipeViewCreator.Type::class.java))
+                        Commands.argument(
+                            "flaw-type",
+                            EnumArgument(RecipeViewCreator.Type::class.java)
+                        )
                             .then(
                                 Commands.argument(
                                     "flaw-level", DoubleArgumentType.doubleArg(0.0, 100.0)

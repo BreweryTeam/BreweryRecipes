@@ -81,7 +81,7 @@ class Recipes : JavaPlugin() {
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
         // TODO: Add BreweryX integration
-        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, TbpGuiInterface), this)
+        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, loadGuiIntegration()), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
@@ -100,7 +100,7 @@ class Recipes : JavaPlugin() {
                 .map { TBPRecipeConverter.convert(it) }
         }
         if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
-            BRecipe.getRecipes()
+            return BRecipe.getRecipes()
                 .map { BreweryXRecipeConverter.convert(it) }
         }
         throw IllegalStateException("Expected either BreweryX to be available or TBP")

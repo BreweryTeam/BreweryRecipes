@@ -1,9 +1,6 @@
 package dev.jsinco.recipes.util
 
-import com.dre.brewery.recipe.BRecipe
-import com.dre.brewery.recipe.CustomItem
-import com.dre.brewery.recipe.RecipeItem
-import com.dre.brewery.recipe.SimpleItem
+import com.dre.brewery.recipe.*
 import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.process.Ingredient
 import net.kyori.adventure.text.Component
@@ -29,14 +26,19 @@ object BreweryXRecipeConverter {
     private fun parseIngredients(ingredients: List<RecipeItem>): Map<Ingredient, Int> {
         return buildMap {
             ingredients.forEach {
-                val displayName = when (val genericIngredient = it.toIngredientGeneric()) {
-                    is CustomItem -> genericIngredient.name?.let(LegacyComponentSerializer.legacySection()::deserialize)
-                    is SimpleItem -> genericIngredient.material.itemTranslationKey?.let(Component::translatable)
+                val displayName = when (it) {
+                    is CustomItem -> it.name?.let(LegacyComponentSerializer.legacySection()::deserialize)
+                    is SimpleItem -> it.material.itemTranslationKey?.let(Component::translatable)
+                    is PluginItem -> Component.text(it.itemId)
+                    is CustomMatchAnyItem -> {
+                        Component.text(if (it.names.isNullOrEmpty()) it.configId else it.names!!.last())
+                    }
+
                     else -> null
-                } ?: Component.text(it.configId)
+                } ?: Component.text("Unknown")
                 put(
                     Ingredient(
-                        it.configId, displayName
+                        it.toConfigString().replace("/\\d+", ""), displayName
                     ),
                     it.amount
                 )
