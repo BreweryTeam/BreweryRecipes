@@ -129,13 +129,12 @@ class Recipes : JavaPlugin() {
             .add(TriggersDefinitionSerializer)
             .add(KeyedSerializer(RegistryKey.BLOCK, BlockType::class.java))
             .add(KeyedSerializer(RegistryKey.BIOME, Biome::class.java))
+            .add(SpawnDefinitionSerializer)
     }
 
     private fun readSpawnConfig(): SpawnConfig {
-        val serdesBuilder = SerdesPackBuilder()
-            .add(SpawnDefinitionSerializer)
         return ConfigManager.create(SpawnConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), serdesBuilder.build())
+            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
             it.withBindFile(File(this.dataFolder, "spawning.yml"))
             it.saveDefaults()
             it.load(true)
