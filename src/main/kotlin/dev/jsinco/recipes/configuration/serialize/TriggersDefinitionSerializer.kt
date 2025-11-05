@@ -1,11 +1,11 @@
 package dev.jsinco.recipes.configuration.serialize
 
 import dev.jsinco.recipes.configuration.spawning.triggers.*
-import dev.jsinco.recipes.util.Logger
 import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
 import eu.okaeri.configs.serdes.ObjectSerializer
 import eu.okaeri.configs.serdes.SerializationData
+import net.kyori.adventure.key.Key
 import org.bukkit.block.BlockType
 import org.bukkit.entity.EntityType
 import org.bukkit.event.inventory.InventoryType
@@ -22,10 +22,22 @@ object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
         generics: GenericsDeclaration
     ) {
         `object`.premadeTrigger?.let { data.add("premade", it) }
-        `object`.inventoryFillTrigger?.let { data.add("inventory", it.inventoryTypes) }
-        `object`.blockDropTrigger?.let { data.add("block", it.blocks) }
-        `object`.lootSpawnTrigger?.let { data.add("loot", it.lootTables.map(LootTable::key)) }
-        `object`.mobDropTrigger?.let { data.add("entities", it.entities) }
+        `object`.inventoryFillTrigger?.let {
+            data.addCollection(
+                "inventory",
+                it.inventoryTypes.toList(),
+                InventoryType::class.java
+            )
+        }
+        `object`.blockDropTrigger?.let { data.addCollection("block", it.blocks.toList(), BlockType::class.java) }
+        `object`.lootSpawnTrigger?.let {
+            data.addCollection(
+                "loot",
+                it.lootTables.map(LootTable::key),
+                Key::class.java
+            )
+        }
+        `object`.mobDropTrigger?.let { data.addCollection("entities", it.entities.toList(), EntityType::class.java) }
     }
 
     override fun deserialize(
