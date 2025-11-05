@@ -26,7 +26,7 @@ object KeySerializer : ObjectSerializer<Key> {
     ): Key? {
         val value = data.getValue(String::class.java)
         if (!Key.parseable(value)) {
-            Logger.logErr("Could not parse key '$value' in ${data.context.field.name}")
+            Logger.logErr("Could not parse key '$value' in ${data.context.field?.name ?: "unknown"}")
             return null
         }
         return Key.key(value)

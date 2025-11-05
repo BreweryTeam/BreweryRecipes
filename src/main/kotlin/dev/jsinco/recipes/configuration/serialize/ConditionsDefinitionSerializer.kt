@@ -9,7 +9,7 @@ import org.bukkit.block.Biome
 
 object ConditionsDefinitionSerializer : ObjectSerializer<ConditionsDefinition> {
     override fun supports(type: Class<in ConditionsDefinition>): Boolean {
-        return type.equals(ConditionsDefinition::class)
+        return ConditionsDefinition::class.java.isAssignableFrom(type)
     }
 
     override fun serialize(
@@ -31,7 +31,7 @@ object ConditionsDefinitionSerializer : ObjectSerializer<ConditionsDefinition> {
     ): ConditionsDefinition? {
         val biomes = data.getAsList("biomes", Biome::class.java)
         val worlds = data.getAsList("worlds", String::class.java)
-        if(biomes == null && worlds == null) {
+        if (biomes == null && worlds == null) {
             return null
         }
         return ConditionsDefinition(biomes, worlds)

@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.configuration.serialize
 
 import dev.jsinco.recipes.configuration.spawning.triggers.*
+import dev.jsinco.recipes.util.Logger
 import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
 import eu.okaeri.configs.serdes.ObjectSerializer
@@ -12,7 +13,7 @@ import org.bukkit.loot.LootTable
 
 object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
     override fun supports(type: Class<in TriggersDefinition>): Boolean {
-        return type.equals(TriggersDefinition::class)
+        return TriggersDefinition::class.java.isAssignableFrom(type)
     }
 
     override fun serialize(
@@ -38,10 +39,10 @@ object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
         val mobDropTrigger = data.getAsList("entities", EntityType::class.java)
         val output = TriggersDefinition(
             premadeTrigger = premadeTrigger,
-            inventoryFillTrigger = InventoryFillTrigger(*inventoryFillTrigger.toTypedArray()),
-            blockDropTrigger = BlockDropTrigger(*blockDropTrigger.toTypedArray()),
-            lootSpawnTrigger = LootSpawnTrigger.fromStrings(*lootSpawnTrigger.toTypedArray()),
-            mobDropTrigger = MobDropTrigger(*mobDropTrigger.toTypedArray())
+            inventoryFillTrigger = inventoryFillTrigger?.let { InventoryFillTrigger(*it.toTypedArray()) },
+            blockDropTrigger = blockDropTrigger?.let { BlockDropTrigger(*it.toTypedArray()) },
+            lootSpawnTrigger = lootSpawnTrigger?.let { LootSpawnTrigger.fromStrings(*it.toTypedArray()) },
+            mobDropTrigger = mobDropTrigger?.let { MobDropTrigger(*it.toTypedArray()) }
         )
         return if (output.asList().isEmpty()) {
             null

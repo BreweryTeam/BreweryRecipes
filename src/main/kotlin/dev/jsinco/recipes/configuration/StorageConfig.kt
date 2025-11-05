@@ -12,7 +12,7 @@ class StorageConfig : OkaeriConfig() {
         //" - YAML -> Human-readable, great for debugging",
         "Leave at SQLite if unsure"
     )
-    var type: String? = "SQLite"
+    var type: String = "SQLite"
 
     @Comment("MySQL-specific configuration settings")
     var mysql: MySQLOptions = MySQLOptions()
