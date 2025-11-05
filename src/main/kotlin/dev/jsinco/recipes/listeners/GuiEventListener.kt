@@ -75,7 +75,5 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
         event.setUseInteractedBlock(Event.Result.DENY)
         event.setUseItemInHand(Event.Result.DENY)
         event.isCancelled = true
-
-        // TODO add recipe
     }
 }

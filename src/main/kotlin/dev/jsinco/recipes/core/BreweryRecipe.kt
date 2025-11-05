@@ -1,7 +1,6 @@
 package dev.jsinco.recipes.core
 
 import com.google.common.collect.ImmutableList
-import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
@@ -9,15 +8,17 @@ import dev.jsinco.recipes.core.process.steps.AgeStep
 import dev.jsinco.recipes.core.process.steps.CookStep
 import dev.jsinco.recipes.core.process.steps.DistillStep
 import dev.jsinco.recipes.core.process.steps.MixStep
+import dev.jsinco.recipes.util.RecipeUtil
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
+import java.util.*
 
 data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
@@ -26,7 +27,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
         itemStack.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(
-                Component.translatable("recipes.loot.new.brew.recipe")
+                Component.translatable("recipes.loot.recipe.completed")
                     .colorIfAbsent(NamedTextColor.WHITE)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             )
@@ -39,7 +40,28 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
                     .map(TranslationUtil::render)
             )
         )
+        itemStack.editPersistentDataContainer { it.set(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING, identifier) }
         return itemStack
+    }
+
+    fun lootItem(recipeViewCreatorType: RecipeViewCreator.Type): ItemStack {
+        val output = lootItem()
+        output.editPersistentDataContainer {
+            it.set(
+                RecipeUtil.FLAW_KEY,
+                PersistentDataType.STRING,
+                recipeViewCreatorType.name.lowercase(Locale.ROOT)
+            )
+        }
+        output.setData(
+            DataComponentTypes.CUSTOM_NAME,
+            TranslationUtil.render(
+                Component.translatable(recipeViewCreatorType.lootTranslationKey)
+                    .colorIfAbsent(NamedTextColor.WHITE)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            )
+        )
+        return output
     }
 
     fun generateCompletedView(): RecipeView {

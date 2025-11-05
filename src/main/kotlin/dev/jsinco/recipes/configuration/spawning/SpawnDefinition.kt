@@ -2,6 +2,7 @@ package dev.jsinco.recipes.configuration.spawning
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
+import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import org.bukkit.inventory.ItemStack
 
@@ -22,7 +23,7 @@ data class SpawnDefinition(
         val attempts = (attempts ?: 1).coerceAtLeast(1)
         val chance = (chance ?: 1.0).coerceIn(0.0, 1.0)
         val applicableRecipes = Recipes.recipes().asSequence()
-            .filter { recipeWhitelist == null || !recipeWhitelist.contains(it.key) }
+            .filter { recipeWhitelist == null || recipeWhitelist.contains(it.key) }
             .filter { recipeBlacklist == null || !recipeBlacklist.contains(it.key) }
             .map { it.value }
             .toList()
@@ -30,24 +31,24 @@ data class SpawnDefinition(
         val results = mutableListOf<ItemStack>()
         repeat(attempts) {
             if (Math.random() <= chance) {
-                results.add(applicableRecipes.random().lootItem())
+                results.add(lootItem(applicableRecipes.random()))
             }
         }
         return results
     }
 
     fun generateItem(): ItemStack? {
-        val attempts = (attempts ?: 1).coerceAtLeast(1)
-        val chance = (chance ?: 1.0).coerceIn(0.0, 1.0)
-        val applicableRecipes = Recipes.recipes().asSequence()
-            .filter { recipeWhitelist == null || !recipeWhitelist.contains(it.key) }
-            .filter { recipeBlacklist == null || !recipeBlacklist.contains(it.key) }
-            .map { it.value }
-            .toList()
-        if (applicableRecipes.isEmpty()) return null
-        var success = false
-        repeat(attempts) { if (Math.random() <= chance) success = true }
-        if (success) return applicableRecipes.random().lootItem()
-        return null
+        val items = generateItems()
+        return if (!items.isEmpty()) items.random() else null
+    }
+
+    private fun lootItem(breweryRecipe: BreweryRecipe): ItemStack {
+        if(flawless) {
+            return breweryRecipe.lootItem()
+        }
+        if(flaws.isNullOrEmpty()) {
+            return breweryRecipe.lootItem(RecipeViewCreator.Type.values().random())
+        }
+        return breweryRecipe.lootItem(flaws.random())
     }
 }
