@@ -7,6 +7,7 @@ import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
+import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
 import org.bukkit.entity.EntityType
 import org.bukkit.event.inventory.InventoryType
@@ -146,8 +147,8 @@ class SpawnConfig : OkaeriConfig() {
             ),
             conditions = ConditionsDefinition(
                 biomeCondition = listOf(
-                    "nether_wastes",
-                    "crimson_forest"
+                    Biome.NETHER_WASTES,
+                    Biome.CRIMSON_FOREST
                 )
             )
         )
