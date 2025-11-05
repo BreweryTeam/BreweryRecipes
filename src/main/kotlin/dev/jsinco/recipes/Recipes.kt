@@ -1,5 +1,6 @@
 package dev.jsinco.recipes
 
+import com.dre.brewery.recipe.BRecipe
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.GuiConfig
@@ -11,10 +12,14 @@ import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.core.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
+import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface
+import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.listeners.RecipeListener
 import dev.jsinco.recipes.listeners.RecipeSpawningListener
+import dev.jsinco.recipes.util.BreweryXRecipeConverter
+import dev.jsinco.recipes.util.ClassUtil
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
@@ -39,7 +44,7 @@ class Recipes : JavaPlugin() {
         lateinit var guiConfig: GuiConfig
         lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
-        private lateinit var recipeList: Map<String, BreweryRecipe>
+        private lateinit var recipeMap: Map<String, BreweryRecipe>
 
         fun key(key: String): NamespacedKey {
             if (key.contains(":")) {
@@ -52,14 +57,14 @@ class Recipes : JavaPlugin() {
          * TBP can have a very late initialization on some recipes, use only post start
          */
         fun recipes(): Map<String, BreweryRecipe> {
-            if (this::recipeList.isInitialized && !recipeList.isEmpty()) {
-                return recipeList
+            if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
+                return recipeMap
             }
-            recipeList = instance.loadRecipeProvider()!!
+            recipeMap = instance.loadRecipeProvider()!!
                 .asSequence()
                 .map { it.identifier to it }
                 .toMap()
-            return recipeList
+            return recipeMap
         }
     }
 
@@ -85,8 +90,7 @@ class Recipes : JavaPlugin() {
     }
 
     private fun loadRecipeProvider(): List<BreweryRecipe>? {
-        try {
-            Class.forName("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")
+        if (ClassUtil.exists("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")) {
             if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
                 return null
             }
@@ -94,9 +98,22 @@ class Recipes : JavaPlugin() {
                 (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null
             return provider.recipeRegistry.recipes
                 .map { TBPRecipeConverter.convert(it) }
-        } catch (ignored: NoClassDefFoundError) {
-            return null
         }
+        if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
+            BRecipe.getRecipes()
+                .map { BreweryXRecipeConverter.convert(it) }
+        }
+        throw IllegalStateException("Expected either BreweryX to be available or TBP")
+    }
+
+    private fun loadGuiIntegration(): GuiIntegration {
+        if (ClassUtil.exists("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")) {
+            return TbpGuiInterface
+        }
+        if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
+            return BreweryXGuiInterface
+        }
+        throw IllegalStateException("Expected either BreweryX to be available or TBP")
     }
 
     private fun readConfig(): RecipesConfig {

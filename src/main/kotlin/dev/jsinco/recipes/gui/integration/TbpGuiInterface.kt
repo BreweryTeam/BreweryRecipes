@@ -27,24 +27,18 @@ object TbpGuiInterface : GuiIntegration {
         return tbpApi
     }
 
-    override fun createItem(recipeView: RecipeView): GuiItem? {
-        val tbp = getApi()
-        val recipe = tbp.recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null
+    override fun createItem(recipeView: RecipeView): ItemStack? {
+        val recipe = getApi().recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null
+        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
+        val brew = getApi().brewManager.createBrew(recipe.steps)
+        val item = result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
         val brewDisplayName = (recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name
         val displayName = recipeView.translation(MiniMessage.miniMessage().deserialize(brewDisplayName))
-        val item = RecipeWriter.writeToItem(recipeView)
         item?.setData(
             DataComponentTypes.CUSTOM_NAME, TranslationUtil.render(displayName)
                 .colorIfAbsent(NamedTextColor.WHITE)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
         )
-        return item?.let { GuiItem(it, GuiItem.Type.NO_ACTION) };
-    }
-
-    fun createItem(identifier: String): ItemStack? {
-        val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
-        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
-        val brew = getApi().brewManager.createBrew(recipe.steps)
-        return result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
+        return item
     }
 }

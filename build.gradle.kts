@@ -112,7 +112,7 @@ bukkit {
     main = "dev.jsinco.recipes.Recipes"
     foliaSupported = false
     apiVersion = "1.21"
-    authors = listOf("Jsinco", "Thorinwasher")
+    authors = listOf("Jsinco", "Thorinwasher, Mitality")
     name = rootProject.name
     permissions {
         register("recipes.command") {

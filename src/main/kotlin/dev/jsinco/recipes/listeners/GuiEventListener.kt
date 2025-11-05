@@ -1,7 +1,6 @@
 package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.core.BreweryRecipe
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.gui.RecipesGui
 import dev.jsinco.recipes.gui.integration.GuiIntegration
@@ -13,10 +12,8 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.world.LootGenerateEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import kotlin.random.Random
 
 
 class GuiEventListener(private val plugin: Recipes, private val guiIntegration: GuiIntegration) : Listener {
@@ -66,7 +63,7 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
         val gui = RecipesGui(
             player,
             recipeViews.mapNotNull {
-                guiIntegration.createItem(it)
+                guiIntegration.createFullItem(it)
             }
         )
         gui.render()
