@@ -56,7 +56,7 @@ object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
             lootSpawnTrigger = lootSpawnTrigger?.let { LootSpawnTrigger.fromStrings(*it.toTypedArray()) },
             mobDropTrigger = mobDropTrigger?.let { MobDropTrigger(*it.toTypedArray()) }
         )
-        return if (output.asList().isEmpty()) {
+        return if (output.asList().isEmpty() && output.premadeTrigger?.isEmpty() ?: false) {
             null
         } else {
             output
