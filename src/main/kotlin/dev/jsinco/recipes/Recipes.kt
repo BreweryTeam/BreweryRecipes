@@ -13,6 +13,7 @@ import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
+import dev.jsinco.recipes.listeners.RecipeListener
 import dev.jsinco.recipes.listeners.RecipeSpawningListener
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
@@ -77,6 +78,7 @@ class Recipes : JavaPlugin() {
         // TODO: Add BreweryX integration
         Bukkit.getPluginManager().registerEvents(GuiEventListener(this, TbpGuiInterface), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
+        Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }

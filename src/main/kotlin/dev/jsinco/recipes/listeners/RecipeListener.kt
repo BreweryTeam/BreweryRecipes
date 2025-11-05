@@ -43,5 +43,6 @@ class RecipeListener : Listener {
             playerInteractEvent.player.uniqueId,
             recipeView
         )
+        item.amount -= 1
     }
 }
