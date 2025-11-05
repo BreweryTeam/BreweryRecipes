@@ -27,6 +27,7 @@ object RecipesCommand {
                     .requires { it.sender.hasPermission("recipes.command.book") }
             ).then(
                 RecipeAddCommand.command()
+                    .requires { it.sender.hasPermission("recipes.command.recipe.add") }
             ).then(
                 Commands.literal("clear")
                     .executes { context ->
@@ -36,7 +37,7 @@ object RecipesCommand {
                         }
                         Recipes.recipeViewManager.clearAll(sender.uniqueId)
                         1
-                    }
+                    }.requires { it.sender.hasPermission("recipes.command.recipe.clear") }
             ).build()
     }
 }

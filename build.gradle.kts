@@ -42,7 +42,7 @@ kotlin {
 sourceSets {
     main {
         java {
-             srcDirs("src/main/kotlin")
+            srcDirs("src/main/kotlin")
         }
     }
 }
@@ -116,8 +116,9 @@ bukkit {
     name = rootProject.name
     permissions {
         register("recipes.command") {
-            children = listOf("recipes.command.give", "recipes.command.book")
+            children = listOf("recipes.command.recipe.add", "recipes.command.recipe.clear", "recipes.command.book")
         }
+        register("recipes.override.view")
     }
     softDepend = listOf("BreweryX", "TheBrewingProject")
 }
