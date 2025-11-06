@@ -23,8 +23,8 @@ data class SpawnDefinition(
         val attempts = (attempts ?: 1).coerceAtLeast(1)
         val chance = (chance ?: 1.0).coerceIn(0.0, 1.0)
         val applicableRecipes = Recipes.recipes().asSequence()
-            .filter { recipeWhitelist == null || recipeWhitelist.contains(it.key) }
-            .filter { recipeBlacklist == null || !recipeBlacklist.contains(it.key) }
+            .filter { recipeWhitelist.isNullOrEmpty() || recipeWhitelist.contains(it.key) }
+            .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.key) }
             .map { it.value }
             .toList()
         if (applicableRecipes.isEmpty()) return mutableListOf()
@@ -43,10 +43,10 @@ data class SpawnDefinition(
     }
 
     private fun lootItem(breweryRecipe: BreweryRecipe): ItemStack {
-        if(flawless) {
+        if (flawless) {
             return breweryRecipe.lootItem()
         }
-        if(flaws.isNullOrEmpty()) {
+        if (flaws.isNullOrEmpty()) {
             return breweryRecipe.lootItem(RecipeViewCreator.Type.values().random())
         }
         return breweryRecipe.lootItem(flaws.random())

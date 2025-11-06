@@ -18,6 +18,7 @@ import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.listeners.RecipeListener
 import dev.jsinco.recipes.listeners.RecipeSpawningListener
+import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import dev.jsinco.recipes.util.ClassUtil
 import dev.jsinco.recipes.util.TBPRecipeConverter
@@ -27,9 +28,11 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
+import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -87,6 +90,10 @@ class Recipes : JavaPlugin() {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
+        val book = ShapelessRecipe(key("recipe_book"), BookUtil.createBook())
+        book.addIngredient(Material.PAPER)
+        book.addIngredient(Material.BOOK)
+        Bukkit.addRecipe(book)
     }
 
     private fun loadRecipeProvider(): List<BreweryRecipe>? {
