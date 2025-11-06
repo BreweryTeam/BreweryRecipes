@@ -7,7 +7,7 @@ import java.util.function.Function
 object Serdes {
 
 
-    fun <T> serialize(tList: List<T>, tConverter: Function<T, JsonElement>): JsonArray {
+    fun <T> serializeCollection(tList: Collection<T>, tConverter: Function<T, JsonElement>): JsonArray {
         val output = JsonArray()
         tList.stream().map(tConverter)
             .forEach { output.add(it) }
@@ -15,10 +15,18 @@ object Serdes {
     }
 
 
-    fun <T> deserialize(jsonArray: JsonArray, tConverter: Function<JsonElement, T?>): List<T> {
+    fun <T> deserializeList(jsonArray: JsonArray, tConverter: Function<JsonElement, T?>): List<T> {
         return jsonArray.asList().asSequence()
             .map { tConverter.apply(it) }
             .filterNotNull()
             .toList()
     }
+
+    fun <T> deserializeSet(jsonArray: JsonArray, tConverter: Function<JsonElement, T?>): Set<T> {
+        return jsonArray.asList().asSequence()
+            .map { tConverter.apply(it) }
+            .filterNotNull()
+            .toSet()
+    }
+
 }

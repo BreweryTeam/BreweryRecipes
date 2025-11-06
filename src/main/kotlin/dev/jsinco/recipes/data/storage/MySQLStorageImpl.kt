@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.data.storage
 
 import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.jsinco.recipes.Recipes
@@ -53,6 +54,7 @@ class MySQLStorageImpl : StorageImpl {
               player_uuid BINARY(16) NOT NULL,
               recipe_key VARCHAR(255) NOT NULL, /* MySQL doesn't allow TEXT as PK */
               recipe_flaws JSON NOT NULL,
+              inverted_reveals JSON NOT NULL,
               PRIMARY KEY (player_uuid, recipe_key)
             );
         """.trimIndent()
@@ -79,7 +81,12 @@ class MySQLStorageImpl : StorageImpl {
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
             it.setString(2, recipeView.recipeIdentifier)
-            it.setString(3, Serdes.serialize(recipeView.flaws, FlawSerdes::serializeFlawBundle).toString())
+            it.setString(3, Serdes.serializeCollection(recipeView.flaws, FlawSerdes::serializeFlaw).toString())
+            it.setString(4, Serdes.serializeCollection(recipeView.invertedReveals) { ints ->
+                Serdes.serializeCollection(ints) { number ->
+                    JsonPrimitive(number)
+                }
+            }.toString())
             it.execute()
             return@runStatement null
         }
@@ -117,10 +124,15 @@ class MySQLStorageImpl : StorageImpl {
                 recipeViews.add(
                     RecipeView(
                         result.getString("recipe_key"),
-                        Serdes.deserialize(
+                        Serdes.deserializeList(
                             JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
-                            FlawSerdes::deserializeFlawBundle
-                        )
+                            FlawSerdes::deserializeFlaw
+                        ),
+                        Serdes.deserializeList(JsonParser.parseString(result.getString("inverted_reveals")).asJsonArray) {jsonArray ->
+                            Serdes.deserializeSet(jsonArray.asJsonArray) { element ->
+                                element.asInt
+                            }
+                        }
                     )
                 )
             }

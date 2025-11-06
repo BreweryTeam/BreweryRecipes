@@ -1,7 +1,10 @@
 package dev.jsinco.recipes.core
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.core.flaws.*
+import dev.jsinco.recipes.core.flaws.Flaw
+import dev.jsinco.recipes.core.flaws.FlawExtent
+import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+import dev.jsinco.recipes.core.flaws.FlawTextModifications
 import dev.jsinco.recipes.core.flaws.type.FlawType
 import dev.jsinco.recipes.core.process.Ingredient
 import dev.jsinco.recipes.core.process.Step
@@ -41,7 +44,14 @@ object RecipeWriter {
             DataComponentTypes.LORE, ItemLore.lore(
                 recipe.steps
                     .asSequence()
-                    .mapIndexed { index, value -> renderStep(value, index, recipeView.flaws) }
+                    .mapIndexed { index, value ->
+                        renderStep(
+                            value,
+                            index,
+                            recipeView.flaws,
+                            recipeView.invertedReveals
+                        )
+                    }
                     .map { component ->
                         component.colorIfAbsent(NamedTextColor.GRAY)
                             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
@@ -103,19 +113,19 @@ object RecipeWriter {
         return TranslationUtil.render(raw)
     }
 
-    private fun renderStep(step: Step, stepIndex: Int, flaws: List<FlawBundle>): Component {
+    private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
         val rawBase = buildBaseStep(step)
         val base = resolveTranslatablesForMutation(rawBase)
         val textModifications = compileTextModifications(base, stepIndex, flaws)
+            .map { it.key to it.value.withMatching { idx -> reveals.isEmpty() || reveals[stepIndex].contains(idx) } }
+            .toMap()
         var output = base
         var offsets = mapOf<Int, Int>()
-        for (bundle in flaws) {
-            for (flaw in bundle.flaws) {
-                val textModification = textModifications[flaw] ?: continue
-                output =
-                    FlawTextModificationWriter.process(output, textModification, flaw, offsets)
-                offsets = textModification.offsets(offsets)
-            }
+        for (flaw in flaws) {
+            val textModification = textModifications[flaw] ?: continue
+            output =
+                FlawTextModificationWriter.process(output, textModification, flaw, offsets)
+            offsets = textModification.offsets(offsets)
         }
         return output
     }
@@ -123,44 +133,28 @@ object RecipeWriter {
     private fun compileTextModifications(
         step: Component,
         stepIndex: Int,
-        flaws: List<FlawBundle>
+        flaws: List<Flaw>
     ): Map<Flaw, FlawTextModifications> {
         val allTextModifications = mutableMapOf<Flaw, FlawTextModifications>()
         if (flaws.isEmpty()) {
             return allTextModifications
         }
-        var allFlawPositions: MutableSet<Int>? = null
-        for (bundle in flaws) {
-            val flawPositions = mutableSetOf<Int>()
-            for (flaw in bundle.flaws) {
-                if (flawApplies(stepIndex, flaw)) {
-                    val session = FlawType.ModificationFindSession(stepIndex, flaw.config) {
-                        !flawPositions.contains(it)
-                    }
-                    val textModifications = flaw.type.findFlawModifications(step, session)
-                        .withNoReplacementsOn {
-                            allFlawPositions?.contains(it) ?: false
-                        }
-                    flawPositions.addAll(
-                        textModifications.modifiedPoints
-                            .keys
-                    )
-                    allTextModifications[flaw] = textModifications
+        val flawPositions = mutableListOf<Int>()
+        for (flaw in flaws) {
+            if (flawApplies(stepIndex, flaw)) {
+                val session = FlawType.ModificationFindSession(stepIndex, flaw.config) {
+                    !flawPositions.contains(it)
                 }
-            }
-            if (allFlawPositions == null) {
-                allFlawPositions = flawPositions
-            } else {
-                allFlawPositions.removeIf { !flawPositions.contains(it) }
+                val textModifications = flaw.type.findFlawModifications(step, session)
+                flawPositions.addAll(
+                    textModifications.modifiedPoints
+                        .keys
+                )
+                allTextModifications[flaw] = textModifications
             }
         }
         return allTextModifications
             .filter { !it.value.modifiedPoints.isEmpty() && !it.value.modifiedPoints.all { entry -> entry.value is FlawTextModifications.NoModification } }
-            .map {
-                it.key to it.value.withMatching { pos ->
-                    allFlawPositions?.contains(pos) ?: false
-                }
-            }.toMap()
     }
 
     fun estimateFragmentation(recipeView: RecipeView): Double {
@@ -173,6 +167,11 @@ object RecipeWriter {
             val base = resolveTranslatablesForMutation(buildBaseStep(step))
             val approxBaseLength = PlainTextComponentSerializer.plainText().serialize(base).length
             val modifications = compileTextModifications(base, idx, recipeView.flaws)
+                .map {
+                    it.key to it.value.withMatching { pos ->
+                        recipeView.invertedReveals.isEmpty() || recipeView.invertedReveals[idx].contains(pos)
+                    }
+                }.toMap()
             if (modifications.isEmpty()) {
                 return@forEachIndexed
             }
@@ -190,20 +189,56 @@ object RecipeWriter {
                 .keys.forEach { applicableFlaws.add(it) }
         }
 
-        val bundles = mutableListOf<FlawBundle>()
-        for (bundle in view.flaws) {
-            bundles.add(
-                FlawBundle(
-                    bundle.flaws
-                        .filter { applicableFlaws.contains(it) })
-            )
-        }
+        val newFlaws = view.flaws.filter { applicableFlaws.contains(it) }
         val pct = estimateFragmentation(view)
-        return if (false) {
-            RecipeView(view.recipeIdentifier, emptyList())
+        return if (pct < thresholdPercent) {
+            RecipeView(view.recipeIdentifier, emptyList(), emptyList())
         } else {
-            RecipeView(view.recipeIdentifier, bundles)
+            RecipeView(view.recipeIdentifier, newFlaws, view.invertedReveals)
         }
+    }
+
+    fun mergeFlaws(base: RecipeView, toSubtract: RecipeView): RecipeView {
+        val recipe = Recipes.recipes()[base.recipeIdentifier] ?: return base
+        val flawPositions = mutableListOf<MutableSet<Int>>()
+        for (i in 0..<recipe.steps.size) {
+            val step = recipe.steps[i]
+            val positions = mutableSetOf<Int>()
+            for (flaw in toSubtract.flaws) {
+                if (flawApplies(i, flaw)) {
+                    val session = FlawType.ModificationFindSession(i, flaw.config) {
+                        !positions.contains(it)
+                    }
+                    val textModifications = flaw.type.findFlawModifications(buildBaseStep(step), session)
+                    positions.addAll(
+                        textModifications.modifiedPoints
+                            .keys
+                    )
+                }
+            }
+            flawPositions.add(positions)
+        }
+        val invertedReveals = if (base.invertedReveals.isEmpty()) {
+            flawPositions
+        } else {
+            base.invertedReveals
+                .mapIndexed { idx, stepReveals ->
+                    stepReveals.filter { andMask(it, flawPositions[idx]) }
+                        .toSet()
+                }
+        }
+        return RecipeView(
+            base.recipeIdentifier, base.flaws, invertedReveals
+        )
+    }
+
+    private fun andMask(i: Int, ints: Set<Int>, radius: Int = 1): Boolean {
+        for (idx in (i - radius)..<(i + radius)) {
+            if (!ints.contains(idx)) {
+                return false
+            }
+        }
+        return true
     }
 
     private fun compileIngredients(ingredients: Map<Ingredient, Int>): Component {
