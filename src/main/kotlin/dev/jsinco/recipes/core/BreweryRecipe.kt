@@ -65,7 +65,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
     }
 
     fun generateCompletedView(): RecipeView {
-        return RecipeView(this.identifier, listOf())
+        return RecipeView.of(this.identifier, listOf())
     }
 
     fun generate(expectedFlawLevel: Double): RecipeView {

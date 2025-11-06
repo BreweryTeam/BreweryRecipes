@@ -26,7 +26,7 @@ object SlurringFlawType : FlawType {
         FileUtil.saveResourceIfExists("/locale/en-US.drunk_text.json", destinationFile, false)
         FileInputStream(destinationFile).use { inputStream ->
             InputStreamReader(inputStream).use { reader ->
-                return Serdes.deserialize(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)
+                return Serdes.deserializeList(JsonParser.parseReader(reader).asJsonArray, DrunkenTextSerdes::deserialize)
             }
         }
     }

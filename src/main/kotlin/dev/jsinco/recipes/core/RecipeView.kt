@@ -1,15 +1,14 @@
 package dev.jsinco.recipes.core
 
 import dev.jsinco.recipes.core.flaws.Flaw
-import dev.jsinco.recipes.core.flaws.FlawBundle
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class RecipeView(val recipeIdentifier: String, val flaws: List<FlawBundle>) {
+class RecipeView(val recipeIdentifier: String, val flaws: List<Flaw>, val invertedReveals: List<Set<Int>>) {
 
     companion object {
         fun of(identifier: String, flaws: List<Flaw>): RecipeView {
-            return RecipeView(identifier, listOf(FlawBundle(flaws)))
+            return RecipeView(identifier, flaws, listOf())
         }
     }
 
