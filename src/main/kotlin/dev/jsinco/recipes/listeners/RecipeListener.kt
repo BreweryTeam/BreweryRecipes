@@ -1,9 +1,12 @@
 package dev.jsinco.recipes.listeners
 
+import com.sun.jdi.connect.Connector
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.RecipeUtil
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -11,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
-class RecipeListener : Listener {
+data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     fun onPlayerInteract(playerInteractEvent: PlayerInteractEvent) {
@@ -42,6 +45,15 @@ class RecipeListener : Listener {
         Recipes.recipeViewManager.insertOrMergeView(
             playerInteractEvent.player.uniqueId,
             recipeView
+        )
+        playerInteractEvent.player.sendMessage(
+            Component.translatable(
+                "recipes.loot.discovery",
+                Argument.component(
+                    "recipe_name",
+                    guiIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                )
+            )
         )
         item.amount -= 1
     }

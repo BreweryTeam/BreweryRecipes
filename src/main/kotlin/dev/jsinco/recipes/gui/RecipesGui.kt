@@ -13,7 +13,7 @@ class RecipesGui(
     size: Int = 54
 ) : InventoryHolder {
 
-    private val inventory = Bukkit.createInventory(this, size, Component.translatable("recipes.display.gui.name"))
+    private val inventory = Bukkit.createInventory(this, size, calculateGuiName())
     private val renderedGuiItems = mutableSetOf<GuiItem>()
 
     private val recipesSlots = findRecipeSlots()
@@ -83,6 +83,12 @@ class RecipesGui(
 
     fun open() = open(player)
     fun open(player: Player) = player.openInventory(inventory)
+
+    fun calculateGuiName(): Component {
+        return if (player.hasPermission("recipes.override.view"))
+            Component.translatable("recipes.display.gui.name.admin")
+        else Component.translatable("recipes.display.gui.name")
+    }
 
     override fun getInventory() = inventory
 }

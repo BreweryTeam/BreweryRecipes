@@ -83,10 +83,10 @@ class Recipes : JavaPlugin() {
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
-        // TODO: Add BreweryX integration
-        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, loadGuiIntegration()), this)
+        val guiIntegration = loadGuiIntegration()
+        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, guiIntegration), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
-        Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
+        Bukkit.getPluginManager().registerEvents(RecipeListener(guiIntegration), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
