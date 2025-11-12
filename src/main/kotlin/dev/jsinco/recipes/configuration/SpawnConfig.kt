@@ -57,7 +57,15 @@ class SpawnConfig : OkaeriConfig() {
                 lootSpawnTrigger = LootSpawnTrigger.fromStrings(
                     "chests/shipwreck_supply",
                     "chests/abandoned_mineshaft"
-                ),
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.05,
+            flaws = listOf(RecipeViewCreator.Type.DRUNK),
+            triggers = TriggersDefinition(
                 premadeTrigger = listOf(PremadeTrigger.FISHING)
             )
         ),
@@ -69,11 +77,19 @@ class SpawnConfig : OkaeriConfig() {
             triggers = TriggersDefinition(
                 lootSpawnTrigger = LootSpawnTrigger.fromStrings(
                     "chests/village/village_fisher",
-                    "chests/village/shepherd",
+                    "chests/village/village_shepherd",
                     "chests/village/village_temple",
-                    "chests/village/tannery",
+                    "chests/village/village_tannery",
                     "chests/village/village_plains_house",
-                    "chests/village/village_savanna_house"
+                    "chests/village/village_savanna_house",
+                    "chests/village/village_desert_house",
+                    "chests/village/village_taiga_house",
+                    "chests/village/village_snowy_house",
+                    "chests/village/village_weaponsmith",
+                    "chests/village/village_toolsmith",
+                    "chests/village/village_butcher",
+                    "chests/village/village_mason",
+                    "chests/village/village_armorer"
                 )
             )
         ),
