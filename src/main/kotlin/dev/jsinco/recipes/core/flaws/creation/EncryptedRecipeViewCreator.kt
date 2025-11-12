@@ -22,7 +22,7 @@ object EncryptedRecipeViewCreator : RecipeViewCreator {
                 2 -> ReplacementFlawType("  ")
                 else -> throw IllegalStateException("Unreachable code, someone messed up")
             }
-            flaws.add(Flaw(flawType, FlawConfig(FlawExtent.Everywhere, Random.nextInt(), expectedFlawLevel)))
+            flaws.add(Flaw(flawType, FlawConfig(FlawExtent.Everywhere, Random.nextInt(), expectedFlawLevel * 2 / 3)))
             flawFragmentation =
                 RecipeWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
         }
