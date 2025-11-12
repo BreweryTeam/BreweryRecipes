@@ -1,6 +1,5 @@
 package dev.jsinco.recipes.listeners
 
-import com.sun.jdi.connect.Connector
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.gui.integration.GuiIntegration
@@ -10,15 +9,17 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
 data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    fun onPlayerInteract(playerInteractEvent: PlayerInteractEvent) {
-        val item = playerInteractEvent.item ?: return
+    @EventHandler(priority = EventPriority.NORMAL)
+    fun onPlayerInteract(event: PlayerInteractEvent) {
+        if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.RIGHT_CLICK_AIR) return
+        val item = event.item ?: return
         if (item.isEmpty) return
         if (!item.persistentDataContainer.has(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)) {
             return
@@ -33,7 +34,7 @@ data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
             }
         } else null
         val recipe = Recipes.recipes()[recipeIdentifier] ?: run {
-            playerInteractEvent.player.sendMessage(Component.translatable("recipes.loot.expired.recipe"))
+            event.player.sendMessage(Component.translatable("recipes.loot.expired.recipe"))
             return
         }
         val recipeView = flaw?.let {
@@ -43,10 +44,10 @@ data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
             )
         } ?: recipe.generate(0.0)
         Recipes.recipeViewManager.insertOrMergeView(
-            playerInteractEvent.player.uniqueId,
+            event.player.uniqueId,
             recipeView
         )
-        playerInteractEvent.player.sendMessage(
+        event.player.sendMessage(
             Component.translatable(
                 "recipes.loot.discovery",
                 Argument.component(
