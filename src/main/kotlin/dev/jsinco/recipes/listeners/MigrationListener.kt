@@ -12,7 +12,7 @@ class MigrationListener : Listener {
     private val permissionTemplate: String
 
     init {
-        val configFile = File("plugins/BreweryX/addons/Recipes/recipesConfig.yml")
+        val configFile = File(Recipes.instance.dataFolder.parentFile, "BreweryX/addons/Recipes/recipesConfig.yml")
         permissionTemplate = if (configFile.exists()) {
             val config = YamlConfiguration.loadConfiguration(configFile)
             config.getString("recipe-permission-node")
