@@ -10,6 +10,9 @@ class RecipesConfig : OkaeriConfig() {
     @Comment("The language to use when displaying messages and more")
     var language: Locale = Locale.US
 
+    @Comment("Migrate from the old BreweryX-Recipes-Addon?")
+    var migrate: Boolean = true
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 }
