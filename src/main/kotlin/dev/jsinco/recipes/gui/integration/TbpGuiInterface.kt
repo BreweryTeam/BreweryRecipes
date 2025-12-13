@@ -2,6 +2,7 @@ package dev.jsinco.recipes.gui.integration
 
 import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.brew.BrewQuality
+import dev.jsinco.brewery.bukkit.TheBrewingProject
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
 import dev.jsinco.recipes.core.RecipeView
@@ -34,5 +35,23 @@ object TbpGuiInterface : GuiIntegration {
         val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
         return MiniMessage.miniMessage()
             .deserialize((recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name)
+    }
+
+    override fun cookingMinuteTicks(): Long {
+        try {
+            Class.forName("dev.jsinco.brewery.api.config.Configuration")
+            return getApi().configuration.cauldrons().cookingMinuteTicks()
+        } catch (e: ClassNotFoundException) {
+            return 20 * 60 // default
+        }
+    }
+
+    override fun agingYearTicks(): Long {
+        try {
+            Class.forName("dev.jsinco.brewery.api.config.Configuration")
+            return getApi().configuration.barrels().agingYearTicks()
+        } catch (e: ClassNotFoundException) {
+            return 20 * 60 * 20 // default
+        }
     }
 }

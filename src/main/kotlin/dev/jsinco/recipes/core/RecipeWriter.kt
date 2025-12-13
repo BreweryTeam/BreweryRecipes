@@ -29,11 +29,13 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 
 object RecipeWriter {
-    // TODO: Read this from TBP and BreweryX
-    const val DEFAULT_COOKING_MINUTE = 20 * 60
-    const val DEFAULT_AGING_YEAR = DEFAULT_COOKING_MINUTE * 20
+
+    var cookingMinuteTicks = 20L * 60L
+    var agingYearTicks = 20L * 60L * 20L
 
     fun writeItem(recipeView: RecipeView, guiIntegration: GuiIntegration): ItemStack? {
+        cookingMinuteTicks = guiIntegration.cookingMinuteTicks()
+        agingYearTicks = guiIntegration.agingYearTicks()
         val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
         val item = if (Recipes.guiConfig.recipes.enabled) {
             Recipes.guiConfig.recipes.item.generateItem()
@@ -80,7 +82,7 @@ object RecipeWriter {
             is AgeStep -> Component.translatable(
                 "recipes.display.recipe.step.age",
                 Argument.tagResolver(
-                    Formatter.number("aging_years", step.agingTicks / DEFAULT_AGING_YEAR),
+                    Formatter.number("aging_years", step.agingTicks / agingYearTicks),
                     Placeholder.component(
                         "barrel_type",
                         Component.translatable("recipes.barrel.type." + step.barrelType.name.lowercase(Locale.ROOT))
@@ -92,7 +94,7 @@ object RecipeWriter {
                 "recipes.display.recipe.step.mix",
                 Argument.tagResolver(
                     Placeholder.component("ingredients", compileIngredients(step.ingredients)),
-                    Formatter.number("mixing_time", step.mixingTicks / DEFAULT_COOKING_MINUTE)
+                    Formatter.number("mixing_time", step.mixingTicks / cookingMinuteTicks)
                 )
             )
 
@@ -100,7 +102,7 @@ object RecipeWriter {
                 "recipes.display.recipe.step.cook",
                 Argument.tagResolver(
                     Placeholder.component("ingredients", compileIngredients(step.ingredients)),
-                    Formatter.number("cooking_time", step.cookingTicks / DEFAULT_COOKING_MINUTE),
+                    Formatter.number("cooking_time", step.cookingTicks / cookingMinuteTicks),
                     Placeholder.component(
                         "cauldron_type",
                         Component.translatable("recipes.cauldron.type." + step.cauldronType.name.lowercase(Locale.ROOT))

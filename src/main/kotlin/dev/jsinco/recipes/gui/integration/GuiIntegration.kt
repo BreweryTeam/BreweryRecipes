@@ -14,4 +14,6 @@ interface GuiIntegration {
 
     fun createItem(recipeView: RecipeView): ItemStack?
     fun brewDisplayName(identifier: String): Component?
+    fun cookingMinuteTicks(): Long
+    fun agingYearTicks(): Long
 }
