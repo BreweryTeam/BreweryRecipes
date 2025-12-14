@@ -38,6 +38,9 @@ object RecipesCommand {
                 RecipeAddCommand.command()
                     .requires { it.sender.hasPermission("recipes.command.recipe.add") }
             ).then(
+                RecipesGiveCommand.command()
+                    .requires { it.sender.hasPermission("recipes.command.recipe.give") }
+            ).then(
                 Commands.literal("clear")
                     .executes { context ->
                         val sender = context.source.sender
