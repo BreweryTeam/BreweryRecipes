@@ -41,12 +41,23 @@ object RecipesCommand {
                 Commands.literal("clear")
                     .executes { context ->
                         val sender = context.source.sender
-                        if (sender !is Player) {
-                            return@executes 1
-                        }
+                        if (sender !is Player) return@executes 1
                         Recipes.recipeViewManager.clearAll(sender.uniqueId)
                         1
-                    }.requires { it.sender.hasPermission("recipes.command.recipe.clear") }
+                    }
+                    .then(
+                        Commands.argument("targets", ArgumentTypes.players())
+                            .executes { context ->
+                                val targets = context
+                                    .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
+                                    .resolve(context.source)
+                                for (target in targets) {
+                                    Recipes.recipeViewManager.clearAll(target.uniqueId)
+                                }
+                                1
+                            }
+                    )
+                    .requires { it.sender.hasPermission("recipes.command.recipe.clear") }
             ).build()
     }
 
