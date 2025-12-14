@@ -70,6 +70,11 @@ class Recipes : JavaPlugin() {
                 .toMap()
             return recipeMap
         }
+        fun clearRecipeCache() {
+            if (this::recipeMap.isInitialized) {
+                recipeMap = emptyMap()
+            }
+        }
     }
 
     lateinit var storageImpl: StorageImpl
@@ -175,8 +180,13 @@ class Recipes : JavaPlugin() {
     }
 
     fun reload() {
+        clearRecipeCache()
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()
+        val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
+        GlobalTranslator.translator().removeSource(translator)
+        translator.reload() // no idea how this works lol, praying it does
+        GlobalTranslator.translator().addSource(translator)
     }
 }

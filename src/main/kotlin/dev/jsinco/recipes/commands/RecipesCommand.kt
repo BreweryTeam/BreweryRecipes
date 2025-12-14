@@ -14,6 +14,14 @@ object RecipesCommand {
     fun command(): LiteralCommandNode<CommandSourceStack> {
         return Commands.literal("recipes")
             .then(
+                Commands.literal("reload")
+                    .executes { _ ->
+                        Recipes.instance.reload()
+                        1
+                    }
+                    .requires { it.sender.hasPermission("recipes.command.recipe.reload") }
+            )
+            .then(
                 Commands.literal("givebook")
                     .executes { context ->
                         val sender = context.source.sender
