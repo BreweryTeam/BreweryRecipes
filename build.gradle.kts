@@ -120,7 +120,7 @@ bukkit {
     name = rootProject.name
     permissions {
         register("recipes.command") {
-            children = listOf("recipes.command.recipe.add", "recipes.command.recipe.clear", "recipes.command.book")
+            children = listOf("recipes.command.recipe.add", "recipes.command.recipe.remove", "recipes.command.recipe.clear", "recipes.command.recipe.give", "recipes.command.recipe.givebook", "recipes.command.recipe.reload")
         }
         register("recipes.override.view")
     }

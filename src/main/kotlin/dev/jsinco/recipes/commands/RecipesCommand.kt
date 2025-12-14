@@ -33,12 +33,15 @@ object RecipesCommand {
                                 1
                             }
                     )
-                    .requires { it.sender.hasPermission("recipes.command.givebook") }
+                    .requires { it.sender.hasPermission("recipes.command.recipe.givebook") }
             ).then(
                 RecipeAddCommand.command()
                     .requires { it.sender.hasPermission("recipes.command.recipe.add") }
             ).then(
-                RecipesGiveCommand.command()
+                RecipeRemoveCommand.command()
+                    .requires { it.sender.hasPermission("recipes.command.recipe.remove") }
+            ).then(
+                RecipeGiveCommand.command()
                     .requires { it.sender.hasPermission("recipes.command.recipe.give") }
             ).then(
                 Commands.literal("clear")
