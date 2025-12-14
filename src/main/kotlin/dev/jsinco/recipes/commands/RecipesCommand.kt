@@ -19,7 +19,7 @@ object RecipesCommand {
                         Recipes.instance.reload()
                         1
                     }
-                    .requires { it.sender.hasPermission("recipes.command.recipe.reload") }
+                    .requires { it.sender.hasPermission("recipes.command.reload") }
             )
             .then(
                 Commands.literal("givebook")
@@ -41,16 +41,16 @@ object RecipesCommand {
                                 1
                             }
                     )
-                    .requires { it.sender.hasPermission("recipes.command.recipe.givebook") }
+                    .requires { it.sender.hasPermission("recipes.command.givebook") }
             ).then(
                 RecipeAddCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.recipe.add") }
+                    .requires { it.sender.hasPermission("recipes.command.add") }
             ).then(
                 RecipeRemoveCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.recipe.remove") }
+                    .requires { it.sender.hasPermission("recipes.command.remove") }
             ).then(
                 RecipeGiveCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.recipe.give") }
+                    .requires { it.sender.hasPermission("recipes.command.give") }
             ).then(
                 Commands.literal("clear")
                     .executes { context ->
@@ -71,7 +71,7 @@ object RecipesCommand {
                                 1
                             }
                     )
-                    .requires { it.sender.hasPermission("recipes.command.recipe.clear") }
+                    .requires { it.sender.hasPermission("recipes.command.clear") }
             ).build()
     }
 

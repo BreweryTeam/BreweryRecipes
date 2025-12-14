@@ -22,9 +22,12 @@ Craft a book with one `minecraft:book` and one `minecraft:paper`. Find recipe fr
 
 ## Permissions
 - `recipes.command` root node for all commands in the plugin
-- `recipes.command.recipe.add` node for the recipes add command
-- `recipes.command.recipe.clear` node for the recipes clear command
-- `recipes.command.book` node for the book command
+- `recipes.command.add` node for the recipes add command
+- `recipes.command.remove` node for the recipes remove command
+- `recipes.command.clear` node for the recipes clear command
+- `recipes.command.give` node for the recipes give command
+- `recipes.command.givebook` node for the givebook command
+- `recipes.command.reload` node for the reload command
 - `recipes.override.view` override node for showing all recipes in the book
 
 ## Configuration
