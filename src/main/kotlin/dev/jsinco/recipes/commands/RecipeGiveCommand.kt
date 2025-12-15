@@ -57,10 +57,12 @@ object RecipeGiveCommand {
                     .then(
                         Commands.argument("flaw-type", EnumArgument(RecipeViewCreator.Type::class.java))
                             .executes { context ->
-                                val targets = context
-                                    .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
-                                    .resolve(context.source)
-                                applyToTargets(context, targets, true)
+                                val sender = context.source.sender
+                                if (sender !is Player) {
+                                    context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                                    return@executes 1
+                                }
+                                applyToTargets(context, listOf(sender), true)
                             }
                             .then(
                                 Commands.argument("targets", ArgumentTypes.players())
