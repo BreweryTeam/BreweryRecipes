@@ -4,7 +4,13 @@ import dev.jsinco.recipes.recipe.flaws.Flaw
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class RecipeView(val recipeIdentifier: String, val flaws: List<Flaw>, val invertedReveals: List<Set<Int>>) {
+class RecipeView(
+    val recipeIdentifier: String,
+    flaws: List<Flaw>,
+    val invertedReveals: List<Set<Int>>
+) {
+
+    val flaws = flaws.subList(0, flaws.size.coerceAtMost(10))
 
     companion object {
         fun of(identifier: String, flaws: List<Flaw>): RecipeView {
