@@ -15,7 +15,8 @@ object EncryptedRecipeViewCreator : RecipeViewCreator {
         var flawFragmentation = 0.0
         val flaws = mutableListOf<Flaw>()
         val arbitraryTargetFlawIntensity = expectedFlawLevel * 0.8
-        while (arbitraryTargetFlawIntensity > flawFragmentation) {
+        var maximumLoops = 10
+        while (arbitraryTargetFlawIntensity > flawFragmentation && maximumLoops-- > 0) {
             val flawType = when (Random.nextInt(3)) {
                 0 -> ObfuscationFlawType
                 1 -> ReplacementFlawType(" ")

@@ -16,7 +16,8 @@ object UncertainRecipeViewCreator : RecipeViewCreator {
         val arbitraryTargetFlawIntensity = expectedFlawLevel * 0.4
         var flawIntensity = 0.0
         val flaws = mutableListOf<Flaw>()
-        while (arbitraryTargetFlawIntensity > flawIntensity) {
+        var maximumLoops = 10
+        while (arbitraryTargetFlawIntensity > flawIntensity && maximumLoops-- > 0) {
             val random1 = Random.nextInt(3)
             val flawType = when (random1) {
                 0 -> ReplacementFlawType("?")
