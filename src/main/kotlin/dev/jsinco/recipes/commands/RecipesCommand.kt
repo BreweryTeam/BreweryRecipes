@@ -3,10 +3,12 @@ package dev.jsinco.recipes.commands
 import com.mojang.brigadier.tree.LiteralCommandNode
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.util.BookUtil
+import dev.jsinco.recipes.util.TranslationArgumentUtil
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 
 object RecipesCommand {
@@ -15,8 +17,9 @@ object RecipesCommand {
         return Commands.literal("recipes")
             .then(
                 Commands.literal("reload")
-                    .executes { _ ->
+                    .executes { context ->
                         Recipes.instance.reload()
+                        context.source.sender.sendMessage(Component.translatable("recipes.command.reload"))
                         1
                     }
                     .requires { it.sender.hasPermission("recipes.command.reload") }
@@ -25,8 +28,12 @@ object RecipesCommand {
                 Commands.literal("givebook")
                     .executes { context ->
                         val sender = context.source.sender
-                        if (sender !is Player) return@executes 1
+                        if (sender !is Player) {
+                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                            return@executes 1
+                        }
                         giveBook(sender)
+                        context.source.sender.sendMessage(Component.translatable("recipes.command.givebook", TranslationArgumentUtil.players(listOf(sender))))
                         1
                     }
                     .then(
@@ -38,8 +45,9 @@ object RecipesCommand {
                                 for (target in targets) {
                                     giveBook(target)
                                 }
+                                context.source.sender.sendMessage(Component.translatable("recipes.command.givebook", TranslationArgumentUtil.players(targets)))
                                 1
-                            }
+                            }.requires { it.sender.hasPermission("recipes.command.others") }
                     )
                     .requires { it.sender.hasPermission("recipes.command.givebook") }
             ).then(
@@ -55,7 +63,11 @@ object RecipesCommand {
                 Commands.literal("clear")
                     .executes { context ->
                         val sender = context.source.sender
-                        if (sender !is Player) return@executes 1
+                        if (sender !is Player) {
+                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                            return@executes 1
+                        }
+                        context.source.sender.sendMessage(Component.translatable("recipes.command.clear", TranslationArgumentUtil.players(listOf(sender))))
                         Recipes.recipeViewManager.clearAll(sender.uniqueId)
                         1
                     }
@@ -65,11 +77,12 @@ object RecipesCommand {
                                 val targets = context
                                     .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
                                     .resolve(context.source)
+                                context.source.sender.sendMessage(Component.translatable("recipes.command.clear", TranslationArgumentUtil.players(targets)))
                                 for (target in targets) {
                                     Recipes.recipeViewManager.clearAll(target.uniqueId)
                                 }
                                 1
-                            }
+                            }.requires { it.sender.hasPermission("recipes.command.others") }
                     )
                     .requires { it.sender.hasPermission("recipes.command.clear") }
             ).build()
