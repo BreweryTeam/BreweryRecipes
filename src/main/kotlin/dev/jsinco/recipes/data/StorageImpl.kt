@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.data
 
-import dev.jsinco.recipes.core.RecipeView
+import dev.jsinco.recipes.recipe.RecipeView
 import java.util.*
 import java.util.concurrent.CompletableFuture
 

@@ -6,8 +6,8 @@ import com.mojang.brigadier.context.CommandContext
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.commands.argument.EnumArgument
 import dev.jsinco.recipes.commands.argument.RecipeArgumentType
-import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes

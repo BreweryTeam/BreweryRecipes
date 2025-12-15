@@ -1,0 +1,27 @@
+package dev.jsinco.recipes.recipe.process.steps
+
+import dev.jsinco.recipes.recipe.process.Ingredient
+import dev.jsinco.recipes.recipe.process.Step
+import dev.jsinco.recipes.recipe.process.StepType
+
+class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
+
+    override fun getType(): StepType = StepType.MIX
+
+    enum class CauldronType {
+        WATER, LAVA, SNOW;
+        companion object {
+            @JvmStatic
+            fun fromString(type: String?): CauldronType {
+                if (type == null) return WATER
+                return when (type.trim().lowercase()) {
+                    "snow" -> SNOW
+                    "lava" -> LAVA
+                    else -> WATER
+                }
+            }
+        }
+    }
+
+
+}

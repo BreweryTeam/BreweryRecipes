@@ -5,7 +5,7 @@ import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.TheBrewingProject
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
-import dev.jsinco.recipes.core.RecipeView
+import dev.jsinco.recipes.recipe.RecipeView
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit

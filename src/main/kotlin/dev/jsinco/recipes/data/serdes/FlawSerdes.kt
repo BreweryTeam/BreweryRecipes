@@ -1,12 +1,11 @@
 package dev.jsinco.recipes.data.serdes
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import dev.jsinco.recipes.core.flaws.Flaw
-import dev.jsinco.recipes.core.flaws.FlawConfig
-import dev.jsinco.recipes.core.flaws.FlawExtent
-import dev.jsinco.recipes.core.flaws.type.*
+import dev.jsinco.recipes.recipe.flaws.Flaw
+import dev.jsinco.recipes.recipe.flaws.FlawConfig
+import dev.jsinco.recipes.recipe.flaws.FlawExtent
+import dev.jsinco.recipes.recipe.flaws.type.*
 
 object FlawSerdes {
 

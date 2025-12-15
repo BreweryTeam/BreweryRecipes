@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.gui.integration
 
-import dev.jsinco.recipes.core.RecipeView
-import dev.jsinco.recipes.core.RecipeWriter
+import dev.jsinco.recipes.recipe.RecipeView
+import dev.jsinco.recipes.recipe.RecipeWriter
 import dev.jsinco.recipes.gui.GuiItem
 import net.kyori.adventure.text.Component
 import org.bukkit.inventory.ItemStack

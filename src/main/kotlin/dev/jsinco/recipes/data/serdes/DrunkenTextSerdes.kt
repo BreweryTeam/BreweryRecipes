@@ -2,7 +2,7 @@ package dev.jsinco.recipes.data.serdes
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import dev.jsinco.recipes.core.flaws.drunkentext.DrunkenTextReplacement
+import dev.jsinco.recipes.recipe.flaws.drunkentext.DrunkenTextReplacement
 
 object DrunkenTextSerdes {
 

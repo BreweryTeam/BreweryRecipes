@@ -8,8 +8,8 @@ import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.*
-import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.RecipeViewManager
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface

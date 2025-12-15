@@ -1,0 +1,959 @@
+Index: src/main/kotlin/dev/jsinco/recipes/listeners/RecipeListener.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.listeners\n\nimport dev.jsinco.recipes.Recipes\nimport dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator\nimport dev.jsinco.recipes.gui.integration.GuiIntegration\nimport dev.jsinco.recipes.util.RecipeUtil\nimport net.kyori.adventure.text.Component\nimport net.kyori.adventure.text.minimessage.translation.Argument\nimport org.bukkit.event.EventHandler\nimport org.bukkit.event.EventPriority\nimport org.bukkit.event.Listener\nimport org.bukkit.event.block.Action\nimport org.bukkit.event.player.PlayerInteractEvent\nimport org.bukkit.persistence.PersistentDataType\nimport kotlin.random.Random\n\ndata class RecipeListener(val guiIntegration: GuiIntegration) : Listener {\n\n    @EventHandler(priority = EventPriority.NORMAL)\n    fun onPlayerInteract(event: PlayerInteractEvent) {\n        if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.RIGHT_CLICK_AIR) return\n        val item = event.item ?: return\n        if (item.isEmpty) return\n        if (!item.persistentDataContainer.has(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)) {\n            return\n        }\n        val recipeIdentifier = item.persistentDataContainer.get(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)\n        val flaw = if (item.persistentDataContainer.has(RecipeUtil.FLAW_KEY)) {\n            val actual = item.persistentDataContainer.get(\n                RecipeUtil.FLAW_KEY, PersistentDataType.STRING\n            )\n            RecipeViewCreator.Type.entries.first {\n                it.name.equals(actual, true)\n            }\n        } else null\n        val recipe = Recipes.recipes()[recipeIdentifier] ?: run {\n            event.player.sendMessage(Component.translatable(\"recipes.loot.expired.recipe\"))\n            return\n        }\n        val recipeView = flaw?.let {\n            recipe.generate(\n                Random.nextDouble(50.0, 100.0),\n                it\n            )\n        } ?: recipe.generate(0.0)\n        Recipes.recipeViewManager.insertOrMergeView(\n            event.player.uniqueId,\n            recipeView\n        )\n        event.player.sendMessage(\n            Component.translatable(\n                \"recipes.loot.discovery\",\n                Argument.component(\n                    \"recipe_name\",\n                    guiIntegration.brewDisplayName(recipe.identifier) ?: Component.text(\"Unknown\")\n                )\n            )\n        )\n        item.amount -= 1\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/listeners/RecipeListener.kt b/src/main/kotlin/dev/jsinco/recipes/listeners/RecipeListener.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/listeners/RecipeListener.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/listeners/RecipeListener.kt	(date 1765807284493)
+@@ -1,7 +1,7 @@
+ package dev.jsinco.recipes.listeners
+ 
+ import dev.jsinco.recipes.Recipes
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+ import dev.jsinco.recipes.gui.integration.GuiIntegration
+ import dev.jsinco.recipes.util.RecipeUtil
+ import net.kyori.adventure.text.Component
+Index: src/main/kotlin/dev/jsinco/recipes/configuration/SpawnConfig.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.configuration\n\nimport dev.jsinco.recipes.configuration.spawning.ConditionsDefinition\nimport dev.jsinco.recipes.configuration.spawning.SpawnDefinition\nimport dev.jsinco.recipes.configuration.spawning.triggers.*\nimport dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator\nimport eu.okaeri.configs.OkaeriConfig\nimport eu.okaeri.configs.annotation.Comment\nimport eu.okaeri.configs.annotation.CustomKey\nimport org.bukkit.block.Biome\nimport org.bukkit.block.BlockType\nimport org.bukkit.entity.EntityType\nimport org.bukkit.event.inventory.InventoryType\n\nclass SpawnConfig : OkaeriConfig() {\n\n    //TODO: Rewrite comment\n    @CustomKey(\"recipe-spawning\")\n    @Comment(\n        \"+-------------------------------------------------------------------------------------------+\",\n        \"| This file is for specifying when and how recipes should randomly appear in your world(s). |\",\n        \"+-------------------------------------------------------------------------------------------+\",\n        \" \",\n        \"Common settings:\",\n        \"  enabled: <true|false>   - Optional. Enables or disables this spawn entry.\",\n        \"  attempts: <number>      - How many times to attempt spawning a recipe per event.\",\n        \"  chance: <0.0–1.0>       - Probability for each attempt (1.0 = 100% = always).\",\n        \"  whitelist: <list>       - Only recipes with matching keys will be considered.\",\n        \"  blacklist: <list>       - Recipes with these keys will not be spawned.\",\n        \"  flaws: <list>           - Optional. The flaws to choose to apply to a recipe\",\n        \"  flawless: <true|false>  - Optional. True if there's no flaw on this recipe\",\n        \" \",\n        \"Triggers options:\",\n        \"  premade: <fishing|barrel|chest|minecart> - Optional. Premade triggers\",\n        \"  loot: <list>                             - Optional. Loot table triggers, see https://minecraft.wiki/w/Loot_table\",\n        \"  entities: <list>                         - Optional. A list of entities that should drop recipe loot when killed\",\n        \"  blocks: <list>                           - Optional. A list of blocks that should drop recipe loot when broken\",\n        \"  inventories: <list>                      - Optional. A list of inventory types that should populate recipe loot\",\n        \" \",\n        \"Conditions (optional):\",\n        \"  biomes: <list> - Optional. Biomes the event has to occurred in\",\n        \"  worlds: <list> - Optional. Worlds the event has to occurred in\",\n        \" \",\n        \"Condition Blacklist (optional)\",\n        \"  biomes: <list> - Optional. Biomes the event has to not occurred in\",\n        \"  worlds: <list> - Optional. Worlds the event has to not occurred in\",\n        \" \",\n        \"Your time to shine:\"\n    )\n    var recipeSpawning: ArrayList<SpawnDefinition> = arrayListOf(\n        SpawnDefinition(\n            recipeBlacklist = listOf(\"ex\"),\n            attempts = 1,\n            chance = 0.15,\n            flaws = listOf(RecipeViewCreator.Type.DRUNK),\n            triggers = TriggersDefinition(\n                lootSpawnTrigger = LootSpawnTrigger.fromStrings(\n                    \"chests/shipwreck_supply\",\n                    \"chests/abandoned_mineshaft\"\n                )\n            )\n        ),\n        SpawnDefinition(\n            recipeBlacklist = listOf(\"ex\"),\n            attempts = 1,\n            chance = 0.05,\n            flaws = listOf(RecipeViewCreator.Type.DRUNK),\n            triggers = TriggersDefinition(\n                premadeTrigger = listOf(PremadeTrigger.FISHING)\n            )\n        ),\n        SpawnDefinition(\n            recipeBlacklist = listOf(\"ex\"),\n            attempts = 1,\n            chance = 0.15,\n            flaws = listOf(RecipeViewCreator.Type.UNCERTAIN),\n            triggers = TriggersDefinition(\n                lootSpawnTrigger = LootSpawnTrigger.fromStrings(\n                    \"chests/village/village_fisher\",\n                    \"chests/village/village_shepherd\",\n                    \"chests/village/village_temple\",\n                    \"chests/village/village_tannery\",\n                    \"chests/village/village_plains_house\",\n                    \"chests/village/village_savanna_house\",\n                    \"chests/village/village_desert_house\",\n                    \"chests/village/village_taiga_house\",\n                    \"chests/village/village_snowy_house\",\n                    \"chests/village/village_weaponsmith\",\n                    \"chests/village/village_toolsmith\",\n                    \"chests/village/village_butcher\",\n                    \"chests/village/village_mason\",\n                    \"chests/village/village_armorer\"\n                )\n            )\n        ),\n        SpawnDefinition(\n            recipeBlacklist = listOf(\"ex\"),\n            attempts = 1,\n            chance = 0.15,\n            flaws = listOf(RecipeViewCreator.Type.ENCRYPTED),\n            triggers = TriggersDefinition(\n                inventoryFillTrigger = InventoryFillTrigger(\n                    InventoryType.CHEST,\n                    InventoryType.BARREL\n                )\n            ),\n            conditions = ConditionsDefinition(\n                worldCondition = listOf(\"the_end\")\n            )\n        ),\n        SpawnDefinition(\n            recipeBlacklist = listOf(\"ex\"),\n            attempts = 1,\n            chance = 0.075,\n            triggers = TriggersDefinition(\n                inventoryFillTrigger = InventoryFillTrigger(\n                    InventoryType.CHEST,\n                    InventoryType.BARREL\n                )\n            ),\n            conditionBlacklist = ConditionsDefinition(\n                worldCondition = listOf(\"overworld\")\n            )\n        ),\n        SpawnDefinition(\n            recipeWhitelist = listOf(\"shroom_vodka\"),\n            attempts = 1,\n            chance = 0.0125,\n            flaws = listOf(RecipeViewCreator.Type.DRUNK),\n            triggers = TriggersDefinition(\n                blockDropTrigger = BlockDropTrigger(\n                    BlockType.MUSHROOM_STEM,\n                    BlockType.RED_MUSHROOM_BLOCK,\n                    BlockType.BROWN_MUSHROOM_BLOCK\n                )\n            )\n        ),\n        SpawnDefinition(\n            recipeWhitelist = listOf(\"fire_whiskey\"),\n            attempts = 1,\n            chance = 0.075,\n            flaws = listOf(RecipeViewCreator.Type.ENCRYPTED),\n            triggers = TriggersDefinition(\n                mobDropTrigger = MobDropTrigger(\n                    EntityType.BLAZE\n                )\n            ),\n            conditions = ConditionsDefinition(\n                biomeCondition = listOf(\n                    Biome.NETHER_WASTES,\n                    Biome.CRIMSON_FOREST\n                )\n            )\n        )\n    )\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/configuration/SpawnConfig.kt b/src/main/kotlin/dev/jsinco/recipes/configuration/SpawnConfig.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/configuration/SpawnConfig.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/configuration/SpawnConfig.kt	(date 1765807284147)
+@@ -3,7 +3,7 @@
+ import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
+ import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+ import dev.jsinco.recipes.configuration.spawning.triggers.*
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+ import eu.okaeri.configs.OkaeriConfig
+ import eu.okaeri.configs.annotation.Comment
+ import eu.okaeri.configs.annotation.CustomKey
+Index: src/main/kotlin/dev/jsinco/recipes/core/RecipeViewManager.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/RecipeViewManager.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeViewManager.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/RecipeViewManager.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/RecipeViewManager.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/RecipeViewManager.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeViewManager.kt	(date 1765807284362)
+@@ -1,6 +1,5 @@
+-package dev.jsinco.recipes.core
++package dev.jsinco.recipes.recipe
+ 
+-import dev.jsinco.recipes.core.flaws.type.*
+ import dev.jsinco.recipes.data.StorageImpl
+ import java.util.*
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/data/storage/SQLiteStorageImpl.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.data.storage\n\nimport com.google.gson.JsonParser\nimport com.google.gson.JsonPrimitive\nimport com.zaxxer.hikari.HikariConfig\nimport com.zaxxer.hikari.HikariDataSource\nimport dev.jsinco.recipes.core.RecipeView\nimport dev.jsinco.recipes.data.StorageImpl\nimport dev.jsinco.recipes.data.StorageType\nimport dev.jsinco.recipes.data.serdes.FlawSerdes\nimport dev.jsinco.recipes.data.serdes.Serdes\nimport dev.jsinco.recipes.util.Logger\nimport dev.jsinco.recipes.util.UuidUtil\nimport java.io.File\nimport java.sql.PreparedStatement\nimport java.sql.SQLException\nimport java.util.*\nimport java.util.concurrent.CompletableFuture\nimport java.util.concurrent.Executors\nimport java.util.concurrent.ScheduledExecutorService\n\nclass SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {\n    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()\n    private val dataSource: HikariDataSource = setupDataSource()\n    override fun getType(): StorageType = StorageType.SQLite\n\n    private fun setupDataSource(): HikariDataSource {\n        val config = HikariConfig()\n        val databaseFile = File(dataFolder, \"recipes.sqlite\")\n        val jdbcUrl = \"jdbc:sqlite:${databaseFile.absolutePath}\"\n\n        config.jdbcUrl = jdbcUrl\n        config.poolName = \"SQLitePool\"\n        config.connectionTestQuery = \"SELECT 1\"\n\n        config.maximumPoolSize = 1 // SQLite handles only one write at a time\n        config.minimumIdle = 1\n\n        config.maxLifetime = 300_000 // 5m\n        config.initializationFailTimeout = -1\n\n        return HikariDataSource(config)\n    }\n\n    override fun createTables() {\n        val sql = \"\"\"\n            CREATE TABLE IF NOT EXISTS recipe_view (\n              player_uuid BINARY(16) NOT NULL,\n              recipe_key TEXT NOT NULL,\n              recipe_flaws JSON NOT NULL,\n              inverted_reveals JSON NOT NULL,\n              PRIMARY KEY (player_uuid, recipe_key)\n            );\n        \"\"\".trimIndent()\n\n        try {\n            dataSource.connection.use { conn ->\n                conn.createStatement().use { stmt ->\n                    stmt.execute(sql)\n                }\n            }\n        } catch (e: SQLException) {\n            Logger.logErr(e)\n        }\n    }\n\n    override fun insertOrUpdateRecipeView(\n        playerUuid: UUID,\n        recipeView: RecipeView\n    ): CompletableFuture<Void?> {\n        return runStatement(\n            \"\"\"\n                INSERT OR REPLACE INTO recipe_view\n                  VALUES(?,?,?,?);\n            \"\"\"\n        ) {\n            it.setBytes(1, UuidUtil.toBytes(playerUuid))\n            it.setString(2, recipeView.recipeIdentifier)\n            it.setString(3, Serdes.serializeCollection(recipeView.flaws, FlawSerdes::serializeFlaw).toString())\n            it.setString(4, Serdes.serializeCollection(recipeView.invertedReveals) { ints ->\n                Serdes.serializeCollection(ints) { number ->\n                    JsonPrimitive(number)\n                }\n            }.toString())\n            it.execute()\n            return@runStatement null\n        }\n    }\n\n    override fun removeRecipeView(\n        playerUuid: UUID,\n        recipeKey: String\n    ): CompletableFuture<Void?> {\n        return runStatement(\n            \"\"\"\n                DELETE FROM recipe_view\n                    WHERE player_uuid = ? AND recipe_key = ?;\n            \"\"\"\n        ) {\n            it.setBytes(1, UuidUtil.toBytes(playerUuid))\n            it.setString(2, recipeKey)\n            it.execute()\n            return@runStatement null\n        }\n    }\n\n    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?> {\n        return runStatement(\n            \"\"\"\n                SELECT * FROM recipe_view;\n            \"\"\".trimIndent()\n        ) {\n            val result = it.executeQuery()\n            val output = mutableMapOf<UUID, MutableList<RecipeView>>()\n            while (result.next()) {\n                val recipeViews = output.computeIfAbsent(UuidUtil.asUuid(result.getBytes(\"player_uuid\"))) {\n                    mutableListOf()\n                }\n                recipeViews.add(\n                    RecipeView(\n                        result.getString(\"recipe_key\"),\n                        Serdes.deserializeList(\n                            JsonParser.parseString(result.getString(\"recipe_flaws\")).asJsonArray,\n                            FlawSerdes::deserializeFlaw\n                        ),\n                        Serdes.deserializeList(JsonParser.parseString(result.getString(\"inverted_reveals\")).asJsonArray) {jsonArray ->\n                            Serdes.deserializeSet(jsonArray.asJsonArray) { element ->\n                                element.asInt\n                            }\n                        }\n                    )\n                )\n            }\n            return@runStatement output\n        }\n    }\n\n    private fun <T> runStatement(statement: String, supplier: Function1<PreparedStatement, T>): CompletableFuture<T?> {\n        return CompletableFuture.supplyAsync<T>({\n            dataSource.connection.use {\n                it.prepareStatement(statement).use { preparedStatement ->\n                    return@supplyAsync supplier.invoke(preparedStatement)\n                }\n            }\n        }, executor)\n            .handleAsync { t, e ->\n                if (e != null) {\n                    Logger.logErr(e)\n                    return@handleAsync null\n                }\n                return@handleAsync t\n            }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/data/storage/SQLiteStorageImpl.kt b/src/main/kotlin/dev/jsinco/recipes/data/storage/SQLiteStorageImpl.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/data/storage/SQLiteStorageImpl.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/data/storage/SQLiteStorageImpl.kt	(date 1765807284137)
+@@ -4,7 +4,7 @@
+ import com.google.gson.JsonPrimitive
+ import com.zaxxer.hikari.HikariConfig
+ import com.zaxxer.hikari.HikariDataSource
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.RecipeView
+ import dev.jsinco.recipes.data.StorageImpl
+ import dev.jsinco.recipes.data.StorageType
+ import dev.jsinco.recipes.data.serdes.FlawSerdes
+Index: src/main/kotlin/dev/jsinco/recipes/data/storage/MySQLStorageImpl.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.data.storage\n\nimport com.google.gson.JsonParser\nimport com.google.gson.JsonPrimitive\nimport com.zaxxer.hikari.HikariConfig\nimport com.zaxxer.hikari.HikariDataSource\nimport dev.jsinco.recipes.Recipes\nimport dev.jsinco.recipes.core.RecipeView\nimport dev.jsinco.recipes.data.StorageImpl\nimport dev.jsinco.recipes.data.StorageType\nimport dev.jsinco.recipes.data.serdes.FlawSerdes\nimport dev.jsinco.recipes.data.serdes.Serdes\nimport dev.jsinco.recipes.util.Logger\nimport dev.jsinco.recipes.util.UuidUtil\nimport java.sql.PreparedStatement\nimport java.sql.SQLException\nimport java.util.*\nimport java.util.concurrent.CompletableFuture\nimport java.util.concurrent.Executors\nimport java.util.concurrent.ScheduledExecutorService\n\nclass MySQLStorageImpl : StorageImpl {\n\n    private val dataSource: HikariDataSource = setupDataSource()\n    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()\n\n\n    override fun getType(): StorageType = StorageType.MySQL\n\n\n    private fun setupDataSource(): HikariDataSource {\n        val config = HikariConfig()\n        val jdbcUrl =\n            \"jdbc:mysql://${Recipes.recipesConfig.storage.mysql.host}:${Recipes.recipesConfig.storage.mysql.port}/${Recipes.recipesConfig.storage.mysql.database}\"\n        config.jdbcUrl = jdbcUrl\n        config.username = Recipes.recipesConfig.storage.mysql.user\n        config.password = Recipes.recipesConfig.storage.mysql.password\n\n        config.poolName = \"MySQLPool\"\n        config.connectionTestQuery = \"SELECT 1\"\n\n        config.maximumPoolSize = 10\n        config.minimumIdle = 2\n        config.idleTimeout = 600_000 // 10m\n        config.maxLifetime = 1_800_000 // 30m\n        config.connectionTimeout = 30_000 // 30s\n\n        return HikariDataSource(config)\n    }\n\n    override fun createTables() {\n        val sql = \"\"\"\n            CREATE TABLE IF NOT EXISTS ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view (\n              player_uuid BINARY(16) NOT NULL,\n              recipe_key VARCHAR(255) NOT NULL, /* MySQL doesn't allow TEXT as PK */\n              recipe_flaws JSON NOT NULL,\n              inverted_reveals JSON NOT NULL,\n              PRIMARY KEY (player_uuid, recipe_key)\n            );\n        \"\"\".trimIndent()\n        try {\n            dataSource.connection.use { conn ->\n                conn.createStatement().use { stmt ->\n                    stmt.execute(sql)\n                }\n            }\n        } catch (e: SQLException) {\n            Logger.logErr(e)\n        }\n    }\n\n    override fun insertOrUpdateRecipeView(\n        playerUuid: UUID,\n        recipeView: RecipeView\n    ): CompletableFuture<Void?> {\n        return runStatement(\n            \"\"\"\n                INSERT OR REPLACE INTO ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view\n                  VALUES(?,?,?);\n            \"\"\"\n        ) {\n            it.setBytes(1, UuidUtil.toBytes(playerUuid))\n            it.setString(2, recipeView.recipeIdentifier)\n            it.setString(3, Serdes.serializeCollection(recipeView.flaws, FlawSerdes::serializeFlaw).toString())\n            it.setString(4, Serdes.serializeCollection(recipeView.invertedReveals) { ints ->\n                Serdes.serializeCollection(ints) { number ->\n                    JsonPrimitive(number)\n                }\n            }.toString())\n            it.execute()\n            return@runStatement null\n        }\n    }\n\n    override fun removeRecipeView(\n        playerUuid: UUID,\n        recipeKey: String\n    ): CompletableFuture<Void?> {\n        return runStatement(\n            \"\"\"\n                DELETE FROM ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view\n                    WHERE player_uuid = ? AND recipe_key = ?;\n            \"\"\".trimIndent()\n        ) {\n            it.setBytes(1, UuidUtil.toBytes(playerUuid))\n            it.setString(2, recipeKey)\n            it.execute()\n            return@runStatement null\n        }\n    }\n\n    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?> {\n        return runStatement(\n            \"\"\"\n                SELECT * FROM ${Recipes.recipesConfig.storage.mysql.prefix}recipe_view;\n            \"\"\"\n        ) {\n            val result = it.executeQuery()\n            val output = mutableMapOf<UUID, MutableList<RecipeView>>()\n            while (result.next()) {\n                val recipeViews = output.computeIfAbsent(UuidUtil.asUuid(result.getBytes(\"player_uuid\"))) {\n                    mutableListOf()\n                }\n                recipeViews.add(\n                    RecipeView(\n                        result.getString(\"recipe_key\"),\n                        Serdes.deserializeList(\n                            JsonParser.parseString(result.getString(\"recipe_flaws\")).asJsonArray,\n                            FlawSerdes::deserializeFlaw\n                        ),\n                        Serdes.deserializeList(JsonParser.parseString(result.getString(\"inverted_reveals\")).asJsonArray) {jsonArray ->\n                            Serdes.deserializeSet(jsonArray.asJsonArray) { element ->\n                                element.asInt\n                            }\n                        }\n                    )\n                )\n            }\n            return@runStatement output\n        }\n    }\n\n    private fun <T> runStatement(statement: String, supplier: Function1<PreparedStatement, T>): CompletableFuture<T?> {\n        return CompletableFuture.supplyAsync<T>({\n            dataSource.connection.use {\n                it.prepareStatement(statement).use { preparedStatement ->\n                    return@supplyAsync supplier.invoke(preparedStatement)\n                }\n            }\n        }, executor)\n            .handleAsync { t, e ->\n                if (e != null) {\n                    Logger.logErr(e)\n                    return@handleAsync null\n                }\n                return@handleAsync t\n            }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/data/storage/MySQLStorageImpl.kt b/src/main/kotlin/dev/jsinco/recipes/data/storage/MySQLStorageImpl.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/data/storage/MySQLStorageImpl.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/data/storage/MySQLStorageImpl.kt	(date 1765807284178)
+@@ -5,7 +5,7 @@
+ import com.zaxxer.hikari.HikariConfig
+ import com.zaxxer.hikari.HikariDataSource
+ import dev.jsinco.recipes.Recipes
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.RecipeView
+ import dev.jsinco.recipes.data.StorageImpl
+ import dev.jsinco.recipes.data.StorageType
+ import dev.jsinco.recipes.data.serdes.FlawSerdes
+Index: src/main/kotlin/dev/jsinco/recipes/data/serdes/FlawSerdes.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.data.serdes\n\nimport com.google.gson.JsonArray\nimport com.google.gson.JsonElement\nimport com.google.gson.JsonObject\nimport dev.jsinco.recipes.core.flaws.Flaw\nimport dev.jsinco.recipes.core.flaws.FlawConfig\nimport dev.jsinco.recipes.core.flaws.FlawExtent\nimport dev.jsinco.recipes.core.flaws.type.*\n\nobject FlawSerdes {\n\n    fun serializeFlaw(flaw: Flaw): JsonElement {\n        val output = JsonObject()\n        output.add(\"type\", serializeFlawType(flaw.type))\n        output.add(\"config\", serializeFlawConfig(flaw.config))\n        return output\n    }\n\n    fun deserializeFlaw(json: JsonElement): Flaw? {\n        if (json !is JsonObject) return null\n        val type = deserializeFlawType(json.get(\"type\")) ?: return null\n        val config = deserializeFlawConfig(json.get(\"config\")) ?: return null\n        return Flaw(type, config)\n    }\n\n    private fun serializeFlawConfig(config: FlawConfig): JsonElement {\n        val output = JsonObject()\n        output.add(\"extent\", serializeFlawExtent(config.extent))\n        output.addProperty(\"seed\", config.seed)\n        output.addProperty(\"intensity\", config.intensity)\n        return output\n    }\n\n    private fun deserializeFlawConfig(json: JsonElement): FlawConfig? {\n        if (json !is JsonObject) return null\n        val extent = deserializeFlawExtent(json.get(\"extent\")) ?: return null\n        val seed = json.get(\"seed\").asInt\n        val intensity = json.get(\"intensity\").asDouble\n        return FlawConfig(extent, seed, intensity)\n    }\n\n    private fun serializeFlawExtent(extent: FlawExtent): JsonElement {\n        val output = JsonObject()\n        when (extent) {\n            is FlawExtent.Everywhere -> output.addProperty(\"type\", \"everywhere\")\n            is FlawExtent.WholeStep -> {\n                output.addProperty(\"type\", \"whole_step\")\n                output.addProperty(\"step-index\", extent.stepIndex)\n            }\n\n            is FlawExtent.StepRange -> {\n                output.addProperty(\"type\", \"partial_step\")\n                output.addProperty(\"step-index\", extent.stepIndex)\n                output.addProperty(\"start\", extent.start)\n                output.addProperty(\"stop\", extent.stop)\n            }\n\n            is FlawExtent.AfterPoint -> {\n                output.addProperty(\"type\", \"after\")\n                output.addProperty(\"step-index\", extent.stepIndex)\n                output.addProperty(\"start\", extent.start)\n            }\n\n            else -> throw IllegalStateException(\"Unknown flaw extent\")\n        }\n        return output\n    }\n\n    private fun deserializeFlawExtent(json: JsonElement): FlawExtent? {\n        if (json !is JsonObject) return null\n        return when (json.get(\"type\").asString) {\n            \"everywhere\" -> FlawExtent.Everywhere\n            \"whole_step\" -> FlawExtent.WholeStep(json.get(\"step-index\").asInt)\n            \"partial_step\" -> FlawExtent.StepRange(\n                json.get(\"step-index\").asInt,\n                json.get(\"start\").asInt,\n                json.get(\"stop\").asInt\n            )\n\n            \"after\" -> FlawExtent.AfterPoint(\n                json.get(\"step-index\").asInt,\n                json.get(\"start\").asInt\n            )\n\n            else -> null\n        }\n    }\n\n    private fun serializeFlawType(flawType: FlawType): JsonElement {\n        val output = JsonObject()\n        when (flawType) {\n            is InaccuracyFlawType -> output.addProperty(\"type\", \"inaccuracy\")\n            is ReplacementFlawType -> {\n                output.addProperty(\"type\", \"replacement\")\n                output.addProperty(\"chars\", flawType.replacement)\n            }\n\n            is ObfuscationFlawType -> output.addProperty(\"type\", \"obfuscation\")\n            is SlurringFlawType -> output.addProperty(\"type\", \"slurring\")\n            is CorrectionFlawType -> output.addProperty(\"type\", \"correction\")\n            else -> throw IllegalStateException(\"Unknown flaw type\")\n        }\n        return output\n    }\n\n    private fun deserializeFlawType(json: JsonElement): FlawType? {\n        if (json !is JsonObject) return null\n        return when (json.get(\"type\").asString) {\n            \"inaccuracy\" -> InaccuracyFlawType\n            \"replacement\" -> {\n                val replacement = json.get(\"chars\") ?: return null\n                ReplacementFlawType(replacement.asString)\n            }\n\n            \"obfuscation\" -> ObfuscationFlawType\n            \"slurring\" -> SlurringFlawType\n            \"correction\" -> CorrectionFlawType\n            else -> null\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/data/serdes/FlawSerdes.kt b/src/main/kotlin/dev/jsinco/recipes/data/serdes/FlawSerdes.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/data/serdes/FlawSerdes.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/data/serdes/FlawSerdes.kt	(date 1765807284169)
+@@ -1,12 +1,11 @@
+ package dev.jsinco.recipes.data.serdes
+ 
+-import com.google.gson.JsonArray
+ import com.google.gson.JsonElement
+ import com.google.gson.JsonObject
+-import dev.jsinco.recipes.core.flaws.Flaw
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawExtent
+-import dev.jsinco.recipes.core.flaws.type.*
++import dev.jsinco.recipes.recipe.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawExtent
++import dev.jsinco.recipes.recipe.flaws.type.*
+ 
+ object FlawSerdes {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/data/serdes/DrunkenTextSerdes.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.data.serdes\n\nimport com.google.gson.JsonElement\nimport com.google.gson.JsonObject\nimport dev.jsinco.recipes.core.flaws.drunkentext.DrunkenTextReplacement\n\nobject DrunkenTextSerdes {\n\n\n    fun deserialize(json: JsonElement): DrunkenTextReplacement? {\n        if (json !is JsonObject) {\n            return null\n        }\n        val to = json.get(\"to\").asString\n        val from = json.get(\"from\").asString.toRegex()\n        val intensity = if (json.has(\"alcohol\")) json.get(\"alcohol\").asDouble else 5.0\n        val percentage = json.get(\"percentage\").asDouble\n        return DrunkenTextReplacement(from, intensity, percentage / 100, to, 1.0)\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/data/serdes/DrunkenTextSerdes.kt b/src/main/kotlin/dev/jsinco/recipes/data/serdes/DrunkenTextSerdes.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/data/serdes/DrunkenTextSerdes.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/data/serdes/DrunkenTextSerdes.kt	(date 1765807284546)
+@@ -2,7 +2,7 @@
+ 
+ import com.google.gson.JsonElement
+ import com.google.gson.JsonObject
+-import dev.jsinco.recipes.core.flaws.drunkentext.DrunkenTextReplacement
++import dev.jsinco.recipes.recipe.flaws.drunkentext.DrunkenTextReplacement
+ 
+ object DrunkenTextSerdes {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/util/TBPRecipeConverter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.util\n\nimport dev.jsinco.brewery.api.brew.BrewingStep\nimport dev.jsinco.brewery.api.ingredient.Ingredient\nimport dev.jsinco.brewery.api.recipe.Recipe\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport org.bukkit.inventory.ItemStack\n\nobject TBPRecipeConverter {\n\n\n    fun convert(recipe: Recipe<ItemStack>): BreweryRecipe {\n        val recipeBuilder = BreweryRecipe.Builder(recipe.recipeName)\n        val steps = recipe.steps\n        steps.forEach {\n            when (it) {\n                is BrewingStep.Cook -> recipeBuilder.cook(\n                    it.time().moment(),\n                    it.cauldronType().name,\n                    mapIngredients(it.ingredients())\n                )\n\n                is BrewingStep.Distill -> recipeBuilder.distill(it.runs().toLong())\n                is BrewingStep.Age -> recipeBuilder.age(it.time().moment(), it.barrelType().name)\n                is BrewingStep.Mix -> recipeBuilder.mix(it.time().moment(), \"WATER\", mapIngredients(it.ingredients()))\n            }\n        }\n        return recipeBuilder.build()\n    }\n\n    private fun mapIngredients(ingredients: Map<out Ingredient, Int>): Map<dev.jsinco.recipes.core.process.Ingredient, Int> {\n        return ingredients.asSequence()\n            .map { entry ->\n                dev.jsinco.recipes.core.process.Ingredient(\n                    entry.key.key,\n                    entry.key.displayName()\n                ) to entry.value\n            }\n            .toMap()\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/util/TBPRecipeConverter.kt b/src/main/kotlin/dev/jsinco/recipes/util/TBPRecipeConverter.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/util/TBPRecipeConverter.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/util/TBPRecipeConverter.kt	(date 1765807284317)
+@@ -3,7 +3,7 @@
+ import dev.jsinco.brewery.api.brew.BrewingStep
+ import dev.jsinco.brewery.api.ingredient.Ingredient
+ import dev.jsinco.brewery.api.recipe.Recipe
+-import dev.jsinco.recipes.core.BreweryRecipe
++import dev.jsinco.recipes.recipe.BreweryRecipe
+ import org.bukkit.inventory.ItemStack
+ 
+ object TBPRecipeConverter {
+@@ -28,10 +28,10 @@
+         return recipeBuilder.build()
+     }
+ 
+-    private fun mapIngredients(ingredients: Map<out Ingredient, Int>): Map<dev.jsinco.recipes.core.process.Ingredient, Int> {
++    private fun mapIngredients(ingredients: Map<out Ingredient, Int>): Map<dev.jsinco.recipes.recipe.process.Ingredient, Int> {
+         return ingredients.asSequence()
+             .map { entry ->
+-                dev.jsinco.recipes.core.process.Ingredient(
++                dev.jsinco.recipes.recipe.process.Ingredient(
+                     entry.key.key,
+                     entry.key.displayName()
+                 ) to entry.value
+Index: src/main/kotlin/dev/jsinco/recipes/util/BreweryXRecipeConverter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.util\n\nimport com.dre.brewery.recipe.*\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport dev.jsinco.recipes.core.process.Ingredient\nimport net.kyori.adventure.text.Component\nimport net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer\n\nobject BreweryXRecipeConverter {\n    fun convert(recipe: BRecipe): BreweryRecipe {\n        val recipeBuilder = BreweryRecipe.Builder(recipe.id)\n        recipeBuilder.cook(\n            recipe.cookingTime * 60L * 20L,\n            \"water\",\n            parseIngredients(recipe.ingredients),\n        )\n        if (recipe.distillruns > 0) {\n            recipeBuilder.distill(recipe.distillruns.toLong())\n        }\n        if (recipe.age > 0) {\n            recipeBuilder.age((recipe.age * 20 * 60 * 20).toLong(), recipe.wood.name)\n        }\n        return recipeBuilder.build()\n    }\n\n    private fun parseIngredients(ingredients: List<RecipeItem>): Map<Ingredient, Int> {\n        return buildMap {\n            ingredients.forEach {\n                val displayName = when (it) {\n                    is CustomItem -> it.name?.let(LegacyComponentSerializer.legacySection()::deserialize)\n                    is SimpleItem -> it.material.itemTranslationKey?.let(Component::translatable)\n                    is PluginItem -> Component.text(it.itemId)\n                    is CustomMatchAnyItem -> {\n                        Component.text(if (it.names.isNullOrEmpty()) it.configId else it.names!!.last())\n                    }\n\n                    else -> null\n                } ?: Component.text(\"Unknown\")\n                put(\n                    Ingredient(\n                        it.toConfigString().replace(\"/\\\\d+\", \"\"), displayName\n                    ),\n                    it.amount\n                )\n            }\n        }\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/util/BreweryXRecipeConverter.kt b/src/main/kotlin/dev/jsinco/recipes/util/BreweryXRecipeConverter.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/util/BreweryXRecipeConverter.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/util/BreweryXRecipeConverter.kt	(date 1765807284484)
+@@ -1,8 +1,8 @@
+ package dev.jsinco.recipes.util
+ 
+ import com.dre.brewery.recipe.*
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.process.Ingredient
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.process.Ingredient
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/commands/argument/RecipeArgumentType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.commands.argument\n\nimport com.mojang.brigadier.arguments.ArgumentType\nimport com.mojang.brigadier.arguments.StringArgumentType\nimport com.mojang.brigadier.context.CommandContext\nimport com.mojang.brigadier.exceptions.DynamicCommandExceptionType\nimport com.mojang.brigadier.suggestion.Suggestions\nimport com.mojang.brigadier.suggestion.SuggestionsBuilder\nimport dev.jsinco.recipes.Recipes\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport dev.jsinco.recipes.util.TranslationUtil\nimport io.papermc.paper.command.brigadier.MessageComponentSerializer\nimport io.papermc.paper.command.brigadier.argument.CustomArgumentType\nimport net.kyori.adventure.text.Component\nimport net.kyori.adventure.text.minimessage.translation.Argument\nimport java.util.concurrent.CompletableFuture\n\nobject RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> {\n\n    val UNKNOWN_VALUE = DynamicCommandExceptionType {\n        return@DynamicCommandExceptionType MessageComponentSerializer.message()\n            .serialize(\n                TranslationUtil.render(\n                    Component.translatable(\n                        \"recipes.command.invalid.argument\",\n                        Argument.numeric(\"argument\", it.toString())\n                    )\n                )\n            )\n    }\n    val WORD_ARGUMENT: Regex = \"[a-zA-Z0-9+\\\\-_.]+\".toRegex()\n\n\n    override fun convert(nativeType: String): BreweryRecipe {\n        return Recipes.recipes().get(nativeType) ?: throw UNKNOWN_VALUE.create(nativeType)\n    }\n\n    override fun <S : Any> listSuggestions(\n        context: CommandContext<S>,\n        builder: SuggestionsBuilder\n    ): CompletableFuture<Suggestions> {\n        Recipes.recipes().values.asSequence()\n            .map { it.identifier }\n            .filter { recipeName -> recipeName.startsWith(builder.getRemainingLowerCase()) }\n            .map(this::sanitizeName)\n            .forEach(builder::suggest);\n        return builder.buildFuture();\n    }\n\n\n    private fun sanitizeName(name: String): String {\n        if (WORD_ARGUMENT.matches(name)) {\n            return name\n        }\n        return \"\\\"\" + name + \"\\\"\"\n    }\n\n    override fun getNativeType(): ArgumentType<String> {\n        return StringArgumentType.string()\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/commands/argument/RecipeArgumentType.kt b/src/main/kotlin/dev/jsinco/recipes/commands/argument/RecipeArgumentType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/commands/argument/RecipeArgumentType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/commands/argument/RecipeArgumentType.kt	(date 1765807284446)
+@@ -7,7 +7,7 @@
+ import com.mojang.brigadier.suggestion.Suggestions
+ import com.mojang.brigadier.suggestion.SuggestionsBuilder
+ import dev.jsinco.recipes.Recipes
+-import dev.jsinco.recipes.core.BreweryRecipe
++import dev.jsinco.recipes.recipe.BreweryRecipe
+ import dev.jsinco.recipes.util.TranslationUtil
+ import io.papermc.paper.command.brigadier.MessageComponentSerializer
+ import io.papermc.paper.command.brigadier.argument.CustomArgumentType
+Index: src/main/kotlin/dev/jsinco/recipes/commands/RecipeAddCommand.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.commands\n\nimport com.mojang.brigadier.arguments.DoubleArgumentType\nimport com.mojang.brigadier.builder.LiteralArgumentBuilder\nimport dev.jsinco.recipes.Recipes\nimport dev.jsinco.recipes.commands.argument.EnumArgument\nimport dev.jsinco.recipes.commands.argument.RecipeArgumentType\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator\nimport io.papermc.paper.command.brigadier.CommandSourceStack\nimport io.papermc.paper.command.brigadier.Commands\nimport org.bukkit.entity.Player\n\nobject RecipeAddCommand {\n\n\n    fun command(): LiteralArgumentBuilder<CommandSourceStack> {\n        return Commands.literal(\"add\")\n            .then(\n                Commands.argument(\"recipe-key\", RecipeArgumentType)\n                    .then(\n                        Commands.argument(\n                            \"flaw-type\",\n                            EnumArgument(RecipeViewCreator.Type::class.java)\n                        )\n                            .then(\n                                Commands.argument(\n                                    \"flaw-level\", DoubleArgumentType.doubleArg(0.0, 100.0)\n                                ).executes { context ->\n                                    val recipe = context.getArgument(\"recipe-key\", BreweryRecipe::class.java)\n                                    val flawLevel = context.getArgument(\"flaw-level\", Double::class.java)\n                                    val sender = context.source.sender as Player\n                                    Recipes.recipeViewManager.insertOrMergeView(\n                                        sender.uniqueId,\n                                        recipe.generate(\n                                            flawLevel,\n                                            context.getArgument(\"flaw-type\", RecipeViewCreator.Type::class.java)\n                                        )\n                                    )\n                                    1\n                                }\n                            )\n                    )\n            )\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/commands/RecipeAddCommand.kt b/src/main/kotlin/dev/jsinco/recipes/commands/RecipeAddCommand.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/commands/RecipeAddCommand.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/commands/RecipeAddCommand.kt	(date 1765807284502)
+@@ -5,8 +5,8 @@
+ import dev.jsinco.recipes.Recipes
+ import dev.jsinco.recipes.commands.argument.EnumArgument
+ import dev.jsinco.recipes.commands.argument.RecipeArgumentType
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+ import io.papermc.paper.command.brigadier.CommandSourceStack
+ import io.papermc.paper.command.brigadier.Commands
+ import org.bukkit.entity.Player
+Index: src/main/kotlin/dev/jsinco/recipes/Recipes.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes\n\nimport com.dre.brewery.recipe.BRecipe\nimport dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi\nimport dev.jsinco.recipes.commands.RecipesCommand\nimport dev.jsinco.recipes.configuration.GuiConfig\nimport dev.jsinco.recipes.configuration.RecipesConfig\nimport dev.jsinco.recipes.configuration.RecipesTranslator\nimport dev.jsinco.recipes.configuration.SpawnConfig\nimport dev.jsinco.recipes.configuration.serialize.*\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport dev.jsinco.recipes.core.RecipeViewManager\nimport dev.jsinco.recipes.data.DataManager\nimport dev.jsinco.recipes.data.StorageImpl\nimport dev.jsinco.recipes.gui.integration.BreweryXGuiInterface\nimport dev.jsinco.recipes.gui.integration.GuiIntegration\nimport dev.jsinco.recipes.gui.integration.TbpGuiInterface\nimport dev.jsinco.recipes.listeners.GuiEventListener\nimport dev.jsinco.recipes.listeners.RecipeListener\nimport dev.jsinco.recipes.listeners.RecipeSpawningListener\nimport dev.jsinco.recipes.util.BookUtil\nimport dev.jsinco.recipes.util.BreweryXRecipeConverter\nimport dev.jsinco.recipes.util.ClassUtil\nimport dev.jsinco.recipes.util.TBPRecipeConverter\nimport eu.okaeri.configs.ConfigManager\nimport eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer\nimport io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents\nimport io.papermc.paper.registry.RegistryKey\nimport net.kyori.adventure.translation.GlobalTranslator\nimport org.bukkit.Bukkit\nimport org.bukkit.Material\nimport org.bukkit.NamespacedKey\nimport org.bukkit.block.Biome\nimport org.bukkit.block.BlockType\nimport org.bukkit.inventory.ShapelessRecipe\nimport org.bukkit.plugin.java.JavaPlugin\nimport java.io.File\n\n// Idea:\n// Allow recipes for brews to be collected from randomly generated chests and make some recipes rarer than others\n// Has a gui that shows all the recipes the player has collected and how to make them\n// Pulls directly from the Brewery plugin's config.yml file\nclass Recipes : JavaPlugin() {\n    companion object {\n        lateinit var instance: Recipes\n        lateinit var recipesConfig: RecipesConfig\n        lateinit var guiConfig: GuiConfig\n        lateinit var spawnConfig: SpawnConfig\n        lateinit var recipeViewManager: RecipeViewManager\n        private lateinit var recipeMap: Map<String, BreweryRecipe>\n\n        fun key(key: String): NamespacedKey {\n            if (key.contains(\":\")) {\n                return NamespacedKey.fromString(key) ?: NamespacedKey(\"brewery_recipes\", key)\n            }\n            return NamespacedKey(\"brewery_recipes\", key)\n        }\n\n        /**\n         * TBP can have a very late initialization on some recipes, use only post start\n         */\n        fun recipes(): Map<String, BreweryRecipe> {\n            if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {\n                return recipeMap\n            }\n            recipeMap = instance.loadRecipeProvider()!!\n                .asSequence()\n                .map { it.identifier to it }\n                .toMap()\n            return recipeMap\n        }\n    }\n\n    lateinit var storageImpl: StorageImpl\n\n    override fun onEnable() {\n        recipesConfig = readConfig()\n        guiConfig = readGuiConfig()\n        spawnConfig = readSpawnConfig()\n        storageImpl = DataManager(dataFolder).storageImpl\n        recipeViewManager = RecipeViewManager(storageImpl)\n\n        val translator = RecipesTranslator(File(dataFolder, \"locale\"), recipesConfig.language)\n        translator.reload()\n        GlobalTranslator.translator().addSource(translator)\n        val guiIntegration = loadGuiIntegration()\n        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, guiIntegration), this)\n        Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)\n        Bukkit.getPluginManager().registerEvents(RecipeListener(guiIntegration), this)\n        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {\n            it.registrar().register(RecipesCommand.command())\n        }\n        val book = ShapelessRecipe(key(\"recipe_book\"), BookUtil.createBook())\n        book.addIngredient(Material.PAPER)\n        book.addIngredient(Material.BOOK)\n        Bukkit.addRecipe(book)\n    }\n\n    private fun loadRecipeProvider(): List<BreweryRecipe>? {\n        if (ClassUtil.exists(\"dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi\")) {\n            if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {\n                return null\n            }\n            val provider =\n                (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null\n            return provider.recipeRegistry.recipes\n                .map { TBPRecipeConverter.convert(it) }\n        }\n        if (ClassUtil.exists(\"com.dre.brewery.recipe.BRecipe\")) {\n            return BRecipe.getRecipes()\n                .map { BreweryXRecipeConverter.convert(it) }\n        }\n        throw IllegalStateException(\"Expected either BreweryX to be available or TBP\")\n    }\n\n    private fun loadGuiIntegration(): GuiIntegration {\n        if (ClassUtil.exists(\"dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi\")) {\n            return TbpGuiInterface\n        }\n        if (ClassUtil.exists(\"com.dre.brewery.recipe.BRecipe\")) {\n            return BreweryXGuiInterface\n        }\n        throw IllegalStateException(\"Expected either BreweryX to be available or TBP\")\n    }\n\n    private fun readConfig(): RecipesConfig {\n        return ConfigManager.create(RecipesConfig::class.java) {\n            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())\n            it.withBindFile(File(this.dataFolder, \"config.yml\"))\n            it.saveDefaults()\n            it.load(true)\n            it.save()\n        }\n    }\n\n    private fun readGuiConfig(): GuiConfig {\n        return ConfigManager.create(GuiConfig::class.java) {\n            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())\n            it.withBindFile(File(this.dataFolder, \"gui.yml\"))\n            it.saveDefaults()\n            it.load(true)\n            it.save()\n        }\n    }\n\n    private fun configSerializers(): SerdesPackBuilder {\n        return SerdesPackBuilder()\n            .add(ComponentSerializer)\n            .add(KeySerializer)\n            .add(ConfigItemSerializer)\n            .add(ConfigItemCollectionSerializer)\n            .add(LoreSerializer)\n            .add(LocaleSerializer)\n            .add(ConditionsDefinitionSerializer)\n            .add(TriggersDefinitionSerializer)\n            .add(KeyedSerializer(RegistryKey.BLOCK, BlockType::class.java))\n            .add(KeyedSerializer(RegistryKey.BIOME, Biome::class.java))\n            .add(SpawnDefinitionSerializer)\n    }\n\n    private fun readSpawnConfig(): SpawnConfig {\n        return ConfigManager.create(SpawnConfig::class.java) {\n            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())\n            it.withBindFile(File(this.dataFolder, \"spawning.yml\"))\n            it.saveDefaults()\n            it.load(true)\n            it.save()\n        }\n    }\n\n    override fun onLoad() {\n        instance = this\n    }\n\n    fun reload() {\n        recipesConfig = readConfig()\n        guiConfig = readGuiConfig()\n        spawnConfig = readSpawnConfig()\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/Recipes.kt b/src/main/kotlin/dev/jsinco/recipes/Recipes.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/Recipes.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/Recipes.kt	(date 1765807284379)
+@@ -8,8 +8,8 @@
+ import dev.jsinco.recipes.configuration.RecipesTranslator
+ import dev.jsinco.recipes.configuration.SpawnConfig
+ import dev.jsinco.recipes.configuration.serialize.*
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.RecipeViewManager
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.RecipeViewManager
+ import dev.jsinco.recipes.data.DataManager
+ import dev.jsinco.recipes.data.StorageImpl
+ import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface
+Index: src/main/kotlin/dev/jsinco/recipes/core/RecipeView.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/RecipeView.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeView.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/RecipeView.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/RecipeView.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/RecipeView.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeView.kt	(date 1765807284278)
+@@ -1,6 +1,6 @@
+-package dev.jsinco.recipes.core
++package dev.jsinco.recipes.recipe
+ 
+-import dev.jsinco.recipes.core.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.Flaw
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.minimessage.translation.Argument
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/RecipeWriter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/RecipeWriter.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeWriter.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/RecipeWriter.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/RecipeWriter.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/RecipeWriter.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/RecipeWriter.kt	(date 1765807284416)
+@@ -1,17 +1,17 @@
+-package dev.jsinco.recipes.core
++package dev.jsinco.recipes.recipe
+ 
+ import dev.jsinco.recipes.Recipes
+-import dev.jsinco.recipes.core.flaws.Flaw
+-import dev.jsinco.recipes.core.flaws.FlawExtent
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
+-import dev.jsinco.recipes.core.flaws.type.FlawType
+-import dev.jsinco.recipes.core.process.Ingredient
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.steps.AgeStep
+-import dev.jsinco.recipes.core.process.steps.CookStep
+-import dev.jsinco.recipes.core.process.steps.DistillStep
+-import dev.jsinco.recipes.core.process.steps.MixStep
++import dev.jsinco.recipes.recipe.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.FlawExtent
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.type.FlawType
++import dev.jsinco.recipes.recipe.process.Ingredient
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.steps.AgeStep
++import dev.jsinco.recipes.recipe.process.steps.CookStep
++import dev.jsinco.recipes.recipe.process.steps.DistillStep
++import dev.jsinco.recipes.recipe.process.steps.MixStep
+ import dev.jsinco.recipes.gui.integration.GuiIntegration
+ import dev.jsinco.recipes.util.TranslationUtil
+ import io.papermc.paper.datacomponent.DataComponentTypes
+Index: src/main/kotlin/dev/jsinco/recipes/core/BreweryRecipe.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/BreweryRecipe.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/BreweryRecipe.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/BreweryRecipe.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/BreweryRecipe.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/BreweryRecipe.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/BreweryRecipe.kt	(date 1765807284219)
+@@ -1,13 +1,13 @@
+-package dev.jsinco.recipes.core
++package dev.jsinco.recipes.recipe
+ 
+ import com.google.common.collect.ImmutableList
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+-import dev.jsinco.recipes.core.process.Ingredient
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.steps.AgeStep
+-import dev.jsinco.recipes.core.process.steps.CookStep
+-import dev.jsinco.recipes.core.process.steps.DistillStep
+-import dev.jsinco.recipes.core.process.steps.MixStep
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.process.Ingredient
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.steps.AgeStep
++import dev.jsinco.recipes.recipe.process.steps.CookStep
++import dev.jsinco.recipes.recipe.process.steps.DistillStep
++import dev.jsinco.recipes.recipe.process.steps.MixStep
+ import dev.jsinco.recipes.util.RecipeUtil
+ import dev.jsinco.recipes.util.TranslationUtil
+ import io.papermc.paper.datacomponent.DataComponentTypes
+Index: src/main/kotlin/dev/jsinco/recipes/gui/integration/TbpGuiInterface.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.gui.integration\n\nimport dev.jsinco.brewery.api.brew.Brew\nimport dev.jsinco.brewery.api.brew.BrewQuality\nimport dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi\nimport dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult\nimport dev.jsinco.recipes.core.RecipeView\nimport net.kyori.adventure.text.Component\nimport net.kyori.adventure.text.minimessage.MiniMessage\nimport org.bukkit.Bukkit\nimport org.bukkit.inventory.ItemStack\nimport kotlin.jvm.optionals.getOrNull\n\nobject TbpGuiInterface : GuiIntegration {\n\n    lateinit var tbpApi: TheBrewingProjectApi\n\n    fun getApi(): TheBrewingProjectApi {\n        if (!this::tbpApi.isInitialized) {\n            this.tbpApi = Bukkit.getServicesManager().load(TheBrewingProjectApi::class.java)!!\n        }\n        return tbpApi\n    }\n\n    override fun createItem(recipeView: RecipeView): ItemStack? {\n        val recipe = getApi().recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null\n        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult\n        val brew = getApi().brewManager.createBrew(recipe.steps)\n        val item = result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())\n        return item\n    }\n\n    override fun brewDisplayName(identifier: String): Component? {\n        val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null\n        return MiniMessage.miniMessage()\n            .deserialize((recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult).name)\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/gui/integration/TbpGuiInterface.kt b/src/main/kotlin/dev/jsinco/recipes/gui/integration/TbpGuiInterface.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/gui/integration/TbpGuiInterface.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/gui/integration/TbpGuiInterface.kt	(date 1765807284336)
+@@ -4,7 +4,7 @@
+ import dev.jsinco.brewery.api.brew.BrewQuality
+ import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
+ import dev.jsinco.brewery.bukkit.recipe.BukkitRecipeResult
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.RecipeView
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.minimessage.MiniMessage
+ import org.bukkit.Bukkit
+Index: src/main/kotlin/dev/jsinco/recipes/gui/integration/GuiIntegration.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.gui.integration\n\nimport dev.jsinco.recipes.core.RecipeView\nimport dev.jsinco.recipes.core.RecipeWriter\nimport dev.jsinco.recipes.gui.GuiItem\nimport net.kyori.adventure.text.Component\nimport org.bukkit.inventory.ItemStack\n\ninterface GuiIntegration {\n    fun createFullItem(recipeView: RecipeView): GuiItem? {\n        return RecipeWriter.writeItem(recipeView, this)\n            ?.let { GuiItem(it, GuiItem.Type.NO_ACTION) }\n    }\n\n    fun createItem(recipeView: RecipeView): ItemStack?\n    fun brewDisplayName(identifier: String): Component?\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/gui/integration/GuiIntegration.kt b/src/main/kotlin/dev/jsinco/recipes/gui/integration/GuiIntegration.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/gui/integration/GuiIntegration.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/gui/integration/GuiIntegration.kt	(date 1765807284455)
+@@ -1,7 +1,7 @@
+ package dev.jsinco.recipes.gui.integration
+ 
+-import dev.jsinco.recipes.core.RecipeView
+-import dev.jsinco.recipes.core.RecipeWriter
++import dev.jsinco.recipes.recipe.RecipeView
++import dev.jsinco.recipes.recipe.RecipeWriter
+ import dev.jsinco.recipes.gui.GuiItem
+ import net.kyori.adventure.text.Component
+ import org.bukkit.inventory.ItemStack
+Index: src/main/kotlin/dev/jsinco/recipes/gui/integration/BreweryXGuiInterface.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.gui.integration\n\nimport com.dre.brewery.recipe.BRecipe\nimport com.dre.brewery.utility.BUtil\nimport dev.jsinco.recipes.core.RecipeView\nimport net.kyori.adventure.text.Component\nimport net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer\nimport org.bukkit.inventory.ItemStack\n\nobject BreweryXGuiInterface : GuiIntegration {\n\n    override fun createItem(recipeView: RecipeView): ItemStack? {\n        val recipe = BRecipe.getRecipes().first { it.id.equals(recipeView.recipeIdentifier, true) } ?: return null\n        return recipe.createBrew(10).createItem()\n    }\n\n    override fun brewDisplayName(identifier: String): Component? {\n        val recipe = BRecipe.getRecipes().first { it.id.equals(identifier, true) } ?: return null\n        return LegacyComponentSerializer.legacySection().deserialize(BUtil.color(recipe.getName(10)))\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/gui/integration/BreweryXGuiInterface.kt b/src/main/kotlin/dev/jsinco/recipes/gui/integration/BreweryXGuiInterface.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/gui/integration/BreweryXGuiInterface.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/gui/integration/BreweryXGuiInterface.kt	(date 1765807284395)
+@@ -2,7 +2,7 @@
+ 
+ import com.dre.brewery.recipe.BRecipe
+ import com.dre.brewery.utility.BUtil
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.RecipeView
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+ import org.bukkit.inventory.ItemStack
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawConfig.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawConfig.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawConfig.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawConfig.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawConfig.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawConfig.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawConfig.kt	(date 1765807284539)
+@@ -1,3 +1,3 @@
+-package dev.jsinco.recipes.core.flaws
++package dev.jsinco.recipes.recipe.flaws
+ 
+ data class FlawConfig(val extent: FlawExtent, val seed: Int, val intensity: Double)
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/Flaw.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/Flaw.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/Flaw.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/Flaw.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/Flaw.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/Flaw.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/Flaw.kt	(date 1765807284186)
+@@ -1,5 +1,5 @@
+-package dev.jsinco.recipes.core.flaws
++package dev.jsinco.recipes.recipe.flaws
+ 
+-import dev.jsinco.recipes.core.flaws.type.FlawType
++import dev.jsinco.recipes.recipe.flaws.type.FlawType
+ 
+ data class Flaw(val type: FlawType, val config: FlawConfig)
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModifications.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModifications.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModifications.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModifications.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModifications.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModifications.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModifications.kt	(date 1765807284353)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.flaws
++package dev.jsinco.recipes.recipe.flaws
+ 
+ import java.util.function.Predicate
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModificationWriter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModificationWriter.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModificationWriter.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModificationWriter.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModificationWriter.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawTextModificationWriter.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawTextModificationWriter.kt	(date 1765807284426)
+@@ -1,6 +1,6 @@
+-package dev.jsinco.recipes.core.flaws
++package dev.jsinco.recipes.recipe.flaws
+ 
+-import dev.jsinco.recipes.core.flaws.type.FlawType
++import dev.jsinco.recipes.recipe.flaws.type.FlawType
+ import net.kyori.adventure.text.Component
+ import java.util.function.BiConsumer
+ import kotlin.random.Random
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ObfuscationFlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ObfuscationFlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ObfuscationFlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ObfuscationFlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ObfuscationFlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ObfuscationFlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ObfuscationFlawType.kt	(date 1765807284196)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.format.TextDecoration
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/CorrectionFlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/CorrectionFlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/CorrectionFlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/CorrectionFlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/CorrectionFlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/CorrectionFlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/CorrectionFlawType.kt	(date 1765807284209)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
+ import net.kyori.adventure.text.Component
+ import net.kyori.adventure.text.format.TextDecoration
+ import kotlin.math.roundToInt
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/FlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/FlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/FlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/FlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/FlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/FlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/FlawType.kt	(date 1765807284229)
+@@ -1,7 +1,7 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
+ import net.kyori.adventure.text.Component
+ import java.util.function.Predicate
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/SlurringFlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/SlurringFlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/SlurringFlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/SlurringFlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/SlurringFlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/SlurringFlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/SlurringFlawType.kt	(date 1765807284239)
+@@ -1,11 +1,11 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+ import com.google.gson.JsonParser
+ import dev.jsinco.recipes.Recipes
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
+-import dev.jsinco.recipes.core.flaws.drunkentext.DrunkenTextReplacement
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.drunkentext.DrunkenTextReplacement
+ import dev.jsinco.recipes.data.serdes.DrunkenTextSerdes
+ import dev.jsinco.recipes.data.serdes.Serdes
+ import dev.jsinco.recipes.util.FileUtil
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ReplacementFlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ReplacementFlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ReplacementFlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ReplacementFlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ReplacementFlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/ReplacementFlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/ReplacementFlawType.kt	(date 1765807284370)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
+ import net.kyori.adventure.text.Component
+ 
+ data class ReplacementFlawType(val replacement: String, val overwriteSpace: Boolean = false) : FlawType {
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/type/InaccuracyFlawType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/InaccuracyFlawType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/InaccuracyFlawType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/type/InaccuracyFlawType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/InaccuracyFlawType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/type/InaccuracyFlawType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/type/InaccuracyFlawType.kt	(date 1765807284157)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.flaws.type
++package dev.jsinco.recipes.recipe.flaws.type
+ 
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawTextModificationWriter
+-import dev.jsinco.recipes.core.flaws.FlawTextModifications
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
++import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
+ import net.kyori.adventure.text.Component
+ import kotlin.math.abs
+ import kotlin.math.roundToInt
+Index: src/main/kotlin/dev/jsinco/recipes/configuration/spawning/SpawnDefinition.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.configuration.spawning\n\nimport dev.jsinco.recipes.Recipes\nimport dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition\nimport dev.jsinco.recipes.core.BreweryRecipe\nimport dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator\nimport org.bukkit.inventory.ItemStack\n\ndata class SpawnDefinition(\n    val enabled: Boolean? = null,\n    val attempts: Int? = null,\n    val chance: Double? = null,\n    val flaws: List<RecipeViewCreator.Type>? = null,\n    val flawless: Boolean = false,\n    val recipeBlacklist: List<String>? = null,\n    val recipeWhitelist: List<String>? = null,\n    val triggers: TriggersDefinition? = null,\n    val conditions: ConditionsDefinition? = null,\n    val conditionBlacklist: ConditionsDefinition? = null,\n) {\n\n    fun generateItems(): List<ItemStack> {\n        val attempts = (attempts ?: 1).coerceAtLeast(1)\n        val chance = (chance ?: 1.0).coerceIn(0.0, 1.0)\n        val applicableRecipes = Recipes.recipes().asSequence()\n            .filter { recipeWhitelist.isNullOrEmpty() || recipeWhitelist.contains(it.key) }\n            .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.key) }\n            .map { it.value }\n            .toList()\n        if (applicableRecipes.isEmpty()) return mutableListOf()\n        val results = mutableListOf<ItemStack>()\n        repeat(attempts) {\n            if (Math.random() <= chance) {\n                results.add(lootItem(applicableRecipes.random()))\n            }\n        }\n        return results\n    }\n\n    fun generateItem(): ItemStack? {\n        val items = generateItems()\n        return if (!items.isEmpty()) items.random() else null\n    }\n\n    private fun lootItem(breweryRecipe: BreweryRecipe): ItemStack {\n        if (flawless) {\n            return breweryRecipe.lootItem()\n        }\n        if (flaws.isNullOrEmpty()) {\n            return breweryRecipe.lootItem(RecipeViewCreator.Type.values().random())\n        }\n        return breweryRecipe.lootItem(flaws.random())\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/configuration/spawning/SpawnDefinition.kt b/src/main/kotlin/dev/jsinco/recipes/configuration/spawning/SpawnDefinition.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/configuration/spawning/SpawnDefinition.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/configuration/spawning/SpawnDefinition.kt	(date 1765807284287)
+@@ -2,8 +2,8 @@
+ 
+ import dev.jsinco.recipes.Recipes
+ import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+ import org.bukkit.inventory.ItemStack
+ 
+ data class SpawnDefinition(
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawExtent.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawExtent.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawExtent.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawExtent.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawExtent.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/FlawExtent.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/FlawExtent.kt	(date 1765807284327)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.flaws
++package dev.jsinco.recipes.recipe.flaws
+ 
+ import kotlin.random.Random
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/Ingredient.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/Ingredient.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/Ingredient.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/Ingredient.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/Ingredient.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/Ingredient.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/Ingredient.kt	(date 1765807284268)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.process
++package dev.jsinco.recipes.recipe.process
+ 
+ import net.kyori.adventure.text.Component
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/Step.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/Step.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/Step.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/Step.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/Step.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/Step.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/Step.kt	(date 1765807284307)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.process
++package dev.jsinco.recipes.recipe.process
+ 
+ interface Step {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/configuration/serialize/SpawnDefinitionSerializer.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.configuration.serialize\n\nimport dev.jsinco.recipes.configuration.spawning.SpawnDefinition\nimport dev.jsinco.recipes.configuration.spawning.ConditionsDefinition\nimport dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition\nimport dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator\nimport eu.okaeri.configs.schema.GenericsDeclaration\nimport eu.okaeri.configs.serdes.DeserializationData\nimport eu.okaeri.configs.serdes.ObjectSerializer\nimport eu.okaeri.configs.serdes.SerializationData\n\nobject SpawnDefinitionSerializer : ObjectSerializer<SpawnDefinition> {\n\n    override fun supports(type: Class<in SpawnDefinition>): Boolean {\n        return SpawnDefinition::class.java.isAssignableFrom(type)\n    }\n\n    override fun serialize(\n        `object`: SpawnDefinition,\n        data: SerializationData,\n        generics: GenericsDeclaration\n    ) {\n        `object`.enabled?.let { data.add(\"enabled\", it) }\n        `object`.attempts?.let { data.add(\"attempts\", it) }\n        `object`.chance?.let { data.add(\"chance\", it) }\n\n        if (!`object`.recipeWhitelist.isNullOrEmpty()) {\n            data.add(\"recipe-whitelist\", `object`.recipeWhitelist)\n        }\n        if (!`object`.recipeBlacklist.isNullOrEmpty()) {\n            data.add(\"recipe-blacklist\", `object`.recipeBlacklist)\n        }\n        data.add(\"flawless\", `object`.flawless)\n        `object`.flaws?.let {\n            data.add(\"flaws\", it)\n        }\n\n        `object`.conditions?.let {\n            data.add(\"conditions\", it)\n        }\n        `object`.conditionBlacklist?.let {\n            data.add(\"condition-blacklist\", it)\n        }\n        `object`.triggers?.let {\n            data.add(\"triggers\", it)\n        }\n    }\n\n    override fun deserialize(\n        data: DeserializationData,\n        generics: GenericsDeclaration\n    ): SpawnDefinition? {\n        val enabled = data.get(\"enabled\", Boolean::class.java) ?: true\n        val attempts = data.get(\"attempts\", Int::class.javaObjectType)\n        val chance = data.get(\"chance\", Double::class.javaObjectType)\n        val whitelist = data.getAsList(\"recipe-whitelist\", String::class.java) ?: listOf()\n        val blacklist = data.getAsList(\"recipe-blacklist\", String::class.java) ?: listOf()\n        val flawless = data.get(\"flawless\", Boolean::class.java) ?: false\n        val flaws = data.getAsList(\"flaws\", RecipeViewCreator.Type::class.java) ?: listOf()\n        val conditions = data.get(\"conditions\", ConditionsDefinition::class.java)\n        val conditionsBlacklist = data.get(\"condition-blacklist\", ConditionsDefinition::class.java)\n        val triggers = data.get(\"triggers\", TriggersDefinition::class.java)\n        return SpawnDefinition(\n            enabled = enabled,\n            attempts = attempts,\n            chance = chance,\n            recipeWhitelist = whitelist,\n            recipeBlacklist = blacklist,\n            flawless = flawless,\n            flaws = flaws,\n            conditions = conditions,\n            conditionBlacklist = conditionsBlacklist,\n            triggers = triggers\n        )\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/configuration/serialize/SpawnDefinitionSerializer.kt b/src/main/kotlin/dev/jsinco/recipes/configuration/serialize/SpawnDefinitionSerializer.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/configuration/serialize/SpawnDefinitionSerializer.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/configuration/serialize/SpawnDefinitionSerializer.kt	(date 1765807284386)
+@@ -3,7 +3,7 @@
+ import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+ import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
+ import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
+-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
++import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+ import eu.okaeri.configs.schema.GenericsDeclaration
+ import eu.okaeri.configs.serdes.DeserializationData
+ import eu.okaeri.configs.serdes.ObjectSerializer
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/drunkentext/DrunkenTextReplacement.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/drunkentext/DrunkenTextReplacement.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/drunkentext/DrunkenTextReplacement.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/drunkentext/DrunkenTextReplacement.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/drunkentext/DrunkenTextReplacement.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/drunkentext/DrunkenTextReplacement.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/drunkentext/DrunkenTextReplacement.kt	(date 1765807284530)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.flaws.drunkentext
++package dev.jsinco.recipes.recipe.flaws.drunkentext
+ 
+ import java.util.function.Predicate
+ import kotlin.random.Random
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/UncertainRecipeViewCreator.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/UncertainRecipeViewCreator.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/UncertainRecipeViewCreator.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/UncertainRecipeViewCreator.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/UncertainRecipeViewCreator.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/UncertainRecipeViewCreator.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/UncertainRecipeViewCreator.kt	(date 1765807284344)
+@@ -1,14 +1,14 @@
+-package dev.jsinco.recipes.core.flaws.creation
++package dev.jsinco.recipes.recipe.flaws.creation
+ 
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.RecipeView
+-import dev.jsinco.recipes.core.RecipeWriter
+-import dev.jsinco.recipes.core.flaws.Flaw
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawExtent
+-import dev.jsinco.recipes.core.flaws.type.CorrectionFlawType
+-import dev.jsinco.recipes.core.flaws.type.InaccuracyFlawType
+-import dev.jsinco.recipes.core.flaws.type.ReplacementFlawType
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.RecipeView
++import dev.jsinco.recipes.recipe.RecipeWriter
++import dev.jsinco.recipes.recipe.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawExtent
++import dev.jsinco.recipes.recipe.flaws.type.CorrectionFlawType
++import dev.jsinco.recipes.recipe.flaws.type.InaccuracyFlawType
++import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
+ import kotlin.random.Random
+ 
+ object UncertainRecipeViewCreator : RecipeViewCreator {
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/EncryptedRecipeViewCreator.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/EncryptedRecipeViewCreator.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/EncryptedRecipeViewCreator.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/EncryptedRecipeViewCreator.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/EncryptedRecipeViewCreator.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/EncryptedRecipeViewCreator.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/EncryptedRecipeViewCreator.kt	(date 1765807284295)
+@@ -1,13 +1,13 @@
+-package dev.jsinco.recipes.core.flaws.creation
++package dev.jsinco.recipes.recipe.flaws.creation
+ 
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.RecipeView
+-import dev.jsinco.recipes.core.RecipeWriter
+-import dev.jsinco.recipes.core.flaws.Flaw
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawExtent
+-import dev.jsinco.recipes.core.flaws.type.ObfuscationFlawType
+-import dev.jsinco.recipes.core.flaws.type.ReplacementFlawType
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.RecipeView
++import dev.jsinco.recipes.recipe.RecipeWriter
++import dev.jsinco.recipes.recipe.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawExtent
++import dev.jsinco.recipes.recipe.flaws.type.ObfuscationFlawType
++import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
+ import kotlin.random.Random
+ 
+ object EncryptedRecipeViewCreator : RecipeViewCreator {
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/RecipeViewCreator.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/RecipeViewCreator.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/RecipeViewCreator.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/RecipeViewCreator.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/RecipeViewCreator.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/RecipeViewCreator.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/RecipeViewCreator.kt	(date 1765807284436)
+@@ -1,7 +1,7 @@
+-package dev.jsinco.recipes.core.flaws.creation
++package dev.jsinco.recipes.recipe.flaws.creation
+ 
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.RecipeView
+ 
+ interface RecipeViewCreator {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/DrunkRecipeViewCreator.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/DrunkRecipeViewCreator.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/DrunkRecipeViewCreator.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/DrunkRecipeViewCreator.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/DrunkRecipeViewCreator.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/flaws/creation/DrunkRecipeViewCreator.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/flaws/creation/DrunkRecipeViewCreator.kt	(date 1765807284521)
+@@ -1,13 +1,13 @@
+-package dev.jsinco.recipes.core.flaws.creation
++package dev.jsinco.recipes.recipe.flaws.creation
+ 
+-import dev.jsinco.recipes.core.BreweryRecipe
+-import dev.jsinco.recipes.core.RecipeView
+-import dev.jsinco.recipes.core.flaws.Flaw
+-import dev.jsinco.recipes.core.flaws.FlawConfig
+-import dev.jsinco.recipes.core.flaws.FlawExtent
+-import dev.jsinco.recipes.core.flaws.type.InaccuracyFlawType
+-import dev.jsinco.recipes.core.flaws.type.ReplacementFlawType
+-import dev.jsinco.recipes.core.flaws.type.SlurringFlawType
++import dev.jsinco.recipes.recipe.BreweryRecipe
++import dev.jsinco.recipes.recipe.RecipeView
++import dev.jsinco.recipes.recipe.flaws.Flaw
++import dev.jsinco.recipes.recipe.flaws.FlawConfig
++import dev.jsinco.recipes.recipe.flaws.FlawExtent
++import dev.jsinco.recipes.recipe.flaws.type.InaccuracyFlawType
++import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
++import dev.jsinco.recipes.recipe.flaws.type.SlurringFlawType
+ import kotlin.random.Random
+ 
+ object DrunkRecipeViewCreator : RecipeViewCreator {
+Index: src/main/kotlin/dev/jsinco/recipes/data/StorageImpl.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package dev.jsinco.recipes.data\n\nimport dev.jsinco.recipes.core.RecipeView\nimport java.util.*\nimport java.util.concurrent.CompletableFuture\n\ninterface StorageImpl {\n\n    fun getType(): StorageType\n\n    fun insertOrUpdateRecipeView(playerUuid: UUID, recipeView: RecipeView): CompletableFuture<Void?>\n\n    fun removeRecipeView(playerUuid: UUID, recipeKey: String): CompletableFuture<Void?>\n\n    fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?>\n\n    fun createTables()\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/data/StorageImpl.kt b/src/main/kotlin/dev/jsinco/recipes/data/StorageImpl.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/data/StorageImpl.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/data/StorageImpl.kt	(date 1765807284464)
+@@ -1,6 +1,6 @@
+ package dev.jsinco.recipes.data
+ 
+-import dev.jsinco.recipes.core.RecipeView
++import dev.jsinco.recipes.recipe.RecipeView
+ import java.util.*
+ import java.util.concurrent.CompletableFuture
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/steps/CookStep.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/CookStep.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/CookStep.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/steps/CookStep.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/CookStep.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/CookStep.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/CookStep.kt	(date 1765807284511)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.process.steps
++package dev.jsinco.recipes.recipe.process.steps
+ 
+-import dev.jsinco.recipes.core.process.Ingredient
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.StepType
++import dev.jsinco.recipes.recipe.process.Ingredient
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.StepType
+ 
+ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/steps/DistillStep.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/DistillStep.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/DistillStep.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/steps/DistillStep.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/DistillStep.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/DistillStep.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/DistillStep.kt	(date 1765807284258)
+@@ -1,7 +1,7 @@
+-package dev.jsinco.recipes.core.process.steps
++package dev.jsinco.recipes.recipe.process.steps
+ 
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.StepType
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.StepType
+ 
+ class DistillStep(val count: Long) : Step {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/steps/AgeStep.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/AgeStep.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/AgeStep.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/steps/AgeStep.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/AgeStep.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/AgeStep.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/AgeStep.kt	(date 1765807284249)
+@@ -1,7 +1,7 @@
+-package dev.jsinco.recipes.core.process.steps
++package dev.jsinco.recipes.recipe.process.steps
+ 
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.StepType
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.StepType
+ 
+ class AgeStep(val agingTicks: Long, val barrelType: BarrelType) : Step {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/steps/MixStep.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/MixStep.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/MixStep.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/steps/MixStep.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/MixStep.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/steps/MixStep.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/steps/MixStep.kt	(date 1765807284473)
+@@ -1,8 +1,8 @@
+-package dev.jsinco.recipes.core.process.steps
++package dev.jsinco.recipes.recipe.process.steps
+ 
+-import dev.jsinco.recipes.core.process.Ingredient
+-import dev.jsinco.recipes.core.process.Step
+-import dev.jsinco.recipes.core.process.StepType
++import dev.jsinco.recipes.recipe.process.Ingredient
++import dev.jsinco.recipes.recipe.process.Step
++import dev.jsinco.recipes.recipe.process.StepType
+ 
+ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
+ 
+Index: src/main/kotlin/dev/jsinco/recipes/core/process/StepType.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/kotlin/dev/jsinco/recipes/core/process/StepType.kt b/src/main/kotlin/dev/jsinco/recipes/recipe/process/StepType.kt
+rename from src/main/kotlin/dev/jsinco/recipes/core/process/StepType.kt
+rename to src/main/kotlin/dev/jsinco/recipes/recipe/process/StepType.kt
+--- a/src/main/kotlin/dev/jsinco/recipes/core/process/StepType.kt	(revision 97cf5acbfba9658299297166cba32be71eac226f)
++++ b/src/main/kotlin/dev/jsinco/recipes/recipe/process/StepType.kt	(date 1765807284403)
+@@ -1,4 +1,4 @@
+-package dev.jsinco.recipes.core.process
++package dev.jsinco.recipes.recipe.process
+ 
+ enum class StepType {
+ 

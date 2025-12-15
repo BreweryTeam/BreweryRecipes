@@ -2,8 +2,8 @@ package dev.jsinco.recipes.configuration.spawning
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
-import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import org.bukkit.inventory.ItemStack
 
 data class SpawnDefinition(

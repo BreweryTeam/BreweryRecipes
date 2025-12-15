@@ -3,7 +3,7 @@ package dev.jsinco.recipes.configuration.serialize
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
 import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
 import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
 import eu.okaeri.configs.serdes.ObjectSerializer

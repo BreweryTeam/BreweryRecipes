@@ -3,7 +3,7 @@ package dev.jsinco.recipes.util
 import dev.jsinco.brewery.api.brew.BrewingStep
 import dev.jsinco.brewery.api.ingredient.Ingredient
 import dev.jsinco.brewery.api.recipe.Recipe
-import dev.jsinco.recipes.core.BreweryRecipe
+import dev.jsinco.recipes.recipe.BreweryRecipe
 import org.bukkit.inventory.ItemStack
 
 object TBPRecipeConverter {
@@ -28,10 +28,10 @@ object TBPRecipeConverter {
         return recipeBuilder.build()
     }
 
-    private fun mapIngredients(ingredients: Map<out Ingredient, Int>): Map<dev.jsinco.recipes.core.process.Ingredient, Int> {
+    private fun mapIngredients(ingredients: Map<out Ingredient, Int>): Map<dev.jsinco.recipes.recipe.process.Ingredient, Int> {
         return ingredients.asSequence()
             .map { entry ->
-                dev.jsinco.recipes.core.process.Ingredient(
+                dev.jsinco.recipes.recipe.process.Ingredient(
                     entry.key.key,
                     entry.key.displayName()
                 ) to entry.value

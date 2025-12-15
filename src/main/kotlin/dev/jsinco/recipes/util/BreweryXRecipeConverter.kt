@@ -1,8 +1,8 @@
 package dev.jsinco.recipes.util
 
 import com.dre.brewery.recipe.*
-import dev.jsinco.recipes.core.BreweryRecipe
-import dev.jsinco.recipes.core.process.Ingredient
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.process.Ingredient
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 

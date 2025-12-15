@@ -4,7 +4,7 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.jsinco.recipes.core.RecipeView
+import dev.jsinco.recipes.recipe.RecipeView
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.data.StorageType
 import dev.jsinco.recipes.data.serdes.FlawSerdes

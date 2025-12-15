@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.RecipeUtil
 import net.kyori.adventure.text.Component

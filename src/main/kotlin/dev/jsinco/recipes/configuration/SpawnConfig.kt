@@ -3,7 +3,7 @@ package dev.jsinco.recipes.configuration
 import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
 import dev.jsinco.recipes.configuration.spawning.triggers.*
-import dev.jsinco.recipes.core.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey

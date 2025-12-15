@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.core.BreweryRecipe
+import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType
