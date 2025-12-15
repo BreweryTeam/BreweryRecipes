@@ -27,11 +27,16 @@ repositories {
 
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     compileOnly("com.github.BreweryTeam:TheBrewingProject:feat~expose-config-to-api-SNAPSHOT")
     compileOnly("net.kyori:adventure-text-minimessage:4.24.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
     implementation("com.zaxxer:HikariCP:7.0.2")
+    testImplementation(platform("org.junit:junit-bom:6.0.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.98.0")
+    testImplementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 
@@ -93,6 +98,10 @@ tasks {
             }
             url("https://download.luckperms.net/1607/bukkit/loader/LuckPerms-Bukkit-5.5.18.jar")
         }
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 

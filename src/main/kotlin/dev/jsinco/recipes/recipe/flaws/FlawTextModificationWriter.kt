@@ -2,39 +2,36 @@ package dev.jsinco.recipes.recipe.flaws
 
 import dev.jsinco.recipes.recipe.flaws.type.FlawType
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import java.util.function.BiConsumer
 import java.util.regex.Pattern
 import kotlin.random.Random
 
 object FlawTextModificationWriter {
 
-    val EVERYTHING = Pattern.compile(".+")
+    val EVERYTHING: Pattern = Pattern.compile(".+")
 
     fun traverse(text: Component, consumer: BiConsumer<String, Int>) {
-        text.replaceText {
-            var pos = 0
-            it.match(EVERYTHING).replacement { matchResult, _ ->
-                val everything = matchResult.group()
-                val prevPos = pos
-                pos += everything.length
-                consumer.accept(everything, matchResult.start() + prevPos)
-                return@replacement Component.text(everything)
-            }
+        traverse(text, 0, consumer)
+    }
+
+    private fun traverse(text: Component, startingPos: Int, consumer: BiConsumer<String, Int>): Int {
+        var newPos = if (text is TextComponent) {
+            consumer.accept(text.content(), startingPos)
+            text.content().length + startingPos
+        } else startingPos
+        for (textChild in text.children()) {
+            newPos = traverse(textChild, newPos, consumer)
         }
+        return newPos
     }
 
     fun traverse(text: Component, regex: Regex, consumer: BiConsumer<String, Int>) {
-        text.replaceText { it ->
-            var pos = 0
-            it.match(EVERYTHING).replacement { matchResult, _ ->
-                val everything = matchResult.group()
-                regex.findAll(everything)
-                    .forEach { matchResult1 ->
-                        consumer.accept(matchResult1.value, matchResult1.range.start + pos)
-                    }
-                pos += everything.length
-                return@replacement Component.text(everything)
-            }
+        traverse(text, 0) { textString, pos ->
+            regex.findAll(textString)
+                .forEach { matchResult1 ->
+                    consumer.accept(matchResult1.value, matchResult1.range.first + pos)
+                }
         }
     }
 
