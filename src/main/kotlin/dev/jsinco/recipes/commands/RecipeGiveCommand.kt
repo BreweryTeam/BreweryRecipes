@@ -70,7 +70,7 @@ object RecipeGiveCommand {
                                         val targets = context
                                             .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
                                             .resolve(context.source)
-                                        applyToTargets(context, targets, false)
+                                        applyToTargets(context, targets, true)
                                     }
                             ).requires { it.sender.hasPermission("recipes.command.others") }
                     )
