@@ -115,20 +115,24 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
             val result = it.executeQuery()
             val output = mutableListOf<RecipeView>()
             while (result.next()) {
-                output.add(
-                    RecipeView(
-                        result.getString("recipe_key"),
-                        Serdes.deserializeList(
-                            JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
-                            FlawSerdes::deserializeFlaw
-                        ),
-                        Serdes.deserializeList(JsonParser.parseString(result.getString("inverted_reveals")).asJsonArray) {jsonArray ->
-                            Serdes.deserializeSet(jsonArray.asJsonArray) { element ->
-                                element.asInt
-                            }
-                        }
-                    )
+                val flaws = Serdes.deserializeList(
+                    JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
+                    FlawSerdes::deserializeFlaw
                 )
+                val recipeView = RecipeView(
+                    result.getString("recipe_key"),
+                    flaws,
+                    Serdes.deserializeList(JsonParser.parseString(result.getString("inverted_reveals")).asJsonArray) { jsonArray ->
+                        Serdes.deserializeSet(jsonArray.asJsonArray) { element ->
+                            element.asInt
+                        }
+                    }
+                )
+                output.add(recipeView)
+                // Replace views that were previously allowed to have infinite flaws
+                if (flaws.size > 10) {
+                    insertOrUpdateRecipeView(playerUuid, recipeView)
+                }
             }
             return@runStatement output
         }
