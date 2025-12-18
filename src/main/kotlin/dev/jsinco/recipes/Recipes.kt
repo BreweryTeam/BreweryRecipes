@@ -17,6 +17,7 @@ import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.listeners.MigrationListener
+import dev.jsinco.recipes.listeners.PlayerEventListener
 import dev.jsinco.recipes.listeners.RecipeListener
 import dev.jsinco.recipes.listeners.RecipeSpawningListener
 import dev.jsinco.recipes.util.BookUtil
@@ -94,6 +95,7 @@ class Recipes : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeListener(guiIntegration), this)
         Bukkit.getPluginManager().registerEvents(MigrationListener(), this)
+        Bukkit.getPluginManager().registerEvents(PlayerEventListener(recipeViewManager), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
