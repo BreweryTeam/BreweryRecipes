@@ -1,12 +1,18 @@
 package dev.jsinco.recipes.recipe
 
+import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.data.StorageImpl
+import dev.jsinco.recipes.util.Logger
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
 class RecipeViewManager(private val storageImpl: StorageImpl) {
+    companion object {
+        const val CACHE_LIFETIME: Int = 60000 // ms
+    }
+
     private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     val backing: MutableMap<UUID, MutableList<RecipeView>> = mutableMapOf()
@@ -22,13 +28,18 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
     }
 
     fun scheduleViewsUnload(playerUuid: UUID) {
-        forRemoval[playerUuid] = System.currentTimeMillis() + 60000
+        forRemoval[playerUuid] = System.currentTimeMillis() + CACHE_LIFETIME
     }
 
     fun tick() {
         val toRemove = forRemoval.filter { it.value < System.currentTimeMillis() }
             .map { it.key }
-        CompletableFuture.runAsync({ toRemove.forEach { backing.remove(it) } }, executor)
+        toRemove.forEach(forRemoval::remove)
+        CompletableFuture.runAsync({
+            toRemove.forEach {
+                backing.remove(it)
+            }
+        }, executor)
     }
 
     fun getViews(playerUuid: UUID): List<RecipeView> {

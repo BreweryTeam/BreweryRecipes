@@ -8,18 +8,14 @@ import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.*
-import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface
 import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
-import dev.jsinco.recipes.listeners.GuiEventListener
-import dev.jsinco.recipes.listeners.MigrationListener
-import dev.jsinco.recipes.listeners.PlayerEventListener
-import dev.jsinco.recipes.listeners.RecipeListener
-import dev.jsinco.recipes.listeners.RecipeSpawningListener
+import dev.jsinco.recipes.listeners.*
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import dev.jsinco.recipes.util.ClassUtil
@@ -71,6 +67,7 @@ class Recipes : JavaPlugin() {
                 .toMap()
             return recipeMap
         }
+
         fun clearRecipeCache() {
             if (this::recipeMap.isInitialized) {
                 recipeMap = emptyMap()
@@ -103,6 +100,12 @@ class Recipes : JavaPlugin() {
         book.addIngredient(Material.PAPER)
         book.addIngredient(Material.BOOK)
         Bukkit.addRecipe(book)
+        Bukkit.getGlobalRegionScheduler().runAtFixedRate(
+            this,
+            { recipeViewManager.tick() },
+            1,
+            20
+        )
     }
 
     private fun loadRecipeProvider(): List<BreweryRecipe>? {
