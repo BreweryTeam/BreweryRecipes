@@ -104,19 +104,18 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         }
     }
 
-    override fun selectAllRecipeViews(): CompletableFuture<Map<UUID, MutableList<RecipeView>>?> {
+    override fun selectRecipeViews(playerUuid: UUID): CompletableFuture<List<RecipeView>?> {
         return runStatement(
             """
-                SELECT * FROM recipe_view;
+                SELECT recipe_key, recipe_flaws, inverted_reveals FROM recipe_view
+                    WHERE player_uuid = ?;
             """.trimIndent()
         ) {
+            it.setBytes(1, UuidUtil.toBytes(playerUuid))
             val result = it.executeQuery()
-            val output = mutableMapOf<UUID, MutableList<RecipeView>>()
+            val output = mutableListOf<RecipeView>()
             while (result.next()) {
-                val recipeViews = output.computeIfAbsent(UuidUtil.asUuid(result.getBytes("player_uuid"))) {
-                    mutableListOf()
-                }
-                recipeViews.add(
+                output.add(
                     RecipeView(
                         result.getString("recipe_key"),
                         Serdes.deserializeList(
