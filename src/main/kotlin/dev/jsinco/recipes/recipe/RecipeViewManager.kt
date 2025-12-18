@@ -1,8 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import com.dre.brewery.utility.Logging
 import dev.jsinco.recipes.data.StorageImpl
-import dev.jsinco.recipes.util.Logger
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -24,7 +22,11 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
             return
         }
         storageImpl.selectRecipeViews(playerUuid)
-            .thenAcceptAsync({ it?.let { backing[playerUuid] = it.toMutableList() } }, executor)
+            .thenAcceptAsync({
+                it?.let {
+                    backing[playerUuid] = it.toMutableList()
+                }
+            }, executor)
     }
 
     fun scheduleViewsUnload(playerUuid: UUID) {

@@ -5,11 +5,11 @@ import com.google.gson.JsonPrimitive
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.recipe.RecipeView
 import dev.jsinco.recipes.data.StorageImpl
 import dev.jsinco.recipes.data.StorageType
 import dev.jsinco.recipes.data.serdes.FlawSerdes
 import dev.jsinco.recipes.data.serdes.Serdes
+import dev.jsinco.recipes.recipe.RecipeView
 import dev.jsinco.recipes.util.Logger
 import dev.jsinco.recipes.util.UuidUtil
 import java.sql.PreparedStatement
@@ -120,20 +120,24 @@ class MySQLStorageImpl : StorageImpl {
             val result = it.executeQuery()
             val output = mutableListOf<RecipeView>()
             while (result.next()) {
-                output.add(
-                    RecipeView(
-                        result.getString("recipe_key"),
-                        Serdes.deserializeList(
-                            JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
-                            FlawSerdes::deserializeFlaw
-                        ),
-                        Serdes.deserializeList(JsonParser.parseString(result.getString("inverted_reveals")).asJsonArray) {jsonArray ->
-                            Serdes.deserializeSet(jsonArray.asJsonArray) { element ->
-                                element.asInt
-                            }
-                        }
-                    )
+                val flaws = Serdes.deserializeList(
+                    JsonParser.parseString(result.getString("recipe_flaws")).asJsonArray,
+                    FlawSerdes::deserializeFlaw
                 )
+                val recipeView = RecipeView(
+                    result.getString("recipe_key"),
+                    flaws,
+                    Serdes.deserializeList(JsonParser.parseString(result.getString("inverted_reveals")).asJsonArray) { jsonArray ->
+                        Serdes.deserializeSet(jsonArray.asJsonArray) { element ->
+                            element.asInt
+                        }
+                    }
+                )
+                output.add(recipeView)
+                // Replace views that were previously allowed to have infinite flaws
+                if (flaws.size > 10) {
+                    insertOrUpdateRecipeView(playerUuid, recipeView)
+                }
             }
             return@runStatement output
         }
