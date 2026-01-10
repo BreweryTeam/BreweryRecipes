@@ -2,7 +2,6 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
-import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.RecipeUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
@@ -14,7 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.persistence.PersistentDataType
 import kotlin.random.Random
 
-data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
+class RecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerInteract(event: PlayerInteractEvent) {
@@ -52,7 +51,7 @@ data class RecipeListener(val guiIntegration: GuiIntegration) : Listener {
                 "recipes.loot.discovery",
                 Argument.component(
                     "recipe_name",
-                    guiIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                    Recipes.guiIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
                 )
             )
         )

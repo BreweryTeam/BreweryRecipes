@@ -2,8 +2,8 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.gui.GuiItem
+import dev.jsinco.recipes.gui.GuiManager
 import dev.jsinco.recipes.gui.RecipesGui
-import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.BookUtil
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -15,8 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
-
-class GuiEventListener(private val plugin: Recipes, private val guiIntegration: GuiIntegration) : Listener {
+class GuiEventListener : Listener {
 
     companion object {
         val GUI_ITEM_TYPE = Recipes.key("gui_item_type")
@@ -54,20 +53,7 @@ class GuiEventListener(private val plugin: Recipes, private val guiIntegration: 
             return
         }
 
-        val recipeViews = if (player.hasPermission("recipes.override.view")) {
-            Recipes.recipes().values.map { breweryRecipe -> breweryRecipe.generateCompletedView() }
-        } else {
-            Recipes.recipeViewManager.getViews(player.uniqueId)
-        }
-
-        val gui = RecipesGui(
-            player,
-            recipeViews.mapNotNull {
-                guiIntegration.createFullItem(it)
-            }
-        )
-        gui.render()
-        gui.open()
+        GuiManager.openRecipeGui(player)
 
         event.setUseInteractedBlock(Event.Result.DENY)
         event.setUseItemInHand(Event.Result.DENY)

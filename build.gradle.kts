@@ -135,6 +135,7 @@ bukkit {
                 "recipes.command.clear",
                 "recipes.command.give",
                 "recipes.command.givebook",
+                "recipes.command.open",
                 "recipes.command.reload",
                 "recipes.command.others"
             )

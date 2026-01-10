@@ -45,6 +45,7 @@ class Recipes : JavaPlugin() {
         lateinit var guiConfig: GuiConfig
         lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
+        lateinit var guiIntegration: GuiIntegration
         private lateinit var recipeMap: Map<String, BreweryRecipe>
 
         fun key(key: String): NamespacedKey {
@@ -83,14 +84,14 @@ class Recipes : JavaPlugin() {
         spawnConfig = readSpawnConfig()
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
+        guiIntegration = loadGuiIntegration()
 
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
-        val guiIntegration = loadGuiIntegration()
-        Bukkit.getPluginManager().registerEvents(GuiEventListener(this, guiIntegration), this)
+        Bukkit.getPluginManager().registerEvents(GuiEventListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
-        Bukkit.getPluginManager().registerEvents(RecipeListener(guiIntegration), this)
+        Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
         Bukkit.getPluginManager().registerEvents(MigrationListener(), this)
         Bukkit.getPluginManager().registerEvents(PlayerEventListener(recipeViewManager), this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {

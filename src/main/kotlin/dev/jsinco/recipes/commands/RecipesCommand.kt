@@ -51,6 +51,9 @@ object RecipesCommand {
                     )
                     .requires { it.sender.hasPermission("recipes.command.givebook") }
             ).then(
+                RecipeOpenCommand.command()
+                    .requires { it.sender.hasPermission("recipes.command.open") }
+            ).then(
                 RecipeAddCommand.command()
                     .requires { it.sender.hasPermission("recipes.command.add") }
             ).then(
