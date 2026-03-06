@@ -116,6 +116,7 @@ class Recipes : JavaPlugin() {
             }
             val provider =
                 (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null
+            Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(provider), this)
             return provider.recipeRegistry.recipes
                 .map { TBPRecipeConverter.convert(it) }
         }
