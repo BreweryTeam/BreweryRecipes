@@ -28,7 +28,7 @@ repositories {
 
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
-    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:3.0.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.24.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
@@ -36,7 +36,7 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:6.0.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.98.0")
-    testImplementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -72,7 +72,9 @@ tasks {
     }
 
     register("publishRelease") {
-        println("Publishing a new release to: modrinth and hangar")
+        doFirst {
+            println("Publishing a new release to: modrinth and hangar")
+        }
         finalizedBy(modrinth)
         finalizedBy("publishPluginPublicationToHangar")
 
@@ -93,11 +95,10 @@ tasks {
         minecraftVersion("1.21.10")
         downloadPlugins {
             if (project.findProperty("testing.with.tbp")!! == "true") {
-                modrinth("thebrewingproject", "2.3.0")
+                modrinth("thebrewingproject", "3.0.0")
             } else {
                 modrinth("breweryx", "3.6.0")
             }
-            url("https://download.luckperms.net/1607/bukkit/loader/LuckPerms-Bukkit-5.5.18.jar")
         }
     }
 
