@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import dev.jsinco.recipes.data.StorageImpl
+import dev.jsinco.recipes.data.storage.StorageImpl
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
@@ -21,7 +21,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         if (backing.contains(playerUuid)) {
             return
         }
-        storageImpl.selectRecipeViews(playerUuid)
+        storageImpl.recipeViewSession().selectRecipeViews(playerUuid)
             .thenAcceptAsync({
                 it?.let {
                     backing[playerUuid] = it.toMutableList()
@@ -54,7 +54,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         }
         recipeViews.removeIf { it.recipeIdentifier == recipeView.recipeIdentifier }
         recipeViews.add(recipeView)
-        storageImpl.insertOrUpdateRecipeView(playerUuid, recipeView)
+        storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, recipeView)
     }
 
     fun insertOrMergeView(playerUuid: UUID, incoming: RecipeView) {
@@ -64,7 +64,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         if (idx < 0) {
             val minimalized = RecipeWriter.clearRedundantFlaws(incoming)
             list.add(minimalized) // No existing view for this recipe yet, add one
-            storageImpl.insertOrUpdateRecipeView(playerUuid, minimalized)
+            storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
             return
         }
 
@@ -72,7 +72,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         val merged = RecipeWriter.mergeFlaws(existing, incoming)
         val minimalized = RecipeWriter.clearRedundantFlaws(merged)
         list[idx] = minimalized // replace in memory, just to be sure
-        storageImpl.insertOrUpdateRecipeView(playerUuid, minimalized)
+        storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
     }
 
     fun removeView(playerUuid: UUID, recipeKey: String) {
@@ -80,13 +80,13 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
             mutableListOf()
         }
         recipeViews.removeIf { it.recipeIdentifier == recipeKey }
-        storageImpl.removeRecipeView(playerUuid, recipeKey)
+        storageImpl.recipeViewSession().removeRecipeView(playerUuid, recipeKey)
     }
 
     fun clearAll(playerUuid: UUID) {
         val views = backing.remove(playerUuid)
         views?.forEach {
-            storageImpl.removeRecipeView(playerUuid, it.recipeIdentifier)
+            storageImpl.recipeViewSession().removeRecipeView(playerUuid, it.recipeIdentifier)
         }
     }
 }
