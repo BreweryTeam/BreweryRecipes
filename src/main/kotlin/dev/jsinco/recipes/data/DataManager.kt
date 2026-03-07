@@ -1,8 +1,9 @@
 package dev.jsinco.recipes.data
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.data.storage.MySQLStorageImpl
-import dev.jsinco.recipes.data.storage.SQLiteStorageImpl
+import dev.jsinco.recipes.data.storage.StorageImpl
+import dev.jsinco.recipes.data.storage.mysql.MySQLStorageImpl
+import dev.jsinco.recipes.data.storage.sqlite.SQLiteStorageImpl
 import java.io.File
 
 class DataManager(val dataFolder: File) {

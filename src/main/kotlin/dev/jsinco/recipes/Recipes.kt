@@ -9,7 +9,7 @@ import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.*
 import dev.jsinco.recipes.data.DataManager
-import dev.jsinco.recipes.data.StorageImpl
+import dev.jsinco.recipes.data.storage.StorageImpl
 import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface
 import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
