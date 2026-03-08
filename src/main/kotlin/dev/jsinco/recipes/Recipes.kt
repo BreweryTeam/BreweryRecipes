@@ -15,6 +15,7 @@ import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.gui.integration.TbpGuiInterface
 import dev.jsinco.recipes.listeners.*
 import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.RecipeCompletionManager
 import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
@@ -45,6 +46,7 @@ class Recipes : JavaPlugin() {
         lateinit var guiConfig: GuiConfig
         lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
+        lateinit var completedRecipeManager: RecipeCompletionManager
         lateinit var guiIntegration: GuiIntegration
         private lateinit var recipeMap: Map<String, BreweryRecipe>
 
@@ -84,16 +86,18 @@ class Recipes : JavaPlugin() {
         spawnConfig = readSpawnConfig()
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
+        completedRecipeManager = RecipeCompletionManager(storageImpl)
         guiIntegration = loadGuiIntegration()
 
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
+        val playerEventListener = PlayerEventListener(recipeViewManager, completedRecipeManager)
         Bukkit.getPluginManager().registerEvents(GuiEventListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
         Bukkit.getPluginManager().registerEvents(MigrationListener(), this)
-        Bukkit.getPluginManager().registerEvents(PlayerEventListener(recipeViewManager), this)
+        Bukkit.getPluginManager().registerEvents(playerEventListener, this)
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
@@ -103,7 +107,7 @@ class Recipes : JavaPlugin() {
         Bukkit.addRecipe(book)
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(
             this,
-            { recipeViewManager.tick() },
+            { playerEventListener.tick() },
             1,
             20
         )

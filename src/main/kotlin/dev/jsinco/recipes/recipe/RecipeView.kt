@@ -8,7 +8,7 @@ class RecipeView(
     val recipeIdentifier: String,
     flaws: List<Flaw>,
     val invertedReveals: List<Set<Int>>
-) {
+) : RecipeDisplay {
 
     val flaws = flaws.subList(0, flaws.size.coerceAtMost(10))
 
@@ -18,7 +18,11 @@ class RecipeView(
         }
     }
 
-    fun translation(brewDisplayName: Component): Component {
+    override fun toLore(): List<Component> {
+        TODO("Not yet implemented")
+    }
+
+    override fun displayName(brewDisplayName: Component): Component {
         val fragmentation = RecipeWriter.estimateFragmentation(this)
         val translationName = if (fragmentation == 0.0) {
             "recipes.display.recipe.name.complete"
@@ -32,6 +36,10 @@ class RecipeView(
             "recipes.display.recipe.name.severely-fragmented"
         }
         return Component.translatable(translationName, Argument.component("name", brewDisplayName))
+    }
+
+    override fun scoreEquivalent(): Double {
+        return RecipeWriter.estimateFragmentation(this) / 100
     }
 
 }
