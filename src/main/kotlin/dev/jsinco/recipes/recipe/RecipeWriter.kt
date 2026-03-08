@@ -1,18 +1,13 @@
 package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
 import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
 import dev.jsinco.recipes.recipe.flaws.type.FlawType
-import dev.jsinco.recipes.recipe.process.Ingredient
 import dev.jsinco.recipes.recipe.process.Step
-import dev.jsinco.recipes.recipe.process.steps.AgeStep
-import dev.jsinco.recipes.recipe.process.steps.CookStep
-import dev.jsinco.recipes.recipe.process.steps.DistillStep
-import dev.jsinco.recipes.recipe.process.steps.MixStep
-import dev.jsinco.recipes.gui.integration.GuiIntegration
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
@@ -20,9 +15,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -62,7 +54,7 @@ object RecipeWriter {
             )
         )
         val displayName = guiIntegration.brewDisplayName(recipeView.recipeIdentifier)
-            ?.let { recipeView.translation(it) } ?: return null
+            ?.let { recipeView.displayName(it) } ?: return null
         item?.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(displayName)
@@ -73,46 +65,7 @@ object RecipeWriter {
     }
 
     private fun buildBaseStep(step: Step): Component {
-        val raw: Component = when (step) {
-            is DistillStep -> Component.translatable(
-                "recipes.display.recipe.step.distill",
-                Argument.tagResolver(Formatter.number("distill_runs", step.count))
-            )
-
-            is AgeStep -> Component.translatable(
-                "recipes.display.recipe.step.age",
-                Argument.tagResolver(
-                    Formatter.number("aging_years", step.agingTicks / agingYearTicks),
-                    Placeholder.component(
-                        "barrel_type",
-                        Component.translatable("recipes.barrel.type." + step.barrelType.name.lowercase(Locale.ROOT))
-                    )
-                )
-            )
-
-            is MixStep -> Component.translatable(
-                "recipes.display.recipe.step.mix",
-                Argument.tagResolver(
-                    Placeholder.component("ingredients", compileIngredients(step.ingredients)),
-                    Formatter.number("mixing_time", step.mixingTicks / cookingMinuteTicks)
-                )
-            )
-
-            is CookStep -> Component.translatable(
-                "recipes.display.recipe.step.cook",
-                Argument.tagResolver(
-                    Placeholder.component("ingredients", compileIngredients(step.ingredients)),
-                    Formatter.number("cooking_time", step.cookingTicks / cookingMinuteTicks),
-                    Placeholder.component(
-                        "cauldron_type",
-                        Component.translatable("recipes.cauldron.type." + step.cauldronType.name.lowercase(Locale.ROOT))
-                    )
-                )
-            )
-
-            else -> Component.text("Unknown component")
-        }
-        return TranslationUtil.render(raw)
+        return TranslationUtil.render(step.display())
     }
 
     private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
@@ -241,15 +194,6 @@ object RecipeWriter {
             }
         }
         return true
-    }
-
-    private fun compileIngredients(ingredients: Map<Ingredient, Int>): Component {
-        return ingredients.entries.stream()
-            .map { entry ->
-                Component.text(entry.value).color(NamedTextColor.GOLD).appendSpace().append(
-                    entry.key.displayName // A Component, not supported
-                ).colorIfAbsent(NamedTextColor.GRAY)
-            }.collect(Component.toComponent(Component.text(", ")))
     }
 
     private fun flawApplies(stepIndex: Int, flaw: Flaw): Boolean {

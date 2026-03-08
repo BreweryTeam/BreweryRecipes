@@ -1,47 +1,26 @@
 package dev.jsinco.recipes.recipe
 
+import dev.jsinco.recipes.data.PersistencyLinkedCache
 import dev.jsinco.recipes.data.storage.StorageImpl
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 
-class RecipeViewManager(private val storageImpl: StorageImpl) {
+class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinkedCache {
     companion object {
         const val CACHE_LIFETIME: Int = 60000 // ms
     }
 
-    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-
     val backing: MutableMap<UUID, MutableList<RecipeView>> = mutableMapOf()
-    val forRemoval: MutableMap<UUID, Long> = mutableMapOf()
 
-    fun initiateViews(playerUuid: UUID) {
-        forRemoval.remove(playerUuid)
+    override fun initiateCacheFor(playerUuid: UUID) {
         if (backing.contains(playerUuid)) {
             return
         }
         storageImpl.recipeViewSession().selectRecipeViews(playerUuid)
-            .thenAcceptAsync({
+            .thenAccept({
                 it?.let {
                     backing[playerUuid] = it.toMutableList()
                 }
-            }, executor)
-    }
-
-    fun scheduleViewsUnload(playerUuid: UUID) {
-        forRemoval[playerUuid] = System.currentTimeMillis() + CACHE_LIFETIME
-    }
-
-    fun tick() {
-        val toRemove = forRemoval.filter { it.value < System.currentTimeMillis() }
-            .map { it.key }
-        toRemove.forEach(forRemoval::remove)
-        CompletableFuture.runAsync({
-            toRemove.forEach {
-                backing.remove(it)
-            }
-        }, executor)
+            })
     }
 
     fun getViews(playerUuid: UUID): List<RecipeView> {
@@ -83,10 +62,14 @@ class RecipeViewManager(private val storageImpl: StorageImpl) {
         storageImpl.recipeViewSession().removeRecipeView(playerUuid, recipeKey)
     }
 
-    fun clearAll(playerUuid: UUID) {
+    fun removeAll(playerUuid: UUID) {
         val views = backing.remove(playerUuid)
         views?.forEach {
             storageImpl.recipeViewSession().removeRecipeView(playerUuid, it.recipeIdentifier)
         }
+    }
+
+    override fun clearAll(playerUuid: UUID) {
+        val views = backing.remove(playerUuid)
     }
 }
