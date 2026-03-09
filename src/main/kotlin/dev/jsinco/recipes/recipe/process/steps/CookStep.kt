@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe.process.steps
 
-import dev.jsinco.recipes.recipe.RecipeWriter.cookingMinuteTicks
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter.cookingMinuteTicks
 import dev.jsinco.recipes.recipe.process.Ingredient
 import dev.jsinco.recipes.recipe.process.IngredientUtil
 import dev.jsinco.recipes.recipe.process.Step

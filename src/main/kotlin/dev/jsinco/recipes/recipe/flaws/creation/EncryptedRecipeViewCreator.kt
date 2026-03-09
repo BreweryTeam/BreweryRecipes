@@ -2,7 +2,7 @@ package dev.jsinco.recipes.recipe.flaws.creation
 
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeView
-import dev.jsinco.recipes.recipe.RecipeWriter
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawConfig
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
@@ -25,8 +25,8 @@ object EncryptedRecipeViewCreator : RecipeViewCreator {
             }
             flaws.add(Flaw(flawType, FlawConfig(FlawExtent.Everywhere, Random.nextInt(), expectedFlawLevel * 2 / 3)))
             flawFragmentation =
-                RecipeWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
+                RecipeViewLoreWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
         }
-        return RecipeWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
+        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
     }
 }

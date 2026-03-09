@@ -23,7 +23,7 @@ class RecipeView(
     }
 
     override fun displayName(brewDisplayName: Component): Component {
-        val fragmentation = RecipeWriter.estimateFragmentation(this)
+        val fragmentation = RecipeViewLoreWriter.estimateFragmentation(this)
         val translationName = if (fragmentation == 0.0) {
             "recipes.display.recipe.name.complete"
         } else if (fragmentation < 25.0) {
@@ -39,7 +39,7 @@ class RecipeView(
     }
 
     override fun scoreEquivalent(): Double {
-        return RecipeWriter.estimateFragmentation(this) / 100
+        return RecipeViewLoreWriter.estimateFragmentation(this) / 100
     }
 
 }

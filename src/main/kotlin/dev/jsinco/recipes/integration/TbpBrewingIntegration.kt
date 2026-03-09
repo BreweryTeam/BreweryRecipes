@@ -1,17 +1,19 @@
-package dev.jsinco.recipes.gui.integration
+package dev.jsinco.recipes.integration
 
 import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.recipe.RecipeView
+import dev.jsinco.recipes.util.TBPRecipeConverter
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.inventory.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
-object TbpGuiInterface : GuiIntegration {
+object TbpBrewingIntegration : BrewingIntegration {
 
     lateinit var tbpApi: TheBrewingProjectApi
+    private lateinit var recipeMap: Map<String, BreweryRecipe>
 
     fun getApi(): TheBrewingProjectApi {
         if (!this::tbpApi.isInitialized) {
@@ -33,6 +35,20 @@ object TbpGuiInterface : GuiIntegration {
         return recipe.getRecipeResult(BrewQuality.EXCELLENT).displayName()
     }
 
+    override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
+        val steps = TBPRecipeConverter.convert(recipe)
+        val brew = getApi().brewManager.createBrew(steps)
+        val item = getApi().brewManager.toItem(brew, Brew.State.Other())
+        val failed = brew.closestRecipe(getApi().recipeRegistry).orElse(null)
+            ?.let(brew::score)
+            ?.let { score -> score.brewQuality() == null }
+            ?: true
+        return BrewingIntegration.RecipeResult(
+            item.effectiveName(),
+            failed
+        )
+    }
+
     override fun cookingMinuteTicks(): Long {
         try {
             Class.forName("dev.jsinco.brewery.api.config.Configuration")
@@ -49,5 +65,29 @@ object TbpGuiInterface : GuiIntegration {
         } catch (e: ClassNotFoundException) {
             return 20 * 60 * 20 // default
         }
+    }
+
+    override fun getRecipe(id: String): BreweryRecipe? {
+        if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
+            return recipeMap[id]
+        }
+        if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
+            return null
+        }
+        val provider = getApi()
+        recipeMap = provider.recipeRegistry.recipes
+            .map { TBPRecipeConverter.convert(it) }
+            .associateBy { it.identifier }
+        return recipeMap[id]
+    }
+
+    override fun reload() {
+        recipeMap = getApi().recipeRegistry.recipes
+            .map { TBPRecipeConverter.convert(it) }
+            .associateBy { it.identifier }
+    }
+
+    override fun enable(recipes: Recipes) {
+        Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(getApi()), recipes)
     }
 }

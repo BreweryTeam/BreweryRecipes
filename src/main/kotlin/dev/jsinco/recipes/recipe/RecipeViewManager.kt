@@ -41,15 +41,15 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         val idx = list.indexOfFirst { it.recipeIdentifier == incoming.recipeIdentifier }
 
         if (idx < 0) {
-            val minimalized = RecipeWriter.clearRedundantFlaws(incoming)
+            val minimalized = RecipeViewLoreWriter.clearRedundantFlaws(incoming)
             list.add(minimalized) // No existing view for this recipe yet, add one
             storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
             return
         }
 
         val existing = list[idx]
-        val merged = RecipeWriter.mergeFlaws(existing, incoming)
-        val minimalized = RecipeWriter.clearRedundantFlaws(merged)
+        val merged = RecipeViewLoreWriter.mergeFlaws(existing, incoming)
+        val minimalized = RecipeViewLoreWriter.clearRedundantFlaws(merged)
         list[idx] = minimalized // replace in memory, just to be sure
         storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
     }
