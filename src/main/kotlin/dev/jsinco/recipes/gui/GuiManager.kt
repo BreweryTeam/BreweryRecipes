@@ -15,7 +15,7 @@ object GuiManager {
         val gui = RecipesGui(
             player,
             recipeViews.mapNotNull {
-                Recipes.guiIntegration.createFullItem(it)
+                Recipes.brewingIntegration.createGuiItem(it)
             }
         )
         gui.render()

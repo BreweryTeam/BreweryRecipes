@@ -2,7 +2,7 @@ package dev.jsinco.recipes.recipe.flaws.creation
 
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeView
-import dev.jsinco.recipes.recipe.RecipeWriter
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawConfig
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
@@ -40,8 +40,8 @@ object UncertainRecipeViewCreator : RecipeViewCreator {
                 }
             }
             flaws.add(Flaw(flawType, FlawConfig(extent, Random.nextInt(), expectedFlawLevel)))
-            flawIntensity = RecipeWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
+            flawIntensity = RecipeViewLoreWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
         }
-        return RecipeWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
+        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
     }
 }

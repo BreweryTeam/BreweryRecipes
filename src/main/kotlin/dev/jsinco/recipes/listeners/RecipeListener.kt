@@ -51,7 +51,7 @@ class RecipeListener : Listener {
                 "recipes.loot.discovery",
                 Argument.component(
                     "recipe_name",
-                    Recipes.guiIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                    Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
                 )
             )
         )

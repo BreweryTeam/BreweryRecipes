@@ -1,7 +1,5 @@
 package dev.jsinco.recipes
 
-import com.dre.brewery.recipe.BRecipe
-import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
@@ -10,17 +8,15 @@ import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.*
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.storage.StorageImpl
-import dev.jsinco.recipes.gui.integration.BreweryXGuiInterface
-import dev.jsinco.recipes.gui.integration.GuiIntegration
-import dev.jsinco.recipes.gui.integration.TbpGuiInterface
+import dev.jsinco.recipes.integration.BreweryXBrewingIntegration
+import dev.jsinco.recipes.integration.BrewingIntegration
+import dev.jsinco.recipes.integration.TbpBrewingIntegration
 import dev.jsinco.recipes.listeners.*
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeCompletionManager
 import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.util.BookUtil
-import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import dev.jsinco.recipes.util.ClassUtil
-import dev.jsinco.recipes.util.TBPRecipeConverter
 import eu.okaeri.configs.ConfigManager
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -47,34 +43,13 @@ class Recipes : JavaPlugin() {
         lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
         lateinit var completedRecipeManager: RecipeCompletionManager
-        lateinit var guiIntegration: GuiIntegration
-        private lateinit var recipeMap: Map<String, BreweryRecipe>
+        lateinit var brewingIntegration: BrewingIntegration
 
         fun key(key: String): NamespacedKey {
             if (key.contains(":")) {
                 return NamespacedKey.fromString(key) ?: NamespacedKey("brewery_recipes", key)
             }
             return NamespacedKey("brewery_recipes", key)
-        }
-
-        /**
-         * TBP can have a very late initialization on some recipes, use only post start
-         */
-        fun recipes(): Map<String, BreweryRecipe> {
-            if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
-                return recipeMap
-            }
-            recipeMap = instance.loadRecipeProvider()!!
-                .asSequence()
-                .map { it.identifier to it }
-                .toMap()
-            return recipeMap
-        }
-
-        fun clearRecipeCache() {
-            if (this::recipeMap.isInitialized) {
-                recipeMap = emptyMap()
-            }
         }
     }
 
@@ -87,7 +62,7 @@ class Recipes : JavaPlugin() {
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
         completedRecipeManager = RecipeCompletionManager(storageImpl)
-        guiIntegration = loadGuiIntegration()
+        brewingIntegration = loadGuiIntegration()
 
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
@@ -115,28 +90,17 @@ class Recipes : JavaPlugin() {
 
     private fun loadRecipeProvider(): List<BreweryRecipe>? {
         if (ClassUtil.exists("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")) {
-            if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
-                return null
-            }
-            val provider =
-                (Bukkit.getServicesManager().getRegistration(TheBrewingProjectApi::class.java)?.provider) ?: return null
-            Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(provider), this)
-            return provider.recipeRegistry.recipes
-                .map { TBPRecipeConverter.convert(it) }
-        }
-        if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
-            return BRecipe.getRecipes()
-                .map { BreweryXRecipeConverter.convert(it) }
+
         }
         throw IllegalStateException("Expected either BreweryX to be available or TBP")
     }
 
-    private fun loadGuiIntegration(): GuiIntegration {
+    private fun loadGuiIntegration(): BrewingIntegration {
         if (ClassUtil.exists("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")) {
-            return TbpGuiInterface
+            return TbpBrewingIntegration
         }
         if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
-            return BreweryXGuiInterface
+            return BreweryXBrewingIntegration
         }
         throw IllegalStateException("Expected either BreweryX to be available or TBP")
     }
@@ -191,7 +155,7 @@ class Recipes : JavaPlugin() {
     }
 
     fun reload() {
-        clearRecipeCache()
+        brewingIntegration.reload()
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()

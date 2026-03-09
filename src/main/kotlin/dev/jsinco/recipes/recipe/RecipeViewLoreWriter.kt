@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.Recipes
-import dev.jsinco.recipes.gui.integration.GuiIntegration
+import dev.jsinco.recipes.integration.BrewingIntegration
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
 import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
@@ -9,59 +9,37 @@ import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
 import dev.jsinco.recipes.recipe.flaws.type.FlawType
 import dev.jsinco.recipes.recipe.process.Step
 import dev.jsinco.recipes.util.TranslationUtil
-import io.papermc.paper.datacomponent.DataComponentTypes
-import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Material
-import org.bukkit.inventory.ItemStack
 import java.util.*
 
-object RecipeWriter {
+object RecipeViewLoreWriter {
 
     var cookingMinuteTicks = 20L * 60L
     var agingYearTicks = 20L * 60L * 20L
 
-    fun writeItem(recipeView: RecipeView, guiIntegration: GuiIntegration): ItemStack? {
-        cookingMinuteTicks = guiIntegration.cookingMinuteTicks()
-        agingYearTicks = guiIntegration.agingYearTicks()
+    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration): List<Component>? {
+        cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
+        agingYearTicks = brewingIntegration.agingYearTicks()
         val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
-        val item = if (Recipes.guiConfig.recipes.enabled) {
-            Recipes.guiConfig.recipes.item.generateItem()
-        } else {
-            guiIntegration.createItem(recipeView)
-        } ?: ItemStack(Material.BARRIER)
-        item.setData(
-            DataComponentTypes.LORE, ItemLore.lore(
-                recipe.steps
-                    .asSequence()
-                    .mapIndexed { index, value ->
-                        renderStep(
-                            value,
-                            index,
-                            recipeView.flaws,
-                            recipeView.invertedReveals
-                        )
-                    }
-                    .map { component ->
-                        component.colorIfAbsent(NamedTextColor.GRAY)
-                            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                    }.map(TranslationUtil::render)
-                    .toList()
-            )
-        )
-        val displayName = guiIntegration.brewDisplayName(recipeView.recipeIdentifier)
-            ?.let { recipeView.displayName(it) } ?: return null
-        item?.setData(
-            DataComponentTypes.CUSTOM_NAME,
-            TranslationUtil.render(displayName)
-                .colorIfAbsent(NamedTextColor.WHITE)
-                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-        )
-        return item
+        return recipe.steps
+            .asSequence()
+            .mapIndexed { index, value ->
+                renderStep(
+                    value,
+                    index,
+                    recipeView.flaws,
+                    recipeView.invertedReveals
+                )
+            }
+            .map { component ->
+                component.colorIfAbsent(NamedTextColor.GRAY)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            }.map(TranslationUtil::render)
+            .toList()
     }
 
     private fun buildBaseStep(step: Step): Component {

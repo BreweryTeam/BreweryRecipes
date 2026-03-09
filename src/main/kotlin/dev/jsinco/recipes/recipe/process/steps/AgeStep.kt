@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe.process.steps
 
-import dev.jsinco.recipes.recipe.RecipeWriter.agingYearTicks
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter.agingYearTicks
 import dev.jsinco.recipes.recipe.process.Step
 import dev.jsinco.recipes.recipe.process.StepType
 import net.kyori.adventure.text.Component
