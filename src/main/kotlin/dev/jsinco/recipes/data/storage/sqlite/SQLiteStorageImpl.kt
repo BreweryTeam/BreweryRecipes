@@ -9,9 +9,7 @@ import dev.jsinco.recipes.data.storage.StorageImpl
 import dev.jsinco.recipes.data.storage.StorageSessionExecutor
 import dev.jsinco.recipes.util.Logger
 import java.io.File
-import java.sql.PreparedStatement
 import java.sql.SQLException
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
@@ -47,7 +45,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
     }
 
     override fun createTables() {
-        val sql = """
+        val createRecipeViewStatement = """
             CREATE TABLE IF NOT EXISTS recipe_view (
               player_uuid BINARY(16) NOT NULL,
               recipe_key TEXT NOT NULL,
@@ -56,11 +54,19 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
               PRIMARY KEY (player_uuid, recipe_key)
             );
         """.trimIndent()
-
+        val createRecipeHistoryStatement = """
+            CREATE TABLE IF NOT EXISTS completed_recipe(
+              player_uuid BINARY(16) NOT NULL,
+              recipe_key VARCHAR(255) NOT NULL,
+              steps JSON NOT NULL,
+              PRIMARY KEY (player_uuid, recipe_key)
+            );
+        """.trimIndent()
         try {
             dataSource.connection.use { conn ->
                 conn.createStatement().use { stmt ->
-                    stmt.execute(sql)
+                    stmt.execute(createRecipeViewStatement)
+                    stmt.execute(createRecipeHistoryStatement)
                 }
             }
         } catch (e: SQLException) {

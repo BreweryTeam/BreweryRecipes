@@ -22,11 +22,9 @@ data class SpawnDefinition(
     fun generateItems(): List<ItemStack> {
         val attempts = (attempts ?: 1).coerceAtLeast(1)
         val chance = (chance ?: 1.0).coerceIn(0.0, 1.0)
-        val applicableRecipes = Recipes.recipes().asSequence()
-            .filter { recipeWhitelist.isNullOrEmpty() || recipeWhitelist.contains(it.key) }
-            .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.key) }
-            .map { it.value }
-            .toList()
+        val applicableRecipes = Recipes.brewingIntegration.allRecipes()
+            .filter { recipeWhitelist.isNullOrEmpty() || recipeWhitelist.contains(it.identifier) }
+            .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.identifier) }
         if (applicableRecipes.isEmpty()) return mutableListOf()
         val results = mutableListOf<ItemStack>()
         repeat(attempts) {

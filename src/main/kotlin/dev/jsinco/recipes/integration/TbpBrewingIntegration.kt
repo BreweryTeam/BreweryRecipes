@@ -12,7 +12,7 @@ import kotlin.jvm.optionals.getOrNull
 
 object TbpBrewingIntegration : BrewingIntegration {
 
-    lateinit var tbpApi: TheBrewingProjectApi
+    private lateinit var tbpApi: TheBrewingProjectApi
     private lateinit var recipeMap: Map<String, BreweryRecipe>
 
     fun getApi(): TheBrewingProjectApi {
@@ -22,9 +22,9 @@ object TbpBrewingIntegration : BrewingIntegration {
         return tbpApi
     }
 
-    override fun createItem(recipeView: RecipeView): ItemStack? {
-        val recipe = getApi().recipeRegistry.getRecipe(recipeView.recipeIdentifier).getOrNull() ?: return null
-        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT)
+    override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
+        val recipe = getApi().recipeRegistry.getRecipe(recipeDisplay.recipeKey()).getOrNull() ?: return null
+        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
         val brew = getApi().brewManager.createBrew(recipe.steps)
         val item = result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
         return item
@@ -39,13 +39,15 @@ object TbpBrewingIntegration : BrewingIntegration {
         val steps = TBPRecipeConverter.convert(recipe)
         val brew = getApi().brewManager.createBrew(steps)
         val item = getApi().brewManager.toItem(brew, Brew.State.Other())
-        val failed = brew.closestRecipe(getApi().recipeRegistry).orElse(null)
+        val score = brew.closestRecipe(getApi().recipeRegistry).orElse(null)
             ?.let(brew::score)
+        val failed = score
             ?.let { score -> score.brewQuality() == null }
             ?: true
         return BrewingIntegration.RecipeResult(
             item.effectiveName(),
-            failed
+            failed,
+            score?.score() ?: 0.0
         )
     }
 
@@ -62,29 +64,37 @@ object TbpBrewingIntegration : BrewingIntegration {
         try {
             Class.forName("dev.jsinco.brewery.api.config.Configuration")
             return getApi().configuration.barrels().agingYearTicks()
-        } catch (e: ClassNotFoundException) {
+        } catch (_: ClassNotFoundException) {
             return 20 * 60 * 20 // default
         }
     }
 
+    override fun allRecipes(): Collection<BreweryRecipe> {
+        return getRecipeMap().values
+    }
+
     override fun getRecipe(id: String): BreweryRecipe? {
-        if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
-            return recipeMap[id]
-        }
-        if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
-            return null
-        }
-        val provider = getApi()
-        recipeMap = provider.recipeRegistry.recipes
-            .map { TBPRecipeConverter.convert(it) }
-            .associateBy { it.identifier }
-        return recipeMap[id]
+        return getRecipeMap()[id]
     }
 
     override fun reload() {
         recipeMap = getApi().recipeRegistry.recipes
             .map { TBPRecipeConverter.convert(it) }
             .associateBy { it.identifier }
+    }
+
+    private fun getRecipeMap(): Map<String, BreweryRecipe> {
+        if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
+            return recipeMap
+        }
+        if (!Bukkit.getServicesManager().isProvidedFor(TheBrewingProjectApi::class.java)) {
+            return mapOf()
+        }
+        val provider = getApi()
+        recipeMap = provider.recipeRegistry.recipes
+            .map { TBPRecipeConverter.convert(it) }
+            .associateBy { it.identifier }
+        return recipeMap
     }
 
     override fun enable(recipes: Recipes) {

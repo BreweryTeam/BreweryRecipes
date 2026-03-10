@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.recipe
 
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
@@ -11,6 +12,7 @@ class RecipeView(
 ) : RecipeDisplay {
 
     val flaws = flaws.subList(0, flaws.size.coerceAtMost(10))
+    override fun recipeKey(): String = recipeIdentifier
 
     companion object {
         fun of(identifier: String, flaws: List<Flaw>): RecipeView {
@@ -18,8 +20,8 @@ class RecipeView(
         }
     }
 
-    override fun toLore(): List<Component> {
-        TODO("Not yet implemented")
+    override fun toLore(): List<Component>? {
+        return RecipeViewLoreWriter.writeLore(this, Recipes.brewingIntegration)
     }
 
     override fun displayName(brewDisplayName: Component): Component {
@@ -39,7 +41,7 @@ class RecipeView(
     }
 
     override fun scoreEquivalent(): Double {
-        return RecipeViewLoreWriter.estimateFragmentation(this) / 100
+        return 1 - RecipeViewLoreWriter.estimateFragmentation(this) / 100
     }
 
 }

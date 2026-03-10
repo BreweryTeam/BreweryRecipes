@@ -8,6 +8,8 @@ import dev.jsinco.brewery.bukkit.api.event.transaction.CauldronExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.DistilleryExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.ItemTransactionEvent
 import dev.jsinco.brewery.bukkit.api.transaction.ItemSource
+import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.util.TBPRecipeConverter
 import dev.jsinco.recipes.util.metadata.UuidMetaDataType
 import net.kyori.adventure.key.Key
 import org.bukkit.entity.Player
@@ -37,23 +39,31 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
     }
 
     private fun onInventoryExtract(event: ItemTransactionEvent<ItemSource.ItemBasedSource>, player: Player?) {
+        player ?: return
         val result = event.transactionSession.result?.itemStack ?: return
         val brew = api.brewManager.fromItem(result).orElse(null) ?: return
         val recipe = brew.closestRecipe(api.recipeRegistry).orElse(null) ?: return
-        val score = brew.score(recipe).score()
+        val score = brew.score(recipe)
+        if (!score.completed()) {
+            return
+        }
+        val scoreValue = score.score()
         val recipeKey = recipe.recipeName
-        if (!appliesTo(player, brew, score, recipeKey)) {
+        if (!appliesTo(player, brew, scoreValue, recipeKey)) {
             return
         }
         val brewModified = brew.withMeta(COMPLETED_RECIPE_KEY, MetaDataType.STRING, recipeKey)
-            .withMeta(COMPLETED_BY_KEY, MetaDataType.STRING, recipeKey)
-            .withMeta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE, score)
+            .withMeta(COMPLETED_BY_KEY, UuidMetaDataType, player.uniqueId)
+            .withMeta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE, scoreValue)
         event.transactionSession.result = ItemSource
             .ItemBasedSource(api.brewManager.toItem(brewModified, Brew.State.Other()))
+        Recipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
+            player.uniqueId,
+            TBPRecipeConverter.convert(recipe.recipeName, brew.steps)
+        )
     }
 
-    private fun appliesTo(player: Player?, brew: Brew, score: Double, recipeKey: String): Boolean {
-        player ?: return false
+    private fun appliesTo(player: Player, brew: Brew, score: Double, recipeKey: String): Boolean {
         if ((brew.meta(COMPLETED_BY_KEY, UuidMetaDataType)?.let { player.uniqueId != it }) ?: false) {
             return false
         }

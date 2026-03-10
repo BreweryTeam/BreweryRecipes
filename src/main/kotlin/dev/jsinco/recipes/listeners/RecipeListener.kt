@@ -23,7 +23,8 @@ class RecipeListener : Listener {
         if (!item.persistentDataContainer.has(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)) {
             return
         }
-        val recipeIdentifier = item.persistentDataContainer.get(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)
+        val recipeIdentifier =
+            item.persistentDataContainer.get(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING) ?: return
         val flaw = if (item.persistentDataContainer.has(RecipeUtil.FLAW_KEY)) {
             val actual = item.persistentDataContainer.get(
                 RecipeUtil.FLAW_KEY, PersistentDataType.STRING
@@ -32,7 +33,7 @@ class RecipeListener : Listener {
                 it.name.equals(actual, true)
             }
         } else null
-        val recipe = Recipes.recipes()[recipeIdentifier] ?: run {
+        val recipe = Recipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
             event.player.sendMessage(Component.translatable("recipes.loot.expired.recipe"))
             return
         }

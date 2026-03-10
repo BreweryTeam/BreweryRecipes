@@ -24,7 +24,7 @@ object RecipeViewLoreWriter {
     fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
-        val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return null
+        val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
         return recipe.steps
             .asSequence()
             .mapIndexed { index, value ->
@@ -91,7 +91,7 @@ object RecipeViewLoreWriter {
     }
 
     fun estimateFragmentation(recipeView: RecipeView): Double {
-        val recipe = Recipes.recipes()[recipeView.recipeIdentifier] ?: return 100.0
+        val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return 100.0
         if (recipe.steps.isEmpty()) return 0.0
 
         var fragmentation = 0.0
@@ -116,7 +116,7 @@ object RecipeViewLoreWriter {
 
     fun clearRedundantFlaws(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
         val applicableFlaws = mutableSetOf<Flaw>()
-        val recipe = Recipes.recipes()[view.recipeIdentifier] ?: return view
+        val recipe = Recipes.brewingIntegration.getRecipe(view.recipeIdentifier) ?: return view
         recipe.steps.forEachIndexed { index, step ->
             compileTextModifications(resolveTranslatablesForMutation(buildBaseStep(step)), index, view.flaws)
                 .keys.forEach { applicableFlaws.add(it) }
@@ -132,7 +132,7 @@ object RecipeViewLoreWriter {
     }
 
     fun mergeFlaws(base: RecipeView, toSubtract: RecipeView): RecipeView {
-        val recipe = Recipes.recipes()[base.recipeIdentifier] ?: return base
+        val recipe = Recipes.brewingIntegration.getRecipe(base.recipeIdentifier) ?: return base
         val flawPositions = mutableListOf<MutableSet<Int>>()
         for (i in 0..<recipe.steps.size) {
             val step = recipe.steps[i]

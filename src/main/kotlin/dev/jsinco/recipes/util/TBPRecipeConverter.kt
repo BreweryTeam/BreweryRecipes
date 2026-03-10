@@ -20,8 +20,11 @@ object TBPRecipeConverter {
 
 
     fun convert(recipe: Recipe<ItemStack>): BreweryRecipe {
-        val recipeBuilder = BreweryRecipe.Builder(recipe.recipeName)
-        val steps = recipe.steps
+        return convert(recipe.recipeName, recipe.steps)
+    }
+
+    fun convert(recipeKey: String, steps: List<BrewingStep>): BreweryRecipe {
+        val recipeBuilder = BreweryRecipe.Builder(recipeKey)
         steps.forEach {
             when (it) {
                 is BrewingStep.Cook -> recipeBuilder.cook(
@@ -43,29 +46,31 @@ object TBPRecipeConverter {
         val ingredientManager = BukkitIngredientManager.INSTANCE
         val output = mutableListOf<BrewingStep>()
         for (step in recipe.steps) {
-            when (step) {
-                is CookStep -> brewManager.cookingStep(
-                    step.cookingTicks, step.ingredients.mapKeys { (key, _) ->
+            output.add(
+                when (step) {
+                    is CookStep -> brewManager.cookingStep(
+                        step.cookingTicks, step.ingredients.mapKeys { (key, _) ->
+                            IngredientWithMeta(
+                                ingredientManager.getIngredient(key.key).join().orElse(null) ?: return null,
+                                mapOf(IngredientMeta.DISPLAY_NAME to key.displayName)
+                            )
+                        },
+                        CauldronType.valueOf(step.cauldronType.name)
+                    )
+
+                    is MixStep -> brewManager.mixingStep(step.mixingTicks, step.ingredients.mapKeys { (key, _) ->
                         IngredientWithMeta(
                             ingredientManager.getIngredient(key.key).join().orElse(null) ?: return null,
                             mapOf(IngredientMeta.DISPLAY_NAME to key.displayName)
                         )
-                    },
-                    CauldronType.valueOf(step.cauldronType.name)
-                )
+                    }, CauldronType.valueOf(step.cauldronType.name))
 
-                is MixStep -> brewManager.mixingStep(step.mixingTicks, step.ingredients.mapKeys { (key, _) ->
-                    IngredientWithMeta(
-                        ingredientManager.getIngredient(key.key).join().orElse(null) ?: return null,
-                        mapOf(IngredientMeta.DISPLAY_NAME to key.displayName)
-                    )
-                }, CauldronType.valueOf(step.cauldronType.name))
+                    is AgeStep -> brewManager.agingStep(step.agingTicks, BarrelType.valueOf(step.barrelType.name))
 
-                is AgeStep -> brewManager.agingStep(step.agingTicks, BarrelType.valueOf(step.barrelType.name))
-
-                is DistillStep -> brewManager.distillStep(step.count.toInt())
-                else -> return null
-            }
+                    is DistillStep -> brewManager.distillStep(step.count.toInt())
+                    else -> return null
+                }
+            )
         }
         return output
     }
