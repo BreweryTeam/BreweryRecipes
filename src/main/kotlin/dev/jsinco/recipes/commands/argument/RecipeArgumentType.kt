@@ -39,9 +39,9 @@ object RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> 
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        Recipes.brewingIntegration.allRecipes().asSequence()
+        Recipes.brewingIntegration.allRecipes()
             .map { it.identifier }
-            .filter { recipeName -> recipeName.startsWith(builder.getRemainingLowerCase()) }
+            .filter { recipeName -> recipeName.contains(builder.remainingLowerCase) }
             .map(this::sanitizeName)
             .forEach(builder::suggest);
         return builder.buildFuture();
