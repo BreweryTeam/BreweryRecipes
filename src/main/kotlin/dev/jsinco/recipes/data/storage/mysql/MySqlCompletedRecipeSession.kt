@@ -6,7 +6,7 @@ import dev.jsinco.recipes.data.serdes.Serdes
 import dev.jsinco.recipes.data.serdes.StepSerdes
 import dev.jsinco.recipes.data.storage.CompletedRecipeStorageSession
 import dev.jsinco.recipes.data.storage.StorageSessionExecutor
-import dev.jsinco.recipes.recipe.process.Recipe
+import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.util.UuidUtil
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -15,7 +15,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     CompletedRecipeStorageSession {
     override fun insertOrUpdateRecipeCompletion(
         playerUuid: UUID,
-        recipe: Recipe
+        recipe: BreweryRecipe
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
@@ -24,7 +24,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
         """.trimIndent()
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
-            it.setString(2, recipe.recipeKey)
+            it.setString(2, recipe.identifier)
             it.setString(3, Serdes.serializeCollection(recipe.steps, StepSerdes::serializeStep).toString())
             return@runStatement null
         }
@@ -47,7 +47,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
         }
     }
 
-    override fun selectRecipeCompletions(playerUuid: UUID): CompletableFuture<List<Recipe>?> {
+    override fun selectRecipeCompletions(playerUuid: UUID): CompletableFuture<List<BreweryRecipe>?> {
         return storageSessionExecutor.runStatement(
             """
                 SELECT recipe_key, steps FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe
@@ -56,13 +56,13 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
             val result = it.executeQuery()
-            val output = mutableListOf<Recipe>()
+            val output = mutableListOf<BreweryRecipe>()
             while (result.next()) {
                 val steps = Serdes.deserializeList(
                     JsonParser.parseString(result.getString("steps")).asJsonArray,
                     StepSerdes::deserializeStep
                 )
-                output.add(Recipe(result.getString("recipe_key"), steps))
+                output.add(BreweryRecipe(result.getString("recipe_key"), steps))
             }
             return@runStatement output
         }

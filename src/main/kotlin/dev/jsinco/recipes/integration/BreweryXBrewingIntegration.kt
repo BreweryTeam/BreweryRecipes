@@ -6,7 +6,7 @@ import com.dre.brewery.recipe.BRecipe
 import com.dre.brewery.utility.BUtil
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.RecipeView
+import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -17,8 +17,8 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     private lateinit var recipeMap: Map<String, BreweryRecipe>
 
-    override fun createItem(recipeView: RecipeView): ItemStack? {
-        val recipe = BRecipe.getRecipes().first { it.id.equals(recipeView.recipeIdentifier, true) } ?: return null
+    override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
+        val recipe = BRecipe.getRecipes().first { it.id.equals(recipeDisplay.recipeKey(), true) } ?: return null
         return recipe.createBrew(10).createItem()
     }
 
@@ -28,7 +28,7 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     }
 
     override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-
+        TODO("Bli bla blo? Bluh!")
     }
 
     override fun cookingMinuteTicks(): Long {
@@ -44,14 +44,22 @@ object BreweryXBrewingIntegration : BrewingIntegration {
         }
     }
 
+    override fun allRecipes(): Collection<BreweryRecipe> {
+        return getRecipeMap().values
+    }
+
     override fun getRecipe(id: String): BreweryRecipe? {
+        return getRecipeMap()[id]
+    }
+
+    private fun getRecipeMap(): Map<String, BreweryRecipe> {
         if (this::recipeMap.isInitialized && !recipeMap.isEmpty()) {
-            return recipeMap[id]
+            return recipeMap
         }
         recipeMap = BRecipe.getRecipes()
             .map { BreweryXRecipeConverter.convert(it) }
             .associateBy { it.identifier }
-        return recipeMap[id]
+        return recipeMap
     }
 
     override fun reload() {

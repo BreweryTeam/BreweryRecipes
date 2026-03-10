@@ -27,8 +27,8 @@ class MigrationListener : Listener {
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
         if (!Recipes.recipesConfig.migrate) return
-        for ((recipeId, recipe) in Recipes.recipes()) {
-            val permission = permissionTemplate.replace("%recipe%", recipeId)
+        for (recipe in Recipes.brewingIntegration.allRecipes()) {
+            val permission = permissionTemplate.replace("%recipe%", recipe.identifier)
             if (event.player.permissionValue(permission) != TriState.TRUE) continue
             Recipes.recipeViewManager.insertOrMergeView(
                 event.player.uniqueId,

@@ -63,7 +63,7 @@ class Recipes : JavaPlugin() {
         recipeViewManager = RecipeViewManager(storageImpl)
         completedRecipeManager = RecipeCompletionManager(storageImpl)
         brewingIntegration = loadGuiIntegration()
-
+        brewingIntegration.enable(this)
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)

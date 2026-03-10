@@ -32,14 +32,14 @@ object RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> 
 
 
     override fun convert(nativeType: String): BreweryRecipe {
-        return Recipes.recipes().get(nativeType) ?: throw UNKNOWN_VALUE.create(nativeType)
+        return Recipes.brewingIntegration.getRecipe(nativeType) ?: throw UNKNOWN_VALUE.create(nativeType)
     }
 
     override fun <S : Any> listSuggestions(
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        Recipes.recipes().values.asSequence()
+        Recipes.brewingIntegration.allRecipes().asSequence()
             .map { it.identifier }
             .filter { recipeName -> recipeName.startsWith(builder.getRemainingLowerCase()) }
             .map(this::sanitizeName)

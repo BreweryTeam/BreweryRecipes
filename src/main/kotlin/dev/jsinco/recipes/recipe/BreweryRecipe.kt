@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.recipe
 
 import com.google.common.collect.ImmutableList
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.recipe.process.Ingredient
 import dev.jsinco.recipes.recipe.process.Step
@@ -15,12 +16,13 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
-data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
+data class BreweryRecipe(val identifier: String, val steps: List<Step>) : RecipeDisplay {
 
     fun lootItem(): ItemStack {
         val itemStack = ItemStack(Material.PAPER)
@@ -75,6 +77,27 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) {
 
     fun generate(expectedFlawLevel: Double, flawViewType: RecipeViewCreator.Type): RecipeView {
         return flawViewType.recipeViewCreator.create(this, expectedFlawLevel)
+    }
+
+    override fun recipeKey(): String = identifier
+
+    override fun toLore(): List<Component> {
+        return steps.map { it.display() }
+            .map { GlobalTranslator.render(it, Recipes.recipesConfig.language) }
+            .map {
+                it.colorIfAbsent(NamedTextColor.GRAY)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            }
+    }
+
+    override fun displayName(brewDisplayName: Component): Component {
+        return Recipes.brewingIntegration.recipeResult(this)
+            .displayName
+    }
+
+    override fun scoreEquivalent(): Double {
+        return Recipes.brewingIntegration.recipeResult(this)
+            .score
     }
 
     class Builder(private val identifier: String) {
