@@ -20,6 +20,10 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         backing[uuid]?.remove(recipeKey)
     }
 
+    fun contains(playerUuid: UUID, recipeKey: String): Boolean {
+        return backing[playerUuid]?.containsKey(recipeKey) ?: false
+    }
+
     override fun clearAll(playerUuid: UUID) {
         backing.remove(playerUuid)
     }
