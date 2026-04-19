@@ -1,13 +1,13 @@
 package dev.jsinco.recipes.util
 
 import dev.jsinco.brewery.api.brew.BrewingStep
-import dev.jsinco.brewery.api.breweries.BarrelType
 import dev.jsinco.brewery.api.breweries.CauldronType
 import dev.jsinco.brewery.api.ingredient.Ingredient
 import dev.jsinco.brewery.api.ingredient.IngredientMeta
 import dev.jsinco.brewery.api.ingredient.IngredientWithMeta
 import dev.jsinco.brewery.api.recipe.Recipe
-import dev.jsinco.brewery.bukkit.ingredient.BukkitIngredientManager
+import dev.jsinco.brewery.api.util.BreweryKey
+import dev.jsinco.brewery.api.util.BreweryRegistry
 import dev.jsinco.recipes.integration.TbpBrewingIntegration.getApi
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.process.steps.AgeStep
@@ -43,7 +43,7 @@ object TBPRecipeConverter {
 
     fun convert(recipe: BreweryRecipe): List<BrewingStep>? {
         val brewManager = getApi().brewManager
-        val ingredientManager = BukkitIngredientManager.INSTANCE
+        val ingredientManager = getApi().ingredientManager
         val output = mutableListOf<BrewingStep>()
         for (step in recipe.steps) {
             output.add(
@@ -65,7 +65,10 @@ object TBPRecipeConverter {
                         )
                     }, CauldronType.valueOf(step.cauldronType.name))
 
-                    is AgeStep -> brewManager.agingStep(step.agingTicks, BarrelType.valueOf(step.barrelType.name))
+                    is AgeStep -> brewManager.agingStep(
+                        step.agingTicks,
+                        BreweryRegistry.BARREL_TYPE.get(BreweryKey.parse(step.barrelType.name))
+                    )
 
                     is DistillStep -> brewManager.distillStep(step.count.toInt())
                     else -> return null

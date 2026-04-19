@@ -3,6 +3,10 @@ package dev.jsinco.recipes.integration
 import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
+import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.listeners.TheBrewingProjectListener
+import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.recipe.RecipeView
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import net.kyori.adventure.text.Component
@@ -24,7 +28,7 @@ object TbpBrewingIntegration : BrewingIntegration {
 
     override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
         val recipe = getApi().recipeRegistry.getRecipe(recipeDisplay.recipeKey()).getOrNull() ?: return null
-        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT) as BukkitRecipeResult
+        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT)
         val brew = getApi().brewManager.createBrew(recipe.steps)
         val item = result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
         return item
