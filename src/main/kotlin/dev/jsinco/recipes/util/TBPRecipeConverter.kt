@@ -21,7 +21,7 @@ object TBPRecipeConverter {
                 )
 
                 is BrewingStep.Distill -> recipeBuilder.distill(it.runs().toLong())
-                is BrewingStep.Age -> recipeBuilder.age(it.time().moment(), it.barrelType().name)
+                is BrewingStep.Age -> recipeBuilder.age(it.time().moment(), it.barrelType().name())
                 is BrewingStep.Mix -> recipeBuilder.mix(it.time().moment(), "WATER", mapIngredients(it.ingredients()))
             }
         }
