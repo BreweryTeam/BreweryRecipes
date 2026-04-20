@@ -3,6 +3,7 @@ package dev.jsinco.recipes.recipe
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
 
 class RecipeView(
@@ -38,6 +39,7 @@ class RecipeView(
             "recipes.display.recipe.name.severely-fragmented"
         }
         return Component.translatable(translationName, Argument.component("name", brewDisplayName))
+            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
 
     override fun scoreEquivalent(): Double {
