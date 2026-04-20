@@ -33,7 +33,12 @@ object RecipesCommand {
                             return@executes 1
                         }
                         giveBook(sender)
-                        context.source.sender.sendMessage(Component.translatable("recipes.command.givebook", TranslationArgumentUtil.players(listOf(sender))))
+                        context.source.sender.sendMessage(
+                            Component.translatable(
+                                "recipes.command.givebook",
+                                TranslationArgumentUtil.players(listOf(sender))
+                            )
+                        )
                         1
                     }
                     .then(
@@ -45,7 +50,12 @@ object RecipesCommand {
                                 for (target in targets) {
                                     giveBook(target)
                                 }
-                                context.source.sender.sendMessage(Component.translatable("recipes.command.givebook", TranslationArgumentUtil.players(targets)))
+                                context.source.sender.sendMessage(
+                                    Component.translatable(
+                                        "recipes.command.givebook",
+                                        TranslationArgumentUtil.players(targets)
+                                    )
+                                )
                                 1
                             }.requires { it.sender.hasPermission("recipes.command.others") }
                     )
@@ -70,8 +80,14 @@ object RecipesCommand {
                             context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                             return@executes 1
                         }
-                        context.source.sender.sendMessage(Component.translatable("recipes.command.clear", TranslationArgumentUtil.players(listOf(sender))))
+                        context.source.sender.sendMessage(
+                            Component.translatable(
+                                "recipes.command.clear",
+                                TranslationArgumentUtil.players(listOf(sender))
+                            )
+                        )
                         Recipes.recipeViewManager.clearAll(sender.uniqueId)
+                        Recipes.completedRecipeManager.clearAll(sender.uniqueId)
                         1
                     }
                     .then(
@@ -80,9 +96,15 @@ object RecipesCommand {
                                 val targets = context
                                     .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
                                     .resolve(context.source)
-                                context.source.sender.sendMessage(Component.translatable("recipes.command.clear", TranslationArgumentUtil.players(targets)))
+                                context.source.sender.sendMessage(
+                                    Component.translatable(
+                                        "recipes.command.clear",
+                                        TranslationArgumentUtil.players(targets)
+                                    )
+                                )
                                 for (target in targets) {
                                     Recipes.recipeViewManager.clearAll(target.uniqueId)
+                                    Recipes.completedRecipeManager.clearAll(target.uniqueId)
                                 }
                                 1
                             }.requires { it.sender.hasPermission("recipes.command.others") }

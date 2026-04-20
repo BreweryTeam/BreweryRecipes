@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:1d2ab1f7")
+    compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:3.0.1")
     compileOnly("net.kyori:adventure-text-minimessage:4.24.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
     implementation("com.zaxxer:HikariCP:7.0.2")
@@ -95,10 +95,11 @@ tasks {
         minecraftVersion("1.21.11")
         downloadPlugins {
             if (project.findProperty("testing.with.tbp")!! == "true") {
-                modrinth("thebrewingproject", "3.0.0")
+                modrinth("thebrewingproject", "3.0.1")
             } else {
                 modrinth("breweryx", "3.6.0")
             }
+            modrinth("luckperms", "OrIs0S6b")
         }
     }
 
