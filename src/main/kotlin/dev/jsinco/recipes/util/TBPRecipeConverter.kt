@@ -82,7 +82,7 @@ object TBPRecipeConverter {
         return ingredients.asSequence()
             .map { entry ->
                 dev.jsinco.recipes.recipe.process.Ingredient(
-                    entry.key.key,
+                    entry.key.key().toString(),
                     entry.key.displayName()
                 ) to entry.value
             }
