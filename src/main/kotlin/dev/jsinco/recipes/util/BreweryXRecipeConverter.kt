@@ -1,8 +1,14 @@
 package dev.jsinco.recipes.util
 
+import com.dre.brewery.BIngredients
+import com.dre.brewery.BarrelWoodType
+import com.dre.brewery.Brew
 import com.dre.brewery.recipe.*
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.process.Ingredient
+import dev.jsinco.recipes.recipe.process.steps.AgeStep
+import dev.jsinco.recipes.recipe.process.steps.CookStep
+import dev.jsinco.recipes.recipe.process.steps.DistillStep
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 
@@ -12,7 +18,7 @@ object BreweryXRecipeConverter {
         recipeBuilder.cook(
             recipe.cookingTime * 60L * 20L,
             "water",
-            parseIngredients(recipe.ingredients),
+            convertIngredients(recipe.ingredients),
         )
         if (recipe.distillruns > 0) {
             recipeBuilder.distill(recipe.distillruns.toLong())
@@ -23,7 +29,36 @@ object BreweryXRecipeConverter {
         return recipeBuilder.build()
     }
 
-    private fun parseIngredients(ingredients: List<RecipeItem>): Map<Ingredient, Int> {
+    fun convert(recipe: BreweryRecipe): Brew? {
+        if (recipe.steps.isEmpty()) return null
+        val cookStep = recipe.steps[0] as? CookStep ?: return null
+        val bIngredients =
+            BIngredients(
+                BRecipe.loadIngredients(
+                    cookStep.ingredients.map {
+                        "${it.key.key.replace("minecraft:", "")}/${it.value}"
+                    },
+                    recipe.identifier
+                ).map { it.toIngredientGeneric() },
+                (cookStep.cookingTicks / (60 * 20)).toInt()
+            )
+        val brew = Brew(bIngredients)
+        for (i in 1..<recipe.steps.size) {
+            val step = recipe.steps[i]
+            if (step is DistillStep) {
+                brew.distillRuns = step.count.toByte()
+            }
+            if (step is AgeStep) {
+                brew.ageTime = step.agingTicks.toFloat() / (60 * 20)
+                brew.wood = BarrelWoodType.valueOf(step.barrelType.name)
+            }
+        }
+        brew.currentRecipe = bIngredients.getBestRecipe(brew.wood, brew.ageTime, brew.distillRuns > 0)
+        brew.quality = brew.calcQuality()
+        return brew
+    }
+
+    private fun convertIngredients(ingredients: List<RecipeItem>): Map<Ingredient, Int> {
         return buildMap {
             ingredients.forEach {
                 val displayName = when (it) {
@@ -45,4 +80,5 @@ object BreweryXRecipeConverter {
             }
         }
     }
+
 }
