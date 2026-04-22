@@ -4,7 +4,6 @@ import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
 import dev.jsinco.recipes.configuration.spawning.triggers.InventoryFillTrigger
 import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
-import dev.jsinco.recipes.configuration.spawning.triggers.MobDropTrigger
 import dev.jsinco.recipes.configuration.spawning.triggers.PremadeTrigger
 import net.kyori.adventure.key.Key
 import org.bukkit.Location

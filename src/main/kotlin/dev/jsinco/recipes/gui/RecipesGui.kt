@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.GUIUtil
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -9,7 +10,8 @@ import org.bukkit.inventory.InventoryHolder
 
 class RecipesGui(
     private val player: Player,
-    private val recipes: List<GuiItem>,
+    private val recipeDisplays: List<RecipeDisplay>,
+    private val itemResolver: (RecipeDisplay) -> GuiItem?,
     size: Int = 54
 ) : InventoryHolder {
 
@@ -18,11 +20,13 @@ class RecipesGui(
 
     private val recipesSlots = findRecipeSlots()
     private val pageRecipeCapacity = recipesSlots.size
-    private val maxPages = Math.ceilDiv(recipes.size, pageRecipeCapacity)
+    private val resolved: MutableList<GuiItem> = mutableListOf()
+    private var nextInputIdx = 0
     private var page = 0
 
     fun nextPage() {
-        page = (page + 1).coerceAtMost(maxPages - 1)
+        if (!hasNextPage()) return
+        page++
         render()
     }
 
@@ -44,8 +48,23 @@ class RecipesGui(
         return output.toList()
     }
 
+    private fun resolveUntil(needed: Int) {
+        while (resolved.size < needed && nextInputIdx < recipeDisplays.size) {
+            val item = itemResolver(recipeDisplays[nextInputIdx])
+            nextInputIdx++
+            if (item != null) resolved.add(item)
+        }
+    }
+
+    private fun hasNextPage(): Boolean {
+        resolveUntil((page + 1) * pageRecipeCapacity + 1)
+        return resolved.size > (page + 1) * pageRecipeCapacity
+    }
+
     fun render() {
         inventory.clear()
+        resolveUntil((page + 1) * pageRecipeCapacity)
+
         for (borderEntry in Recipes.guiConfig.borders) {
             val borderType = borderEntry.key
             val palette = borderEntry.value
@@ -58,18 +77,17 @@ class RecipesGui(
 
         for (override in Recipes.guiConfig.overrides) {
             if (override.type == GuiItem.Type.PREVIOUS_PAGE && page == 0) continue
-            if (override.type == GuiItem.Type.NEXT_PAGE && page + 1 >= maxPages) continue
+            if (override.type == GuiItem.Type.NEXT_PAGE && !hasNextPage()) continue
 
             for (slot in GUIUtil.getValidSlots(override.pos)) {
                 renderItem(GuiItem(override.item.generateItem(), override.type), slot)
             }
         }
 
-        val startPageContentIndex = page * pageRecipeCapacity
-        val recipesToRead = minOf(pageRecipeCapacity, recipes.size - startPageContentIndex)
-
-        for (i in 0 until recipesToRead) {
-            renderItem(recipes[i + startPageContentIndex], recipesSlots[i])
+        val start = page * pageRecipeCapacity
+        val end = minOf((page + 1) * pageRecipeCapacity, resolved.size)
+        for (i in start until end) {
+            renderItem(resolved[i], recipesSlots[i - start])
         }
     }
 

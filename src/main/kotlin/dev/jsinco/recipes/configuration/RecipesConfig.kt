@@ -2,7 +2,6 @@ package dev.jsinco.recipes.configuration
 
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
-import eu.okaeri.configs.annotation.CustomKey
 import java.util.Locale
 
 class RecipesConfig : OkaeriConfig() {
@@ -12,6 +11,14 @@ class RecipesConfig : OkaeriConfig() {
 
     @Comment("Migrate from the old BreweryX-Recipes-Addon?")
     var migrate: Boolean = true
+
+    @Comment(
+        "How recipes are ordered in the recipe book:",
+        "ALPHABETICAL_IDENTIFIER: sorted alphabetically by recipe identifier",
+        "ALPHABETICAL_NAME: sorted by the brew's excellent-quality display name (ignoring color codes/tags)",
+        "AS_PROVIDED: keep the order in which the providing brewing plugin relays its recipes"
+    )
+    var recipeSortOrder: RecipeSortOrder = RecipeSortOrder.AS_PROVIDED
 
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()

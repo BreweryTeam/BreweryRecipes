@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.recipe
 
+import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.data.PersistencyLinkedCache
 import dev.jsinco.recipes.data.storage.StorageImpl
 import java.util.*
@@ -12,12 +13,14 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         storageImpl.completedRecipeSession()
             .insertOrUpdateRecipeCompletion(uuid, recipe)
         backing.computeIfAbsent(uuid) { mutableMapOf() }[recipe.identifier] = recipe
+        Recipes.recipeGuiItemCache.invalidate(uuid, recipe.identifier)
     }
 
     fun removeCompletion(uuid: UUID, recipeKey: String) {
         storageImpl.completedRecipeSession()
             .removeRecipeCompletion(uuid, recipeKey)
         backing[uuid]?.remove(recipeKey)
+        Recipes.recipeGuiItemCache.invalidate(uuid, recipeKey)
     }
 
     fun contains(playerUuid: UUID, recipeKey: String): Boolean {
@@ -26,6 +29,7 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
 
     override fun clearAll(playerUuid: UUID) {
         backing.remove(playerUuid)
+        Recipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
     override fun initiateCacheFor(playerUuid: UUID) {

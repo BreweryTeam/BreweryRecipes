@@ -1,15 +1,19 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.configuration.RecipeSortOrder
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.recipe.RecipeDisplays
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.entity.Player
 
 object GuiManager {
 
     fun openRecipeGui(player: Player) {
-        val recipeDisplays = if (player.hasPermission("recipes.override.view")) {
+        val admin = player.hasPermission("recipes.override.view")
+        val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             Recipes.brewingIntegration.allRecipes()
         } else {
             val completedRecipes = Recipes.completedRecipeManager.getCompletedRecipes(player.uniqueId)
@@ -19,25 +23,45 @@ object GuiManager {
             Recipes.brewingIntegration.allRecipes()
                 .map(BreweryRecipe::recipeKey)
                 .mapNotNull { recipeKey ->
-                    val recipeDisplays = mutableListOf<RecipeDisplay>()
-                    completedRecipes[recipeKey]?.let { recipeDisplays.add(it) }
-                    recipeViews[recipeKey]?.let { recipeDisplays.add(it) }
-                    if (recipeDisplays.isEmpty()) {
+                    val displays = mutableListOf<RecipeDisplay>()
+                    completedRecipes[recipeKey]?.let { displays.add(it) }
+                    recipeViews[recipeKey]?.let { displays.add(it) }
+                    if (displays.isEmpty()) {
                         null
                     } else {
-                        RecipeDisplays(recipeKey, *recipeDisplays.toTypedArray())
+                        RecipeDisplays(recipeKey, *displays.toTypedArray())
                     }
                 }
         }
 
         val gui = RecipesGui(
             player,
-            recipeDisplays.mapNotNull {
-                Recipes.brewingIntegration.createGuiItem(it)
+            sortDisplays(recipeDisplays),
+            { display ->
+                Recipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin) {
+                    Recipes.brewingIntegration.createGuiItem(display)
+                }
             }
         )
         gui.render()
         gui.open()
+    }
+
+    private fun sortDisplays(displays: Collection<RecipeDisplay>): List<RecipeDisplay> {
+        return when (Recipes.recipesConfig.recipeSortOrder) {
+            RecipeSortOrder.AS_PROVIDED -> displays.toList()
+            RecipeSortOrder.ALPHABETICAL_IDENTIFIER ->
+                displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.recipeKey() })
+
+            RecipeSortOrder.ALPHABETICAL_NAME ->
+                displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
+        }
+    }
+
+    private fun plainName(recipeId: String): String {
+        val component = Recipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
+        val rendered = GlobalTranslator.render(component, Recipes.recipesConfig.language)
+        return PlainTextComponentSerializer.plainText().serialize(rendered)
     }
 
 }

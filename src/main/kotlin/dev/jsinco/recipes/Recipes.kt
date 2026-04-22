@@ -8,6 +8,7 @@ import dev.jsinco.recipes.configuration.SpawnConfig
 import dev.jsinco.recipes.configuration.serialize.*
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.storage.StorageImpl
+import dev.jsinco.recipes.gui.RecipeGuiItemCache
 import dev.jsinco.recipes.integration.BreweryXBrewingIntegration
 import dev.jsinco.recipes.integration.BrewingIntegration
 import dev.jsinco.recipes.integration.TbpBrewingIntegration
@@ -43,6 +44,7 @@ class Recipes : JavaPlugin() {
         lateinit var spawnConfig: SpawnConfig
         lateinit var recipeViewManager: RecipeViewManager
         lateinit var completedRecipeManager: RecipeCompletionManager
+        lateinit var recipeGuiItemCache: RecipeGuiItemCache
         lateinit var brewingIntegration: BrewingIntegration
 
         fun key(key: String): NamespacedKey {
@@ -62,12 +64,13 @@ class Recipes : JavaPlugin() {
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
         completedRecipeManager = RecipeCompletionManager(storageImpl)
+        recipeGuiItemCache = RecipeGuiItemCache()
         brewingIntegration = loadGuiIntegration()
         brewingIntegration.enable(this)
         val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
         translator.reload()
         GlobalTranslator.translator().addSource(translator)
-        val playerEventListener = PlayerEventListener(recipeViewManager, completedRecipeManager)
+        val playerEventListener = PlayerEventListener(recipeViewManager, completedRecipeManager, recipeGuiItemCache)
         Bukkit.getPluginManager().registerEvents(GuiEventListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
@@ -163,5 +166,6 @@ class Recipes : JavaPlugin() {
         GlobalTranslator.translator().removeSource(translator)
         translator.reload() // no idea how this works lol, praying it does
         GlobalTranslator.translator().addSource(translator)
+        recipeGuiItemCache.clearGlobal()
     }
 }
