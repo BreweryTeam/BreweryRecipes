@@ -2,8 +2,8 @@ package dev.jsinco.recipes.recipe.process.steps
 
 import dev.jsinco.recipes.recipe.RecipeViewLoreWriter.cookingMinuteTicks
 import dev.jsinco.recipes.recipe.process.Ingredient
+import dev.jsinco.recipes.recipe.process.IngredientStep
 import dev.jsinco.recipes.recipe.process.IngredientUtil
-import dev.jsinco.recipes.recipe.process.Step
 import dev.jsinco.recipes.recipe.process.StepType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
@@ -11,7 +11,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
 import java.util.*
 
-class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) : Step {
+class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) :
+    IngredientStep {
 
     override fun getType(): StepType = StepType.COOK
     override fun display(): Component = Component.translatable(
@@ -25,6 +26,8 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingre
             )
         )
     )
+
+    override fun ingredients(): Map<Ingredient, Int> = ingredients
 
     enum class CauldronType {
         WATER, LAVA, SNOW;

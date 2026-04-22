@@ -28,7 +28,16 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     }
 
     override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        TODO("Bli bla blo? Bluh!")
+        val brew = BreweryXRecipeConverter.convert(recipe) ?: return BrewingIntegration.RecipeResult(
+            Component.text("Placeholder"),
+            true,
+            0.0
+        )
+        return BrewingIntegration.RecipeResult(
+            brew.createItem().effectiveName(),
+            false,
+            brew.quality.toDouble() / 10
+        )
     }
 
     override fun cookingMinuteTicks(): Long {
@@ -69,6 +78,5 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     }
 
     override fun enable(recipes: Recipes) {
-        // NO-OP
     }
 }
