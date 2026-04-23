@@ -32,4 +32,5 @@ interface BrewingIntegration {
     fun reload()
 
     fun enable(recipes: Recipes)
+    fun score(recipe: BreweryRecipe): Double
 }

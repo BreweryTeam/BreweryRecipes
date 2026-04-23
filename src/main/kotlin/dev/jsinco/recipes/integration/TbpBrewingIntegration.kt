@@ -83,4 +83,12 @@ object TbpBrewingIntegration : BrewingIntegration {
     override fun enable(recipes: Recipes) {
         Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(getApi()), recipes)
     }
+
+    override fun score(recipe: BreweryRecipe): Double {
+        val steps = TBPRecipeConverter.convert(recipe)
+        val brew = getApi().brewManager.createBrew(steps)
+        val recipe = getApi().recipeRegistry.getRecipe(recipe.identifier).orElse(null) ?: return 0.0
+        return brew.score(recipe)
+            .score()
+    }
 }

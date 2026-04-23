@@ -66,4 +66,6 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     override fun enable(recipes: Recipes) {
     }
+
+    override fun score(recipe: BreweryRecipe): Double = 1.0
 }
