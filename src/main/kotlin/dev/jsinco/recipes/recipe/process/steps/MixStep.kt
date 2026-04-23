@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
+import java.util.*
 
 class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) :
     IngredientStep {
@@ -18,7 +19,11 @@ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredi
         "recipes.display.recipe.step.mix",
         Argument.tagResolver(
             Placeholder.component("ingredients", IngredientUtil.compileIngredients(ingredients)),
-            Formatter.number("mixing_time", mixingTicks / cookingMinuteTicks)
+            Formatter.number("mixing_time", mixingTicks / cookingMinuteTicks),
+            Placeholder.component(
+                "cauldron_type",
+                Component.translatable("recipes.cauldron.type." + cauldronType.name.lowercase(Locale.ROOT))
+            )
         )
     )
 

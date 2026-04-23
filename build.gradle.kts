@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly("com.dre.brewery:BreweryX:3.4.5-SNAPSHOT#4")
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:3.0.1")
+    compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:3.1.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.24.0")
     implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
     implementation("com.zaxxer:HikariCP:7.0.2")
