@@ -94,10 +94,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
         return brewDisplayName
     }
 
-    override fun scoreEquivalent(): Double {
-        return Recipes.brewingIntegration.recipeResult(this)
-            .score
-    }
+    override fun scoreEquivalent(): Double = 1.0
 
     class Builder(private val identifier: String) {
         private val stepsBuilder = ImmutableList.Builder<Step>()

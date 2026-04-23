@@ -16,37 +16,15 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
 
     private lateinit var recipeMap: Map<String, BreweryRecipe>
-    private val recipeResultCache: MutableMap<String, BrewingIntegration.RecipeResult> = mutableMapOf()
 
     override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
         val recipe = BRecipe.getRecipes().first { it.id.equals(recipeDisplay.recipeKey(), true) } ?: return null
-        val brew = recipe.createBrew(10)
-        val item = brew.createItem()
-        recipeResultCache.getOrPut(recipeDisplay.recipeKey()) {
-            BrewingIntegration.RecipeResult(
-                false,
-                brew.quality.toDouble() / 10
-            )
-        }
-        return item
+        return recipe.createBrew(10).createItem()
     }
 
     override fun brewDisplayName(identifier: String): Component? {
         val recipe = BRecipe.getRecipes().first { it.id.equals(identifier, true) } ?: return null
         return LegacyComponentSerializer.legacySection().deserialize(BUtil.color(recipe.getName(10)))
-    }
-
-    override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        return recipeResultCache.getOrPut(recipe.identifier) { computeRecipeResult(recipe) }
-    }
-
-    private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        val brew = BreweryXRecipeConverter.convert(recipe)
-            ?: return BrewingIntegration.RecipeResult(true, 0.0)
-        return BrewingIntegration.RecipeResult(
-            false,
-            brew.quality.toDouble() / 10
-        )
     }
 
     override fun cookingMinuteTicks(): Long {
@@ -84,7 +62,6 @@ object BreweryXBrewingIntegration : BrewingIntegration {
         recipeMap = BRecipe.getRecipes()
             .map { BreweryXRecipeConverter.convert(it) }
             .associateBy { it.identifier }
-        recipeResultCache.clear()
     }
 
     override fun enable(recipes: Recipes) {

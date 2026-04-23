@@ -1,6 +1,5 @@
 package dev.jsinco.recipes.integration
 
-import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.Recipes
@@ -17,7 +16,6 @@ object TbpBrewingIntegration : BrewingIntegration {
 
     private lateinit var tbpApi: TheBrewingProjectApi
     private lateinit var recipeMap: Map<String, BreweryRecipe>
-    private val recipeResultCache: MutableMap<String, BrewingIntegration.RecipeResult> = mutableMapOf()
 
     fun getApi(): TheBrewingProjectApi {
         if (!this::tbpApi.isInitialized) {
@@ -28,40 +26,12 @@ object TbpBrewingIntegration : BrewingIntegration {
 
     override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
         val recipe = getApi().recipeRegistry.getRecipe(recipeDisplay.recipeKey()).getOrNull() ?: return null
-        val result = recipe.getRecipeResult(BrewQuality.EXCELLENT)
-        val brew = getApi().brewManager.createBrew(recipe.steps)
-        val score = brew.score(recipe)
-        val item = result.newBrewItem(score, brew, Brew.State.Other())
-        recipeResultCache.getOrPut(recipeDisplay.recipeKey()) {
-            BrewingIntegration.RecipeResult(
-                score.brewQuality() == null,
-                score.score()
-            )
-        }
-        return item
+        return recipe.getRecipeResult(BrewQuality.EXCELLENT).newLorelessItem()
     }
 
     override fun brewDisplayName(identifier: String): Component? {
         val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
         return recipe.getRecipeResult(BrewQuality.EXCELLENT).displayName()
-    }
-
-    override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        return recipeResultCache.getOrPut(recipe.identifier) { computeRecipeResult(recipe) }
-    }
-
-    private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        val steps = TBPRecipeConverter.convert(recipe)
-        val brew = getApi().brewManager.createBrew(steps)
-        val score = brew.closestRecipe(getApi().recipeRegistry).orElse(null)
-            ?.let(brew::score)
-        val failed = score
-            ?.let { score -> score.brewQuality() == null }
-            ?: true
-        return BrewingIntegration.RecipeResult(
-            failed,
-            score?.score() ?: 0.0
-        )
     }
 
     override fun cookingMinuteTicks(): Long {
@@ -94,7 +64,6 @@ object TbpBrewingIntegration : BrewingIntegration {
         recipeMap = getApi().recipeRegistry.recipes
             .map { TBPRecipeConverter.convert(it) }
             .associateBy { it.identifier }
-        recipeResultCache.clear()
     }
 
     private fun getRecipeMap(): Map<String, BreweryRecipe> {

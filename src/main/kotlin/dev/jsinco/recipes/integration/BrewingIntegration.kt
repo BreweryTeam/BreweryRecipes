@@ -13,9 +13,6 @@ import org.bukkit.inventory.ItemStack
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
         val item = createItem(recipeDisplay) ?: return null
-        if (recipeDisplay is BreweryRecipe && recipeResult(recipeDisplay).failure) {
-            return null
-        }
         val displayName = recipeDisplay.displayName(item.effectiveName())
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
@@ -28,13 +25,11 @@ interface BrewingIntegration {
 
     fun createItem(recipeDisplay: RecipeDisplay): ItemStack?
     fun brewDisplayName(identifier: String): Component?
-    fun recipeResult(recipe: BreweryRecipe): RecipeResult
     fun cookingMinuteTicks(): Long
     fun agingYearTicks(): Long
     fun allRecipes(): Collection<BreweryRecipe>
     fun getRecipe(id: String): BreweryRecipe?
     fun reload()
-    data class RecipeResult(val failure: Boolean, val score: Double)
 
     fun enable(recipes: Recipes)
 }
