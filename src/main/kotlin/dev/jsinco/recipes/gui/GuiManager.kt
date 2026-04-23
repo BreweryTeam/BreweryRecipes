@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 object GuiManager {
 
     fun openRecipeGui(player: Player) {
+        if (!CooldownManager.tryOpen(player)) return
         val admin = player.hasPermission("recipes.override.view")
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             Recipes.brewingIntegration.allRecipes()

@@ -1,0 +1,51 @@
+package dev.jsinco.recipes.gui
+
+import dev.jsinco.recipes.Recipes
+import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
+import java.util.UUID
+
+object CooldownManager {
+
+    private const val TICK_MS = 50L
+    private val COOLDOWN_SOUND = Sound.sound(
+        org.bukkit.Sound.BLOCK_NOTE_BLOCK_BASS,
+        Sound.Source.MASTER,
+        1.0f,
+        1.0f
+    )
+
+    private val openCooldowns: MutableMap<UUID, Long> = mutableMapOf()
+    private val pageCooldowns: MutableMap<UUID, Long> = mutableMapOf()
+
+    fun tryOpen(player: Player): Boolean =
+        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "recipes.cooldown.open")
+
+    fun tryPageSwitch(player: Player): Boolean =
+        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "recipes.cooldown.page")
+
+    fun clearFor(playerUuid: UUID) {
+        openCooldowns.remove(playerUuid)
+        pageCooldowns.remove(playerUuid)
+    }
+
+    private fun tryConsume(
+        player: Player,
+        store: MutableMap<UUID, Long>,
+        cooldownTicks: Long,
+        messageKey: String
+    ): Boolean {
+        if (cooldownTicks <= 0) return true
+        val now = System.currentTimeMillis()
+        val cooldownMs = cooldownTicks * TICK_MS
+        val last = store[player.uniqueId]
+        if (last != null && now - last < cooldownMs) {
+            player.sendActionBar(Component.translatable(messageKey))
+            player.playSound(COOLDOWN_SOUND)
+            return false
+        }
+        store[player.uniqueId] = now
+        return true
+    }
+}

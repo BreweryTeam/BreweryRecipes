@@ -20,6 +20,12 @@ class RecipesConfig : OkaeriConfig() {
     )
     var recipeSortOrder: RecipeSortOrder = RecipeSortOrder.AS_PROVIDED
 
+    @Comment("Minimum delay between recipe book opens per player. Set to 0 to disable")
+    var openCooldownTicks: Long = 20L
+
+    @Comment("Minimum delay between page switches per player. Set to 0 to disable")
+    var pageCooldownTicks: Long = 3L
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 }
