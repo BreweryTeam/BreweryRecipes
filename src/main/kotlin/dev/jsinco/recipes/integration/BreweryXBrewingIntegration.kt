@@ -16,6 +16,7 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
 
     private lateinit var recipeMap: Map<String, BreweryRecipe>
+    private val recipeResultCache: MutableMap<String, BrewingIntegration.RecipeResult> = mutableMapOf()
 
     override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
         val recipe = BRecipe.getRecipes().first { it.id.equals(recipeDisplay.recipeKey(), true) } ?: return null
@@ -28,6 +29,10 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     }
 
     override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
+        return recipeResultCache.getOrPut(recipe.identifier) { computeRecipeResult(recipe) }
+    }
+
+    private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
         val brew = BreweryXRecipeConverter.convert(recipe) ?: return BrewingIntegration.RecipeResult(
             Component.text("Placeholder"),
             true,
@@ -75,6 +80,7 @@ object BreweryXBrewingIntegration : BrewingIntegration {
         recipeMap = BRecipe.getRecipes()
             .map { BreweryXRecipeConverter.convert(it) }
             .associateBy { it.identifier }
+        recipeResultCache.clear()
     }
 
     override fun enable(recipes: Recipes) {

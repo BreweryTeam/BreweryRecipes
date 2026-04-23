@@ -21,6 +21,12 @@ object RecipeViewLoreWriter {
     var cookingMinuteTicks = 20L * 60L
     var agingYearTicks = 20L * 60L * 20L
 
+    // no touchy
+    var version: Int = 0
+    fun bumpVersion() {
+        version++
+    }
+
     fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()

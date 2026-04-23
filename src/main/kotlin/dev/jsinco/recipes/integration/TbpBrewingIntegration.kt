@@ -7,7 +7,6 @@ import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
-import dev.jsinco.recipes.recipe.RecipeView
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -18,6 +17,7 @@ object TbpBrewingIntegration : BrewingIntegration {
 
     private lateinit var tbpApi: TheBrewingProjectApi
     private lateinit var recipeMap: Map<String, BreweryRecipe>
+    private val recipeResultCache: MutableMap<String, BrewingIntegration.RecipeResult> = mutableMapOf()
 
     fun getApi(): TheBrewingProjectApi {
         if (!this::tbpApi.isInitialized) {
@@ -40,6 +40,10 @@ object TbpBrewingIntegration : BrewingIntegration {
     }
 
     override fun recipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
+        return recipeResultCache.getOrPut(recipe.identifier) { computeRecipeResult(recipe) }
+    }
+
+    private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
         val steps = TBPRecipeConverter.convert(recipe)
         val brew = getApi().brewManager.createBrew(steps)
         val item = getApi().brewManager.toItem(brew, Brew.State.Other())
@@ -85,6 +89,7 @@ object TbpBrewingIntegration : BrewingIntegration {
         recipeMap = getApi().recipeRegistry.recipes
             .map { TBPRecipeConverter.convert(it) }
             .associateBy { it.identifier }
+        recipeResultCache.clear()
     }
 
     private fun getRecipeMap(): Map<String, BreweryRecipe> {

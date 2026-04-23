@@ -13,6 +13,9 @@ class RecipeView(
 ) : RecipeDisplay {
 
     val flaws = flaws.subList(0, flaws.size.coerceAtMost(10))
+    private var memoizedFragmentation: Double = Double.NaN
+    private var memoizedFragmentationVersion: Int = Int.MIN_VALUE
+
     override fun recipeKey(): String = recipeIdentifier
 
     companion object {
@@ -21,12 +24,21 @@ class RecipeView(
         }
     }
 
+    fun fragmentation(): Double {
+        val current = RecipeViewLoreWriter.version
+        if (memoizedFragmentationVersion != current) {
+            memoizedFragmentation = RecipeViewLoreWriter.estimateFragmentation(this)
+            memoizedFragmentationVersion = current
+        }
+        return memoizedFragmentation
+    }
+
     override fun toLore(): List<Component>? {
         return RecipeViewLoreWriter.writeLore(this, Recipes.brewingIntegration)
     }
 
     override fun displayName(brewDisplayName: Component): Component {
-        val fragmentation = RecipeViewLoreWriter.estimateFragmentation(this)
+        val fragmentation = fragmentation()
         val translationName = if (fragmentation == 0.0) {
             "recipes.display.recipe.name.complete"
         } else if (fragmentation < 25.0) {
@@ -43,7 +55,7 @@ class RecipeView(
     }
 
     override fun scoreEquivalent(): Double {
-        return 1 - RecipeViewLoreWriter.estimateFragmentation(this) / 100
+        return 1 - fragmentation() / 100
     }
 
 }

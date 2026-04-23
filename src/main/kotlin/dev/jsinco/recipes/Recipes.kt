@@ -15,6 +15,7 @@ import dev.jsinco.recipes.integration.TbpBrewingIntegration
 import dev.jsinco.recipes.listeners.*
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeCompletionManager
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter
 import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.ClassUtil
@@ -56,6 +57,7 @@ class Recipes : JavaPlugin() {
     }
 
     lateinit var storageImpl: StorageImpl
+    private var translator: RecipesTranslator? = null
 
     override fun onEnable() {
         recipesConfig = readConfig()
@@ -67,9 +69,10 @@ class Recipes : JavaPlugin() {
         recipeGuiItemCache = RecipeGuiItemCache()
         brewingIntegration = loadGuiIntegration()
         brewingIntegration.enable(this)
-        val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
-        translator.reload()
-        GlobalTranslator.translator().addSource(translator)
+        translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language).also {
+            it.reload()
+            GlobalTranslator.translator().addSource(it)
+        }
         val playerEventListener = PlayerEventListener(recipeViewManager, completedRecipeManager, recipeGuiItemCache)
         Bukkit.getPluginManager().registerEvents(GuiEventListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
@@ -162,10 +165,12 @@ class Recipes : JavaPlugin() {
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()
-        val translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language)
-        GlobalTranslator.translator().removeSource(translator)
-        translator.reload() // no idea how this works lol, praying it does
-        GlobalTranslator.translator().addSource(translator)
+        translator?.let { GlobalTranslator.translator().removeSource(it) }
+        translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language).also {
+            it.reload()
+            GlobalTranslator.translator().addSource(it)
+        }
         recipeGuiItemCache.clearGlobal()
+        RecipeViewLoreWriter.bumpVersion()
     }
 }
