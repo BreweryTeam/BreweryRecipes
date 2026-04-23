@@ -91,8 +91,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
     }
 
     override fun displayName(brewDisplayName: Component): Component {
-        return Recipes.brewingIntegration.recipeResult(this)
-            .displayName
+        return brewDisplayName
     }
 
     override fun scoreEquivalent(): Double {

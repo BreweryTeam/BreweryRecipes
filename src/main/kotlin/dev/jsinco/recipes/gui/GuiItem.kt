@@ -10,13 +10,13 @@ data class GuiItem(private val item: ItemStack, val type: Type) {
         private val TYPE_KEY = Recipes.key("gui_item_type")
     }
 
-    fun item(): ItemStack {
-        val output = item.clone()
-        output.editPersistentDataContainer { persistentDataContainer ->
+    init {
+        item.editPersistentDataContainer { persistentDataContainer ->
             persistentDataContainer.set(TYPE_KEY, PersistentDataType.STRING, type.identifier())
         }
-        return output
     }
+
+    fun item(): ItemStack = item.clone()
 
     enum class Type {
         NEXT_PAGE,

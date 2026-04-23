@@ -16,7 +16,6 @@ class RecipesGui(
 ) : InventoryHolder {
 
     private val inventory = Bukkit.createInventory(this, size, calculateGuiName())
-    private val renderedGuiItems = mutableSetOf<GuiItem>()
 
     private val recipesSlots = findRecipeSlots()
     private val pageRecipeCapacity = recipesSlots.size
@@ -92,11 +91,7 @@ class RecipesGui(
     }
 
     fun renderItem(guiItem: GuiItem, position: Int) {
-        val item = guiItem.item()
-        if (!renderedGuiItems.contains(guiItem)) {
-            renderedGuiItems.add(guiItem)
-        }
-        inventory.setItem(position, item)
+        inventory.setItem(position, guiItem.item())
     }
 
     fun open() = open(player)

@@ -30,7 +30,14 @@ object TbpBrewingIntegration : BrewingIntegration {
         val recipe = getApi().recipeRegistry.getRecipe(recipeDisplay.recipeKey()).getOrNull() ?: return null
         val result = recipe.getRecipeResult(BrewQuality.EXCELLENT)
         val brew = getApi().brewManager.createBrew(recipe.steps)
-        val item = result.newBrewItem(brew.score(recipe), brew, Brew.State.Brewing())
+        val score = brew.score(recipe)
+        val item = result.newBrewItem(score, brew, Brew.State.Other())
+        recipeResultCache.getOrPut(recipeDisplay.recipeKey()) {
+            BrewingIntegration.RecipeResult(
+                score.brewQuality() == null,
+                score.score()
+            )
+        }
         return item
     }
 
@@ -46,14 +53,12 @@ object TbpBrewingIntegration : BrewingIntegration {
     private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
         val steps = TBPRecipeConverter.convert(recipe)
         val brew = getApi().brewManager.createBrew(steps)
-        val item = getApi().brewManager.toItem(brew, Brew.State.Other())
         val score = brew.closestRecipe(getApi().recipeRegistry).orElse(null)
             ?.let(brew::score)
         val failed = score
             ?.let { score -> score.brewQuality() == null }
             ?: true
         return BrewingIntegration.RecipeResult(
-            item.effectiveName(),
             failed,
             score?.score() ?: 0.0
         )

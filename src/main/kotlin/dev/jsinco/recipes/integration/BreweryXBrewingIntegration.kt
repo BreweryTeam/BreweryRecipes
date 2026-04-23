@@ -20,7 +20,15 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
         val recipe = BRecipe.getRecipes().first { it.id.equals(recipeDisplay.recipeKey(), true) } ?: return null
-        return recipe.createBrew(10).createItem()
+        val brew = recipe.createBrew(10)
+        val item = brew.createItem()
+        recipeResultCache.getOrPut(recipeDisplay.recipeKey()) {
+            BrewingIntegration.RecipeResult(
+                false,
+                brew.quality.toDouble() / 10
+            )
+        }
+        return item
     }
 
     override fun brewDisplayName(identifier: String): Component? {
@@ -33,13 +41,9 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     }
 
     private fun computeRecipeResult(recipe: BreweryRecipe): BrewingIntegration.RecipeResult {
-        val brew = BreweryXRecipeConverter.convert(recipe) ?: return BrewingIntegration.RecipeResult(
-            Component.text("Placeholder"),
-            true,
-            0.0
-        )
+        val brew = BreweryXRecipeConverter.convert(recipe)
+            ?: return BrewingIntegration.RecipeResult(true, 0.0)
         return BrewingIntegration.RecipeResult(
-            brew.createItem().effectiveName(),
             false,
             brew.quality.toDouble() / 10
         )

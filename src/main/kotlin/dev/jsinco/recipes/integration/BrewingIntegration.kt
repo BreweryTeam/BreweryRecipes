@@ -34,7 +34,7 @@ interface BrewingIntegration {
     fun allRecipes(): Collection<BreweryRecipe>
     fun getRecipe(id: String): BreweryRecipe?
     fun reload()
-    data class RecipeResult(val displayName: Component, val failure: Boolean, val score: Double)
+    data class RecipeResult(val failure: Boolean, val score: Double)
 
     fun enable(recipes: Recipes)
 }
