@@ -86,8 +86,8 @@ object RecipesCommand {
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
-                        Recipes.recipeViewManager.clearAll(sender.uniqueId)
-                        Recipes.completedRecipeManager.clearAll(sender.uniqueId)
+                        Recipes.recipeViewManager.removeAll(sender.uniqueId)
+                        Recipes.completedRecipeManager.removeAll(sender.uniqueId)
                         1
                     }
                     .then(
@@ -103,8 +103,8 @@ object RecipesCommand {
                                     )
                                 )
                                 for (target in targets) {
-                                    Recipes.recipeViewManager.clearAll(target.uniqueId)
-                                    Recipes.completedRecipeManager.clearAll(target.uniqueId)
+                                    Recipes.recipeViewManager.removeAll(target.uniqueId)
+                                    Recipes.completedRecipeManager.removeAll(target.uniqueId)
                                 }
                                 1
                             }.requires { it.sender.hasPermission("recipes.command.others") }

@@ -27,6 +27,14 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         return backing[playerUuid]?.containsKey(recipeKey) ?: false
     }
 
+    fun removeAll(playerUuid: UUID) {
+        val recipes = backing.remove(playerUuid)
+        recipes?.forEach {
+            storageImpl.completedRecipeSession().removeRecipeCompletion(playerUuid, it.key)
+        }
+        Recipes.recipeGuiItemCache.clearAll(playerUuid)
+    }
+
     override fun clearAll(playerUuid: UUID) {
         backing.remove(playerUuid)
         Recipes.recipeGuiItemCache.clearAll(playerUuid)

@@ -80,7 +80,6 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
     }
 
     override fun clearAll(playerUuid: UUID) {
-        val views = backing.remove(playerUuid)
         Recipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 }
