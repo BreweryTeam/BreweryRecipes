@@ -110,16 +110,11 @@ object RecipeViewLoreWriter {
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is AgeStep -> {
-                    val article = when (step.barrelType) {
-                        AgeStep.BarrelType.ANY -> ""
-                        AgeStep.BarrelType.OAK, AgeStep.BarrelType.ACACIA -> "an "
-                        else -> "a "
-                    }
                     result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                         "recipes.display.recipe.step.barrel",
                         "woodcolor", step.barrelType.colorHex,
                         "recipes.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
-                        "barrel_type", article
+                        "barrel_type"
                     ), index, recipeView.flaws, recipeView.invertedReveals)))
                 }
             }
@@ -144,13 +139,13 @@ object RecipeViewLoreWriter {
         return result
     }
 
-    private fun buildTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String, article: String = ""): Component {
+    private fun buildTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String): Component {
+        val colorResolver = TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!))
         return Component.translatable(
             lineKey,
             Argument.tagResolver(
-                TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!)),
-                Placeholder.component(typePlaceholder, Component.translatable(typeKey)),
-                Placeholder.unparsed("article", article)
+                colorResolver,
+                Placeholder.component(typePlaceholder, Component.translatable(typeKey, Argument.tagResolver(colorResolver)))
             )
         ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
