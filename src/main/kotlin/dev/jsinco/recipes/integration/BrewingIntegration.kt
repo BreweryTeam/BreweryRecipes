@@ -8,11 +8,17 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.Color
 import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        val item = createItem(recipeDisplay) ?: return null
+        val customItemConfig = Recipes.guiConfig.recipes.customItem
+        val item = if (customItemConfig.enabled) {
+            customItemConfig.item.generateItem()
+        } else {
+            createItem(recipeDisplay) ?: return null
+        }
         val displayName = recipeDisplay.displayName(item.effectiveName())
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
@@ -25,6 +31,7 @@ interface BrewingIntegration {
 
     fun createItem(recipeDisplay: RecipeDisplay): ItemStack?
     fun brewDisplayName(identifier: String): Component?
+    fun brewIngredientColor(ingredientKey: String): Color?
     fun cookingMinuteTicks(): Long
     fun agingYearTicks(): Long
     fun allRecipes(): Collection<BreweryRecipe>

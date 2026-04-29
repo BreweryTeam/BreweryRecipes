@@ -2,7 +2,7 @@ package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.gui.GuiBorderType
 import dev.jsinco.recipes.configuration.gui.GuiOverride
-import dev.jsinco.recipes.configuration.gui.GuiRecipe
+import dev.jsinco.recipes.configuration.gui.GuiRecipesSection
 import dev.jsinco.recipes.gui.GuiItem
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
@@ -76,14 +76,6 @@ class GuiConfig : OkaeriConfig() {
             ).type(GuiItem.Type.PREVIOUS_PAGE)
             .build()
     )
-    @Comment("Use a specific item for displaying recipes?")
-    var recipes: GuiRecipe = GuiRecipe.Builder()
-        .enabled(true)
-        .item(
-            ConfigItem.Builder()
-                .material(Material.PAPER)
-                .glint(true)
-                .build()
-        )
-        .build()
+    @Comment("Settings related to the recipe items")
+    var recipes: GuiRecipesSection = GuiRecipesSection()
 }

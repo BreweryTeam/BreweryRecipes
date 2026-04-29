@@ -7,8 +7,10 @@ import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.TBPRecipeConverter
+import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.inventory.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
@@ -78,6 +80,16 @@ object TbpBrewingIntegration : BrewingIntegration {
             .map { TBPRecipeConverter.convert(it) }
             .associateBy { it.identifier }
         return recipeMap
+    }
+
+    override fun brewIngredientColor(ingredientKey: String): Color? {
+        val normalizedKey = ingredientKey.substringAfterLast(':')
+        return (getApi().recipeRegistry.getRecipe(normalizedKey).getOrNull()
+            ?: getApi().recipeRegistry.getRecipe(ingredientKey).getOrNull())
+            ?.getRecipeResult(BrewQuality.EXCELLENT)
+            ?.newLorelessItem()
+            ?.getData(DataComponentTypes.POTION_CONTENTS)
+            ?.customColor()
     }
 
     override fun enable(recipes: Recipes) {

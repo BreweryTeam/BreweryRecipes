@@ -7,12 +7,23 @@ import dev.jsinco.recipes.recipe.flaws.FlawExtent
 import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
 import dev.jsinco.recipes.recipe.flaws.type.FlawType
+import dev.jsinco.recipes.recipe.process.IngredientStep
 import dev.jsinco.recipes.recipe.process.Step
+import dev.jsinco.recipes.recipe.process.steps.AgeStep
+import dev.jsinco.recipes.recipe.process.steps.CookStep
+import dev.jsinco.recipes.recipe.process.steps.MixStep
+import dev.jsinco.recipes.util.ItemColorUtil
 import dev.jsinco.recipes.util.TranslationUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.tag.Tag
+import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.util.*
 
@@ -31,21 +42,103 @@ object RecipeViewLoreWriter {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
         val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
-        return recipe.steps
-            .asSequence()
-            .mapIndexed { index, value ->
-                renderStep(
-                    value,
-                    index,
-                    recipeView.flaws,
-                    recipeView.invertedReveals
+        val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
+        val loreConfig = Recipes.guiConfig.recipes.lore
+        val result = mutableListOf<Component>()
+
+        if (loreConfig.emptyLineAtStart) result.add(Component.empty())
+
+        recipe.steps.forEachIndexed { index, step ->
+            val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals)
+                .colorIfAbsent(NamedTextColor.GRAY)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            val rendered = TranslationUtil.render(stepComponent)
+            val ordinal = ordinals.getOrElse(index) { "${index + 1}." }
+
+            result.add(
+                TranslationUtil.render(
+                    Component.translatable(
+                        "recipes.display.recipe.step.header",
+                        Argument.tagResolver(
+                            Placeholder.unparsed("ordinal", ordinal),
+                            Placeholder.component("step", rendered)
+                        )
+                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                 )
+            )
+
+            if (step is IngredientStep) {
+                for ((ingredient, amount) in step.ingredients()) {
+                    val itemColorTag = ItemColorUtil.getHex(ingredient.key)
+                        ?.let { TextColor.fromHexString(it) }
+                        ?.let { Tag.styling(it) }
+                        ?: Tag.selfClosingInserting(Component.empty())
+                    val brewColorTag = if (ingredient.key.startsWith("brewery:"))
+                        Recipes.brewingIntegration.brewIngredientColor(ingredient.key)
+                            ?.let { TextColor.color(it.asRGB()) }
+                            ?.let { Tag.styling(it) }
+                            ?: Tag.selfClosingInserting(Component.empty())
+                        else Tag.selfClosingInserting(Component.empty())
+                    result.add(
+                        TranslationUtil.render(
+                            Component.translatable(
+                                "recipes.display.recipe.ingredient",
+                                Argument.tagResolver(
+                                    Formatter.number("count", amount),
+                                    Placeholder.component("name", ingredient.displayName),
+                                    TagResolver.resolver("itemcolor", itemColorTag),
+                                    TagResolver.resolver("brewcolor", brewColorTag)
+                                )
+                            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                        )
+                    )
+                }
             }
-            .map { component ->
-                component.colorIfAbsent(NamedTextColor.GRAY)
-                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-            }.map(TranslationUtil::render)
-            .toList()
+
+            when (step) {
+                is CookStep -> result.add(renderTypeLine("recipes.display.recipe.step.cauldron", "cauldroncolor", step.cauldronType.colorHex, "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}", "cauldron_type"))
+                is MixStep -> result.add(renderTypeLine("recipes.display.recipe.step.cauldron", "cauldroncolor", step.cauldronType.colorHex, "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}", "cauldron_type"))
+                is AgeStep -> {
+                    val article = when (step.barrelType) {
+                        AgeStep.BarrelType.ANY -> ""
+                        AgeStep.BarrelType.OAK, AgeStep.BarrelType.ACACIA -> "an "
+                        else -> "a "
+                    }
+                    result.add(renderTypeLine("recipes.display.recipe.step.barrel", "woodcolor", step.barrelType.colorHex, "recipes.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}", "barrel_type", article))
+                }
+            }
+
+            if (loreConfig.emptyLineBetweenSteps && index < recipe.steps.size - 1) {
+                result.add(Component.empty())
+            }
+        }
+
+        if (loreConfig.emptyLineAtEnd) result.add(Component.empty())
+
+        val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
+        val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
+        if (prefix != null || suffix != null) {
+            return result.map { line ->
+                var out = line
+                if (prefix != null) out = prefix.append(out)
+                if (suffix != null) out = out.append(suffix)
+                out
+            }
+        }
+        return result
+    }
+
+    private fun renderTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String, article: String = ""): Component {
+        return TranslationUtil.render(
+            Component.translatable(
+                lineKey,
+                Argument.tagResolver(
+                    TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!)),
+                    Placeholder.component(typePlaceholder, Component.translatable(typeKey)),
+                    Placeholder.unparsed("article", article)
+                )
+            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+        )
     }
 
     private fun buildBaseStep(step: Step): Component {

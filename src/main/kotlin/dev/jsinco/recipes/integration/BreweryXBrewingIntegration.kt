@@ -10,6 +10,7 @@ import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bukkit.Color
 import org.bukkit.inventory.ItemStack
 
 object BreweryXBrewingIntegration : BrewingIntegration {
@@ -66,6 +67,9 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     override fun enable(recipes: Recipes) {
     }
+
+    override fun brewIngredientColor(ingredientKey: String): Color? =
+        BRecipe.getRecipes().firstOrNull { it.id.equals(ingredientKey, ignoreCase = true) }?.color?.color
 
     override fun score(recipe: BreweryRecipe): Double = 1.0
 }

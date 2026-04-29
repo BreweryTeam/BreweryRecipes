@@ -1,5 +1,10 @@
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import java.util.TreeMap
+import java.util.zip.ZipFile
+import javax.imageio.ImageIO
 import io.papermc.hangarpublishplugin.model.Platforms
 import java.net.HttpURLConnection
 import java.net.URI
@@ -157,6 +162,78 @@ modrinth {
     loaders.addAll("bukkit", "spigot", "paper", "purpur", "folia")
     gameVersions.addAll("1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4")
     changelog.set(readChangeLog())
+}
+
+fun computeAverageColor(image: java.awt.image.BufferedImage, name: String, biomeOverrides: Map<String, Int>): String {
+    for ((key, rgb) in biomeOverrides) {
+        if (name.contains(key)) return "%06x".format(rgb)
+    }
+    var sumR = 0.0; var sumG = 0.0; var sumB = 0.0; var totalAlpha = 0.0
+    for (x in 0 until image.width) {
+        for (y in 0 until image.height) {
+            val argb = image.getRGB(x, y)
+            val a = ((argb shr 24) and 0xff) / 255.0
+            sumR += ((argb shr 16) and 0xff) * a
+            sumG += ((argb shr 8) and 0xff) * a
+            sumB += (argb and 0xff) * a
+            totalAlpha += a
+        }
+    }
+    if (totalAlpha == 0.0) return "808080"
+    val r = (sumR / totalAlpha).toInt().coerceIn(0, 255)
+    val g = (sumG / totalAlpha).toInt().coerceIn(0, 255)
+    val b = (sumB / totalAlpha).toInt().coerceIn(0, 255)
+    return "%06x".format((r shl 16) or (g shl 8) or b)
+}
+
+tasks.register("generateItemColors") {
+    group = "build"
+    description = "Downloads the Minecraft client JAR and generates item-colors.json from texture alpha-weighted averages"
+    doLast {
+        System.setProperty("java.awt.headless", "true")
+        val mcVersion = project.findProperty("item-colors.mc-version")?.toString() ?: "26.1.2"
+        val outputFile = file("src/main/resources/item-colors.json")
+        val biomeOverrides = mapOf("short_grass" to 0x7cbd6b, "_leaves" to 0x71a74d, "vine" to 0x48b518, "sugar_cane" to 0x8eb971)
+        val textureDirs = listOf("assets/minecraft/textures/item/", "assets/minecraft/textures/block/")
+
+        println("Fetching Mojang version manifest for $mcVersion...")
+        val manifestText = URI("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json").toURL().readText()
+        val versions = JsonParser.parseString(manifestText).asJsonObject.getAsJsonArray("versions")
+        val versionEntry = versions.firstOrNull { it.asJsonObject.get("id").asString == mcVersion }?.asJsonObject
+            ?: error("Minecraft version $mcVersion not found in Mojang manifest. Use -Pitem-colors.mc-version=<version>")
+
+        val versionText = URI(versionEntry.get("url").asString).toURL().readText()
+        val clientUrl = JsonParser.parseString(versionText).asJsonObject
+            .getAsJsonObject("downloads").getAsJsonObject("client").get("url").asString
+
+        println("Downloading client JAR from $clientUrl ...")
+        val clientJar = File.createTempFile("mc-client-$mcVersion-", ".jar")
+        clientJar.deleteOnExit()
+        URI(clientUrl).toURL().openStream().use { input -> input.copyTo(clientJar.outputStream()) }
+        println("Downloaded ${clientJar.length() / 1024 / 1024} MB. Reading textures...")
+
+        val colors = TreeMap<String, String>()
+        ZipFile(clientJar).use { jar ->
+            jar.entries().asSequence()
+                .filter { !it.isDirectory && it.name.endsWith(".png") && textureDirs.any { dir -> it.name.startsWith(dir) } }
+                .sortedBy { if (it.name.startsWith("assets/minecraft/textures/item/")) 0 else 1 }
+                .forEach { entry ->
+                    val name = entry.name.substringAfterLast('/').removeSuffix(".png")
+                    if (colors.containsKey(name)) return@forEach
+                    try {
+                        jar.getInputStream(entry).use { stream ->
+                            val image = ImageIO.read(stream) ?: return@forEach
+                            colors[name] = computeAverageColor(image, name, biomeOverrides)
+                        }
+                    } catch (_: Exception) {}
+                }
+        }
+
+        val jsonObject = JsonObject()
+        colors.forEach { entry -> jsonObject.addProperty(entry.key, entry.value) }
+        outputFile.writeText(GsonBuilder().setPrettyPrinting().create().toJson(jsonObject) + "\n")
+        println("Generated ${colors.size} item colors -> ${outputFile.absolutePath}")
+    }
 }
 
 fun readChangeLog(): String {

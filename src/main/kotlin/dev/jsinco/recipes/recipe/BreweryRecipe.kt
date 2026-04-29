@@ -16,7 +16,6 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
@@ -82,12 +81,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
     override fun recipeKey(): String = identifier
 
     override fun toLore(): List<Component> {
-        return steps.map { it.display() }
-            .map { GlobalTranslator.render(it, Recipes.recipesConfig.language) }
-            .map {
-                it.colorIfAbsent(NamedTextColor.GRAY)
-                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-            }
+        return RecipeViewLoreWriter.writeLore(generateCompletedView(), Recipes.brewingIntegration) ?: emptyList()
     }
 
     override fun displayName(brewDisplayName: Component): Component {

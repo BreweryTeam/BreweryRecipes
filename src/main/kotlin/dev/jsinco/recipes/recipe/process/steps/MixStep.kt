@@ -3,13 +3,10 @@ package dev.jsinco.recipes.recipe.process.steps
 import dev.jsinco.recipes.recipe.RecipeViewLoreWriter.cookingMinuteTicks
 import dev.jsinco.recipes.recipe.process.Ingredient
 import dev.jsinco.recipes.recipe.process.IngredientStep
-import dev.jsinco.recipes.recipe.process.IngredientUtil
 import dev.jsinco.recipes.recipe.process.StepType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.translation.Argument
-import java.util.*
 
 class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) :
     IngredientStep {
@@ -17,20 +14,15 @@ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredi
     override fun getType(): StepType = StepType.MIX
     override fun display(): Component = Component.translatable(
         "recipes.display.recipe.step.mix",
-        Argument.tagResolver(
-            Placeholder.component("ingredients", IngredientUtil.compileIngredients(ingredients)),
-            Formatter.number("mixing_time", mixingTicks / cookingMinuteTicks),
-            Placeholder.component(
-                "cauldron_type",
-                Component.translatable("recipes.cauldron.type." + cauldronType.name.lowercase(Locale.ROOT))
-            )
-        )
+        Argument.tagResolver(Formatter.number("mixing_time", mixingTicks / cookingMinuteTicks))
     )
 
     override fun ingredients(): Map<Ingredient, Int> = ingredients
 
-    enum class CauldronType {
-        WATER, LAVA, SNOW;
+    enum class CauldronType(val colorHex: String) {
+        WATER("#7ec0d4"),
+        LAVA("#e07848"),
+        SNOW("#c0dce8");
 
         companion object {
             @JvmStatic
@@ -44,6 +36,4 @@ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredi
             }
         }
     }
-
-
 }
