@@ -79,32 +79,48 @@ object RecipeViewLoreWriter {
                             ?.let { Tag.styling(it) }
                             ?: Tag.selfClosingInserting(Component.empty())
                         else Tag.selfClosingInserting(Component.empty())
+                    val ingredientComp = Component.translatable(
+                        "recipes.display.recipe.ingredient",
+                        Argument.tagResolver(
+                            Formatter.number("count", amount),
+                            Placeholder.component("name", ingredient.displayName),
+                            TagResolver.resolver("itemcolor", itemColorTag),
+                            TagResolver.resolver("brewcolor", brewColorTag)
+                        )
+                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                     result.add(
                         TranslationUtil.render(
-                            Component.translatable(
-                                "recipes.display.recipe.ingredient",
-                                Argument.tagResolver(
-                                    Formatter.number("count", amount),
-                                    Placeholder.component("name", ingredient.displayName),
-                                    TagResolver.resolver("itemcolor", itemColorTag),
-                                    TagResolver.resolver("brewcolor", brewColorTag)
-                                )
-                            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                            applyFlaws(ingredientComp, index, recipeView.flaws, recipeView.invertedReveals)
                         )
                     )
                 }
             }
 
             when (step) {
-                is CookStep -> result.add(renderTypeLine("recipes.display.recipe.step.cauldron", "cauldroncolor", step.cauldronType.colorHex, "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}", "cauldron_type"))
-                is MixStep -> result.add(renderTypeLine("recipes.display.recipe.step.cauldron", "cauldroncolor", step.cauldronType.colorHex, "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}", "cauldron_type"))
+                is CookStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
+                    "recipes.display.recipe.step.cauldron",
+                    "cauldroncolor", step.cauldronType.colorHex,
+                    "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "cauldron_type"
+                ), index, recipeView.flaws, recipeView.invertedReveals)))
+                is MixStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
+                    "recipes.display.recipe.step.cauldron",
+                    "cauldroncolor", step.cauldronType.colorHex,
+                    "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "cauldron_type"
+                ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is AgeStep -> {
                     val article = when (step.barrelType) {
                         AgeStep.BarrelType.ANY -> ""
                         AgeStep.BarrelType.OAK, AgeStep.BarrelType.ACACIA -> "an "
                         else -> "a "
                     }
-                    result.add(renderTypeLine("recipes.display.recipe.step.barrel", "woodcolor", step.barrelType.colorHex, "recipes.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}", "barrel_type", article))
+                    result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
+                        "recipes.display.recipe.step.barrel",
+                        "woodcolor", step.barrelType.colorHex,
+                        "recipes.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
+                        "barrel_type", article
+                    ), index, recipeView.flaws, recipeView.invertedReveals)))
                 }
             }
 
@@ -128,26 +144,24 @@ object RecipeViewLoreWriter {
         return result
     }
 
-    private fun renderTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String, article: String = ""): Component {
-        return TranslationUtil.render(
-            Component.translatable(
-                lineKey,
-                Argument.tagResolver(
-                    TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!)),
-                    Placeholder.component(typePlaceholder, Component.translatable(typeKey)),
-                    Placeholder.unparsed("article", article)
-                )
-            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-        )
+    private fun buildTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String, article: String = ""): Component {
+        return Component.translatable(
+            lineKey,
+            Argument.tagResolver(
+                TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!)),
+                Placeholder.component(typePlaceholder, Component.translatable(typeKey)),
+                Placeholder.unparsed("article", article)
+            )
+        ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
 
     private fun buildBaseStep(step: Step): Component {
         return TranslationUtil.render(step.display())
     }
 
-    private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
-        val rawBase = buildBaseStep(step)
-        val base = resolveTranslatablesForMutation(rawBase)
+    private fun applyFlaws(component: Component, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
+        if (flaws.isEmpty()) return component
+        val base = resolveTranslatablesForMutation(component)
         val textModifications = compileTextModifications(base, stepIndex, flaws)
             .map { it.key to it.value.withMatching { idx -> reveals.isEmpty() || reveals[stepIndex].contains(idx) } }
             .toMap()
@@ -155,11 +169,14 @@ object RecipeViewLoreWriter {
         var offsets = mapOf<Int, Int>()
         for (flaw in flaws) {
             val textModification = textModifications[flaw] ?: continue
-            output =
-                FlawTextModificationWriter.process(output, textModification, flaw, offsets)
+            output = FlawTextModificationWriter.process(output, textModification, flaw, offsets)
             offsets = textModification.offsets(offsets)
         }
         return output
+    }
+
+    private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
+        return applyFlaws(buildBaseStep(step), stepIndex, flaws, reveals)
     }
 
     private fun compileTextModifications(
