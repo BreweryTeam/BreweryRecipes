@@ -6,6 +6,7 @@ import java.util.TreeMap
 import java.util.zip.ZipFile
 import javax.imageio.ImageIO
 import io.papermc.hangarpublishplugin.model.Platforms
+import java.awt.image.BufferedImage
 import java.net.HttpURLConnection
 import java.net.URI
 
@@ -164,7 +165,7 @@ modrinth {
     changelog.set(readChangeLog())
 }
 
-fun computeAverageColor(image: java.awt.image.BufferedImage, name: String, biomeOverrides: Map<String, Int>): String {
+fun computeAverageColor(image: BufferedImage, name: String, biomeOverrides: Map<String, Int>): String {
     for ((key, rgb) in biomeOverrides) {
         if (name.contains(key)) return "%06x".format(rgb)
     }
@@ -191,14 +192,29 @@ tasks.register("generateItemColors") {
     description = "Downloads the Minecraft client JAR and generates item-colors.json from texture alpha-weighted averages"
     doLast {
         System.setProperty("java.awt.headless", "true")
-        val mcVersion = project.findProperty("item-colors.mc-version")?.toString() ?: "26.1.2"
         val outputFile = file("src/main/resources/item-colors.json")
-        val biomeOverrides = mapOf("short_grass" to 0x7cbd6b, "_leaves" to 0x71a74d, "vine" to 0x48b518, "sugar_cane" to 0x8eb971)
+        val biomeOverrides = mapOf(
+            "short_grass" to 0x7cbd6b, "tall_grass" to 0x7cbd6b,
+            "fern" to 0x7cbd6b,
+            "_leaves" to 0x71a74d,
+            "vine" to 0x48b518,
+            "sugar_cane" to 0x8eb971,
+            "lily_pad" to 0x208030,
+            "seagrass" to 0x4d9e3f, "kelp" to 0x4d9e3f,
+            "dry_grass" to 0xa89060,
+            "dry_bush" to 0x946b44, "bush" to 0x71a74d,
+        )
         val textureDirs = listOf("assets/minecraft/textures/item/", "assets/minecraft/textures/block/")
 
-        println("Fetching Mojang version manifest for $mcVersion...")
+        println("Fetching Mojang version manifest...")
         val manifestText = URI("https://launchermeta.mojang.com/mc/game/version_manifest_v2.json").toURL().readText()
-        val versions = JsonParser.parseString(manifestText).asJsonObject.getAsJsonArray("versions")
+        val manifestObj = JsonParser.parseString(manifestText).asJsonObject
+        val mcChannel = project.findProperty("item-colors.mc-channel")?.toString() ?: "release"
+        val latestVersion = manifestObj.getAsJsonObject("latest").get(mcChannel)?.asString
+            ?: error("Unknown channel '$mcChannel'. Use 'release' or 'snapshot'.")
+        val mcVersion = project.findProperty("item-colors.mc-version")?.toString() ?: latestVersion
+        println("Using Minecraft version: $mcVersion (channel: $mcChannel)")
+        val versions = manifestObj.getAsJsonArray("versions")
         val versionEntry = versions.firstOrNull { it.asJsonObject.get("id").asString == mcVersion }?.asJsonObject
             ?: error("Minecraft version $mcVersion not found in Mojang manifest. Use -Pitem-colors.mc-version=<version>")
 

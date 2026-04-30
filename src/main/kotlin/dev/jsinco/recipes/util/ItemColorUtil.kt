@@ -20,6 +20,8 @@ object ItemColorUtil {
 
     fun getHex(ingredientKey: String): String? {
         val normalized = ingredientKey.substringAfterLast(':')
-        return colors[normalized] ?: colors[ingredientKey]
+        return colors[normalized]
+            ?: colors[ingredientKey]
+            ?: colors.entries.firstOrNull { it.key.startsWith(normalized) }?.value
     }
 }
