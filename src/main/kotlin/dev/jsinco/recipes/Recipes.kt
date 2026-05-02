@@ -29,6 +29,7 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
+import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -82,10 +83,7 @@ class Recipes : JavaPlugin() {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
-        val book = ShapelessRecipe(key("recipe_book"), BookUtil.createBook())
-        book.addIngredient(Material.PAPER)
-        book.addIngredient(Material.BOOK)
-        Bukkit.addRecipe(book)
+        registerRecipeBookCrafting()
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(
             this,
             { playerEventListener.tick() },
@@ -160,6 +158,37 @@ class Recipes : JavaPlugin() {
         instance = this
     }
 
+    private fun registerRecipeBookCrafting() {
+        val recipeKey = key("recipe_book")
+        Bukkit.removeRecipe(recipeKey)
+        val cfg = recipesConfig.recipeBookCrafting
+        if (!cfg.enabled) return
+        val result = BookUtil.createBook()
+        if (cfg.shaped) {
+            val recipe = ShapedRecipe(recipeKey, result)
+            val rows = cfg.shape.take(3).map { it.padEnd(3).take(3) }
+            when (rows.size) {
+                1 -> recipe.shape(rows[0])
+                2 -> recipe.shape(rows[0], rows[1])
+                else -> recipe.shape(rows[0], rows[1], rows[2])
+            }
+            cfg.ingredientMap.forEach { (char, materialName) ->
+                val material = runCatching { Material.valueOf(materialName.uppercase()) }.getOrNull()
+                    ?: run { logger.warning("Unknown material '$materialName' in recipe-book-crafting ingredient-map"); return@forEach }
+                recipe.setIngredient(char[0], material)
+            }
+            Bukkit.addRecipe(recipe)
+        } else {
+            val recipe = ShapelessRecipe(recipeKey, result)
+            cfg.ingredients.forEach { materialName ->
+                val material = runCatching { Material.valueOf(materialName.uppercase()) }.getOrNull()
+                    ?: run { logger.warning("Unknown material '$materialName' in recipe-book-crafting ingredients"); return@forEach }
+                recipe.addIngredient(material)
+            }
+            Bukkit.addRecipe(recipe)
+        }
+    }
+
     fun reload() {
         brewingIntegration.reload()
         recipesConfig = readConfig()
@@ -172,5 +201,6 @@ class Recipes : JavaPlugin() {
         }
         recipeGuiItemCache.clearGlobal()
         RecipeViewLoreWriter.bumpVersion()
+        registerRecipeBookCrafting()
     }
 }
