@@ -45,10 +45,12 @@ object RecipeViewLoreWriter {
         val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
         val loreConfig = Recipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
+        val noIndentIndices = mutableSetOf<Int>()
 
-        if (loreConfig.showDifficulty) {
-            if (loreConfig.emptyLineAboveDifficulty) result.add(Component.empty())
+        if (loreConfig.showBrewDifficulty) {
+            if (loreConfig.emptyLineAboveBrewDifficulty) result.add(Component.empty())
             val difficulty = recipe.difficulty
+            if (!loreConfig.applyIndentationToBrewDifficulty) noIndentIndices.add(result.size)
             result.add(
                 TranslationUtil.render(
                     Component.translatable(
@@ -142,7 +144,8 @@ object RecipeViewLoreWriter {
         val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
         val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
         if (prefix != null || suffix != null) {
-            return result.map { line ->
+            return result.mapIndexed { index, line ->
+                if (index in noIndentIndices) return@mapIndexed line
                 var out = line
                 if (prefix != null) out = prefix.append(out)
                 if (suffix != null) out = out.append(suffix)

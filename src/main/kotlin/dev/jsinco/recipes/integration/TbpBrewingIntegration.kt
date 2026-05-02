@@ -99,8 +99,14 @@ object TbpBrewingIntegration : BrewingIntegration {
     override fun score(recipe: BreweryRecipe): Double {
         val steps = TBPRecipeConverter.convert(recipe)
         val brew = getApi().brewManager.createBrew(steps)
-        val recipe = getApi().recipeRegistry.getRecipe(recipe.identifier).orElse(null) ?: return 0.0
-        return brew.score(recipe)
-            .score()
+        val tbpRecipe = getApi().recipeRegistry.getRecipe(recipe.identifier).orElse(null) ?: return 0.0
+        return brew.score(tbpRecipe).score()
+    }
+
+    override fun scoreDisplayName(recipe: BreweryRecipe): Component? {
+        val steps = TBPRecipeConverter.convert(recipe)
+        val brew = getApi().brewManager.createBrew(steps)
+        val tbpRecipe = getApi().recipeRegistry.getRecipe(recipe.identifier).orElse(null) ?: return null
+        return brew.score(tbpRecipe).displayName()
     }
 }
