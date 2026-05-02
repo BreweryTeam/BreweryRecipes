@@ -64,7 +64,8 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
         Files.newBufferedReader(internalFile, StandardCharsets.UTF_8).use { reader ->
             internalProps.load(reader)
         }
-        val internalKeyOrder = readKeyOrder(internalFile)
+        val internalLines = readLines(internalFile)
+        val internalKeys = internalLines.filterNotNull().filter { !it.startsWith('#') && !it.startsWith('!') }.toSet()
 
         val externalProps = Properties()
         if (externalFile.exists()) {
@@ -75,13 +76,18 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
             throw IOException("Could not create file: $externalFile")
         }
 
-        val internalKeySet = internalKeyOrder.toSet()
-        val orphanedKeys = externalProps.stringPropertyNames().filter { it !in internalKeySet }
+        val orphanedKeys: List<String> = externalProps.stringPropertyNames().filter { it !in internalKeys }
 
         OutputStreamWriter(FileOutputStream(externalFile), StandardCharsets.UTF_8).use { writer ->
-            for (key in internalKeyOrder) {
-                val value = externalProps.getProperty(key) ?: internalProps.getProperty(key)!!
-                writer.write("$key=$value\n")
+            for (line in internalLines) {
+                when {
+                    line == null -> writer.write("\n")
+                    line.startsWith('#') || line.startsWith('!') -> writer.write("$line\n")
+                    else -> {
+                        val value = externalProps.getProperty(line) ?: internalProps.getProperty(line)!!
+                        writer.write("$line=$value\n")
+                    }
+                }
             }
             if (orphanedKeys.isNotEmpty()) {
                 writer.write("\n# The following settings are no longer recognized by this version")
@@ -93,18 +99,22 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
         }
     }
 
-    private fun readKeyOrder(file: Path): List<String> {
-        val keys = mutableListOf<String>()
+    private fun readLines(file: Path): List<String?> {
+        val lines = mutableListOf<String?>()
         Files.newBufferedReader(file, StandardCharsets.UTF_8).use { reader ->
             reader.forEachLine { line ->
                 val trimmed = line.trim()
-                if (trimmed.isNotEmpty() && !trimmed.startsWith('#') && !trimmed.startsWith('!')) {
-                    val eqIdx = trimmed.indexOf('=')
-                    if (eqIdx > 0) keys.add(trimmed.take(eqIdx).trim())
+                when {
+                    trimmed.isEmpty() -> lines.add(null)
+                    trimmed.startsWith('#') || trimmed.startsWith('!') -> lines.add(trimmed)
+                    else -> {
+                        val eqIdx = trimmed.indexOf('=')
+                        if (eqIdx > 0) lines.add(trimmed.take(eqIdx).trim())
+                    }
                 }
             }
         }
-        return keys
+        return lines
     }
 
     private fun loadLangFiles() : Map<Locale, Properties> {
