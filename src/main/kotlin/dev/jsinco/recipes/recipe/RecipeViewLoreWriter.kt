@@ -38,10 +38,11 @@ object RecipeViewLoreWriter {
         version++
     }
 
-    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration): List<Component>? {
+    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
         val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
+        val stepsToRender = stepsOverride ?: recipe.steps
         val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
         val loreConfig = Recipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
@@ -66,7 +67,7 @@ object RecipeViewLoreWriter {
 
         if (loreConfig.emptyLineAboveSteps) result.add(Component.empty())
 
-        recipe.steps.forEachIndexed { index, step ->
+        stepsToRender.forEachIndexed { index, step ->
             val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals)
                 .colorIfAbsent(NamedTextColor.GRAY)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
@@ -134,7 +135,7 @@ object RecipeViewLoreWriter {
                 }
             }
 
-            if (loreConfig.emptyLineBetweenSteps && index < recipe.steps.size - 1) {
+            if (loreConfig.emptyLineBetweenSteps && index < stepsToRender.size - 1) {
                 result.add(Component.empty())
             }
         }

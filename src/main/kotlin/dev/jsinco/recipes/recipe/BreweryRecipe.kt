@@ -81,7 +81,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>, val diff
     override fun recipeKey(): String = identifier
 
     override fun toLore(): List<Component> {
-        return RecipeViewLoreWriter.writeLore(generateCompletedView(), Recipes.brewingIntegration) ?: emptyList()
+        return RecipeViewLoreWriter.writeLore(generateCompletedView(), Recipes.brewingIntegration, steps) ?: emptyList()
     }
 
     override fun displayName(brewDisplayName: Component): Component {
