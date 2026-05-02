@@ -32,12 +32,18 @@ class GuiEventListener : Listener {
 
         if (clickedItem.persistentDataContainer.has(GUI_ITEM_TYPE, PersistentDataType.STRING)) {
             val value = clickedItem.persistentDataContainer.get(GUI_ITEM_TYPE, PersistentDataType.STRING) ?: return
-            val type = GuiItem.Type.entries.first { it.identifier() == value } ?: return
+            val type = GuiItem.Type.entries.firstOrNull { it.identifier() == value } ?: return
             val player = event.whoClicked as? Player ?: return
             when (type) {
                 GuiItem.Type.NEXT_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.nextPage()
                 GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.previousPage()
-                else -> {} // NO-OP
+                GuiItem.Type.SWITCH_MODE -> {
+                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, gui.mode.next())
+                }
+                else -> {
+                    val targetMode = type.targetMode() ?: return
+                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, targetMode)
+                }
             }
         }
     }

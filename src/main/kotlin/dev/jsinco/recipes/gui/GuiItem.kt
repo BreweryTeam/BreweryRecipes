@@ -21,8 +21,17 @@ data class GuiItem(private val item: ItemStack, val type: Type) {
     enum class Type {
         NEXT_PAGE,
         PREVIOUS_PAGE,
-        NO_ACTION;
+        NO_ACTION,
+        SWITCH_MODE,
+        SET_MODE_FRAGMENTS,
+        SET_MODE_BREWED;
 
         fun identifier() = name.lowercase(Locale.ROOT)
+
+        fun targetMode(): RecipeBookMode? = when (this) {
+            SET_MODE_FRAGMENTS -> RecipeBookMode.FRAGMENTS
+            SET_MODE_BREWED -> RecipeBookMode.BREWED
+            else -> null
+        }
     }
 }

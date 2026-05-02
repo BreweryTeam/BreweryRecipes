@@ -10,6 +10,7 @@ import org.bukkit.inventory.InventoryHolder
 
 class RecipesGui(
     private val player: Player,
+    val mode: RecipeBookMode,
     private val recipeDisplays: List<RecipeDisplay>,
     private val itemResolver: (RecipeDisplay) -> GuiItem?,
     size: Int = 54
@@ -98,9 +99,10 @@ class RecipesGui(
     fun open(player: Player) = player.openInventory(inventory)
 
     fun calculateGuiName(): Component {
+        val modeId = mode.identifier()
         return if (player.hasPermission("recipes.override.view"))
-            Component.translatable("gui.name.admin")
-        else Component.translatable("gui.name")
+            Component.translatable("gui.name.admin.$modeId")
+        else Component.translatable("gui.name.$modeId")
     }
 
     override fun getInventory() = inventory

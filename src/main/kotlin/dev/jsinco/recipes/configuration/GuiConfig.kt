@@ -4,11 +4,15 @@ import dev.jsinco.recipes.configuration.gui.GuiBorderType
 import dev.jsinco.recipes.configuration.gui.GuiOverride
 import dev.jsinco.recipes.configuration.gui.GuiRecipesSection
 import dev.jsinco.recipes.gui.GuiItem
+import dev.jsinco.recipes.gui.RecipeBookMode
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import org.bukkit.Material
 
 class GuiConfig : OkaeriConfig() {
+
+    @Comment("The default mode shown when opening the recipe book (FRAGMENTS or BREWED)")
+    var defaultMode: RecipeBookMode = RecipeBookMode.FRAGMENTS
 
     @Comment("Define borders in the recipe GUI")
     var borders: Map<GuiBorderType, ConfigItemCollection> = mapOf(
@@ -52,12 +56,20 @@ class GuiConfig : OkaeriConfig() {
             ).type(GuiItem.Type.NO_ACTION)
             .build(),
         GuiOverride.Builder()
-            .pos("4,49")
+            .pos("4")
             .item(
                 ConfigItem.Builder().material(Material.LILY_PAD)
                     .noText(true)
                     .build()
             ).type(GuiItem.Type.NO_ACTION)
+            .build(),
+        GuiOverride.Builder()
+            .pos("49")
+            .item(
+                ConfigItem.Builder().material(Material.LILY_PAD)
+                    .name("<gray>Switch Mode")
+                    .build()
+            ).type(GuiItem.Type.SWITCH_MODE)
             .build(),
         GuiOverride.Builder()
             .pos("50")

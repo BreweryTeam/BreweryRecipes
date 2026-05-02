@@ -13,18 +13,23 @@ class RecipeGuiItemCache : PersistencyLinkedCache {
         playerUuid: UUID,
         recipeIdentifier: String,
         admin: Boolean,
+        mode: RecipeBookMode,
         builder: () -> GuiItem?
     ): GuiItem? {
+        val cacheKey = "${mode.identifier()}:$recipeIdentifier"
         val target = if (admin) {
             adminCache
         } else {
             playerCache.getOrPut(playerUuid) { mutableMapOf() }
         }
-        return target.getOrPut(recipeIdentifier) { Optional.ofNullable(builder()) }.orElse(null)
+        return target.getOrPut(cacheKey) { Optional.ofNullable(builder()) }.orElse(null)
     }
 
     fun invalidate(playerUuid: UUID, recipeIdentifier: String) {
-        playerCache[playerUuid]?.remove(recipeIdentifier)
+        val playerMap = playerCache[playerUuid] ?: return
+        RecipeBookMode.entries.forEach { mode ->
+            playerMap.remove("${mode.identifier()}:$recipeIdentifier")
+        }
     }
 
     fun clearGlobal() {

@@ -26,6 +26,9 @@ class RecipesConfig : OkaeriConfig() {
     @Comment("Minimum delay between page switches per player. Set to 0 to disable")
     var pageCooldownTicks: Long = 3L
 
+    @Comment("Minimum delay between mode switches per player. Set to 0 to disable")
+    var modeSwitchCooldownTicks: Long = 5L
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 }
