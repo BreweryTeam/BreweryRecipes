@@ -64,35 +64,47 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
         Files.newBufferedReader(internalFile, StandardCharsets.UTF_8).use { reader ->
             internalProps.load(reader)
         }
-        val merged = Properties()
+        val internalKeyOrder = readKeyOrder(internalFile)
+
+        val externalProps = Properties()
         if (externalFile.exists()) {
-            val externalProps = Properties()
-            InputStreamReader(FileInputStream(externalFile), StandardCharsets.UTF_8).use { reader ->
+            Files.newBufferedReader(externalFile.toPath(), StandardCharsets.UTF_8).use { reader ->
                 externalProps.load(reader)
             }
-            merged.putAll(externalProps)
-            for (key in internalProps.stringPropertyNames()) {
-                merged.putIfAbsent(key, internalProps.getProperty(key))
-            }
-        } else {
-            merged.putAll(internalProps)
-            if (!externalFile.createNewFile()) {
-                throw IOException("Could not create file: $externalFile")
-            }
+        } else if (!externalFile.createNewFile()) {
+            throw IOException("Could not create file: $externalFile")
         }
+
+        val internalKeySet = internalKeyOrder.toSet()
+        val orphanedKeys = externalProps.stringPropertyNames().filter { it !in internalKeySet }
+
         OutputStreamWriter(FileOutputStream(externalFile), StandardCharsets.UTF_8).use { writer ->
-            storeWithoutComments(merged, writer)
+            for (key in internalKeyOrder) {
+                val value = externalProps.getProperty(key) ?: internalProps.getProperty(key)!!
+                writer.write("$key=$value\n")
+            }
+            if (orphanedKeys.isNotEmpty()) {
+                writer.write("\n# The following settings are no longer recognized by this version")
+                writer.write("\n# If you don't need them for anything, you can safely remove them\n")
+                for (key in orphanedKeys) {
+                    writer.write("$key=${externalProps.getProperty(key)}\n")
+                }
+            }
         }
     }
 
-    @Throws(IOException::class)
-    private fun storeWithoutComments(props: Properties, writer: Writer) {
-        val keys: MutableList<String> = ArrayList<String>(props.stringPropertyNames())
-        keys.sort()
-
-        for (key in keys) {
-            writer.write(key + "=" + props.getProperty(key) + "\n")
+    private fun readKeyOrder(file: Path): List<String> {
+        val keys = mutableListOf<String>()
+        Files.newBufferedReader(file, StandardCharsets.UTF_8).use { reader ->
+            reader.forEachLine { line ->
+                val trimmed = line.trim()
+                if (trimmed.isNotEmpty() && !trimmed.startsWith('#') && !trimmed.startsWith('!')) {
+                    val eqIdx = trimmed.indexOf('=')
+                    if (eqIdx > 0) keys.add(trimmed.take(eqIdx).trim())
+                }
+            }
         }
+        return keys
     }
 
     private fun loadLangFiles() : Map<Locale, Properties> {
@@ -102,9 +114,9 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
             file?.getName()?.endsWith(".lang.properties") ?: false
         }) {
             try {
-                FileInputStream(translationFile).use { inputStream ->
+                Files.newBufferedReader(translationFile.toPath(), StandardCharsets.UTF_8).use { reader ->
                     val translation = Properties()
-                    translation.load(InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    translation.load(reader)
                     val locale = Locale.forLanguageTag(translationFile.getName().replace(".lang.properties$".toRegex(), ""))
                     if (locale != null) {
                         translationsBuilder.put(locale, translation)
