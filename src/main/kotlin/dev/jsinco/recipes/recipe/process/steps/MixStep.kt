@@ -13,7 +13,7 @@ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType, val ingredi
 
     override fun getType(): StepType = StepType.MIX
     override fun display(): Component = Component.translatable(
-        "recipes.display.recipe.step.mix",
+        "recipes.display.recipe.step.mix.v2",
         Argument.tagResolver(Formatter.number("mixing_time", mixingTicks / cookingMinuteTicks))
     )
 

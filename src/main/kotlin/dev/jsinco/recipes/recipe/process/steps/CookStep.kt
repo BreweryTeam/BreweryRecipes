@@ -13,7 +13,7 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingre
 
     override fun getType(): StepType = StepType.COOK
     override fun display(): Component = Component.translatable(
-        "recipes.display.recipe.step.cook",
+        "recipes.display.recipe.step.cook.v2",
         Argument.tagResolver(Formatter.number("cooking_time", cookingTicks / cookingMinuteTicks))
     )
 

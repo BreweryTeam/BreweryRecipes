@@ -101,7 +101,7 @@ tasks {
         minecraftVersion("1.21.11")
         downloadPlugins {
             if (project.findProperty("testing.with.tbp")!! == "true") {
-                modrinth("thebrewingproject", "3.0.1")
+                modrinth("thebrewingproject", "3.1.0")
             } else {
                 modrinth("breweryx", "3.6.0")
             }
