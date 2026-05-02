@@ -19,10 +19,10 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingre
 
     override fun ingredients(): Map<Ingredient, Int> = ingredients
 
-    enum class CauldronType(val colorHex: String) {
-        WATER("#7ec0d4"),
-        LAVA("#e07848"),
-        SNOW("#c0dce8");
+    enum class CauldronType {
+        WATER,
+        LAVA,
+        SNOW;
 
         companion object {
             @JvmStatic

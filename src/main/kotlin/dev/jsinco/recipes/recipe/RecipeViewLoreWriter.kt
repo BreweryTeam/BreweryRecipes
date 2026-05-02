@@ -49,13 +49,12 @@ object RecipeViewLoreWriter {
         if (loreConfig.showDifficulty) {
             if (loreConfig.emptyLineAboveDifficulty) result.add(Component.empty())
             val difficulty = recipe.difficulty
-            val difficultyColor = "<" + difficultyColor(difficulty).asHexString() + ">"
             result.add(
                 TranslationUtil.render(
                     Component.translatable(
                         "gui.recipes.lore.difficulty",
                         Argument.tagResolver(
-                            Placeholder.unparsed("difficultycolor", difficultyColor),
+                            TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
                             Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
                         )
                     ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
@@ -116,20 +115,17 @@ object RecipeViewLoreWriter {
             when (step) {
                 is CookStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                     "gui.recipes.lore.step.cauldron",
-                    "cauldroncolor", step.cauldronType.colorHex,
                     "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is MixStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                     "gui.recipes.lore.step.cauldron",
-                    "cauldroncolor", step.cauldronType.colorHex,
                     "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is AgeStep -> {
                     result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                         "gui.recipes.lore.step.barrel",
-                        "woodcolor", step.barrelType.colorHex,
                         "gui.recipes.lore.step.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
                         "barrel_type"
                     ), index, recipeView.flaws, recipeView.invertedReveals)))
@@ -177,18 +173,15 @@ object RecipeViewLoreWriter {
         }
     }
 
-    private fun buildTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String): Component {
-        val colorResolver = TagResolver.resolver(colorTagName, Tag.styling(TextColor.fromHexString(colorHex)!!))
+    private fun buildTypeLine(lineKey: String, typeKey: String, typePlaceholder: String): Component {
         return Component.translatable(
             lineKey,
-            Argument.tagResolver(
-                colorResolver,
-                Placeholder.component(typePlaceholder, Component.translatable(typeKey, Argument.tagResolver(colorResolver)))
-            )
+            Argument.tagResolver(Placeholder.component(typePlaceholder, Component.translatable(typeKey)))
         ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
 
-    private fun buildBaseStep(step: Step): Component {
+
+private fun buildBaseStep(step: Step): Component {
         return TranslationUtil.render(step.display())
     }
 
