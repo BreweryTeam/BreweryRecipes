@@ -40,7 +40,7 @@ object GuiManager {
         val gui = RecipesGui(
             player,
             mode,
-            sortDisplays(recipeDisplays),
+            sortDisplays(recipeDisplays, mode),
             { display ->
                 Recipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {
                     Recipes.brewingIntegration.createGuiItem(display)
@@ -51,14 +51,35 @@ object GuiManager {
         gui.open()
     }
 
-    private fun sortDisplays(displays: Collection<RecipeDisplay>): List<RecipeDisplay> {
-        return when (Recipes.recipesConfig.recipeSortOrder) {
+    private fun sortDisplays(displays: Collection<RecipeDisplay>, mode: RecipeBookMode): List<RecipeDisplay> {
+        val baseSorted = when (Recipes.recipesConfig.recipeSortOrder) {
             RecipeSortOrder.AS_PROVIDED -> displays.toList()
             RecipeSortOrder.ALPHABETICAL_IDENTIFIER ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.recipeKey() })
 
             RecipeSortOrder.ALPHABETICAL_NAME ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
+        }
+
+        return when {
+            mode == RecipeBookMode.FRAGMENTS && Recipes.recipesConfig.groupFragmentsByCompleteness ->
+                baseSorted.sortedBy { fragmentationGroup(it) }
+
+            mode == RecipeBookMode.BREWED && Recipes.recipesConfig.groupBrewNotesByScore ->
+                baseSorted.sortedByDescending { it.scoreEquivalent() }
+
+            else -> baseSorted
+        }
+    }
+
+    private fun fragmentationGroup(display: RecipeDisplay): Int {
+        val fragmentation = (1.0 - display.scoreEquivalent()) * 100.0
+        return when {
+            fragmentation <= 0.0 -> 0
+            fragmentation < 25.0 -> 1
+            fragmentation < 50.0 -> 2
+            fragmentation < 75.0 -> 3
+            else -> 4
         }
     }
 
