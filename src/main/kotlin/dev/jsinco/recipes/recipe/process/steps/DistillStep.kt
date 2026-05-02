@@ -13,6 +13,10 @@ class DistillStep(val count: Long) : Step {
         "gui.recipes.lore.step.distill",
         Argument.tagResolver(Formatter.number("distill_runs", count))
     )
+    override fun displayBrewNote(): Component = Component.translatable(
+        "gui.recipes.lore.brew-note.step.distill",
+        Argument.tagResolver(Formatter.number("distill_runs", count))
+    )
 
 
 }

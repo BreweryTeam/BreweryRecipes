@@ -7,4 +7,6 @@ interface Step {
     fun getType(): StepType
 
     fun display(): Component
+
+    fun displayBrewNote(): Component = display()
 }

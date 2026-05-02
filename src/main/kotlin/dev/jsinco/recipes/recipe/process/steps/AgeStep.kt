@@ -14,6 +14,10 @@ class AgeStep(val agingTicks: Long, val barrelType: BarrelType) : Step {
         "gui.recipes.lore.step.age",
         Argument.tagResolver(Formatter.number("aging_years", agingTicks.toDouble() / agingYearTicks))
     )
+    override fun displayBrewNote(): Component = Component.translatable(
+        "gui.recipes.lore.brew-note.step.age",
+        Argument.tagResolver(Formatter.number("aging_years", agingTicks.toDouble() / agingYearTicks))
+    )
 
     enum class BarrelType {
         ANY,

@@ -38,7 +38,7 @@ object RecipeViewLoreWriter {
         version++
     }
 
-    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null): List<Component>? {
+    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null, isBrewNote: Boolean = false): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
         val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
@@ -48,7 +48,7 @@ object RecipeViewLoreWriter {
         val result = mutableListOf<Component>()
         val noIndentIndices = mutableSetOf<Int>()
 
-        if (loreConfig.showBrewDifficulty) {
+        if (if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty) {
             if (loreConfig.emptyLineAboveBrewDifficulty) result.add(Component.empty())
             val difficulty = recipe.difficulty
             if (!loreConfig.applyIndentationToBrewDifficulty) noIndentIndices.add(result.size)
@@ -68,7 +68,7 @@ object RecipeViewLoreWriter {
         if (loreConfig.emptyLineAboveSteps) result.add(Component.empty())
 
         stepsToRender.forEachIndexed { index, step ->
-            val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals)
+            val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals, isBrewNote)
                 .colorIfAbsent(NamedTextColor.GRAY)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             val rendered = TranslationUtil.render(stepComponent)
@@ -185,8 +185,8 @@ object RecipeViewLoreWriter {
     }
 
 
-private fun buildBaseStep(step: Step): Component {
-        return TranslationUtil.render(step.display())
+private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
+        return TranslationUtil.render(if (isBrewNote) step.displayBrewNote() else step.display())
     }
 
     private fun applyFlaws(component: Component, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
@@ -205,8 +205,8 @@ private fun buildBaseStep(step: Step): Component {
         return output
     }
 
-    private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
-        return applyFlaws(buildBaseStep(step), stepIndex, flaws, reveals)
+    private fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>, isBrewNote: Boolean = false): Component {
+        return applyFlaws(buildBaseStep(step, isBrewNote), stepIndex, flaws, reveals)
     }
 
     private fun compileTextModifications(

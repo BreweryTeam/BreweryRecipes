@@ -18,9 +18,13 @@ class LoreConfig : OkaeriConfig() {
     @CustomKey("apply-indentation-to-brew-score")
     var applyIndentationToBrewScore: Boolean = false
 
-    @Comment("Show the recipe's difficulty between name and steps?")
+    @Comment("Show the recipe's difficulty in recipe fragments mode?")
     @CustomKey("show-brew-difficulty")
     var showBrewDifficulty: Boolean = true
+
+    @Comment("Show the recipe's difficulty in brew notes mode?")
+    @CustomKey("show-difficulty-in-brew-notes")
+    var showDifficultyInBrewNotes: Boolean = false
 
     @Comment("Insert an empty line between name and difficulty?")
     @CustomKey("empty-line-between-name-and-difficulty")
