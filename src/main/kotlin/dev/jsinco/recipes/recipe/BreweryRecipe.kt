@@ -21,7 +21,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
-data class BreweryRecipe(val identifier: String, val steps: List<Step>) : RecipeDisplay {
+data class BreweryRecipe(val identifier: String, val steps: List<Step>, val difficulty: Double) : RecipeDisplay {
 
     fun lootItem(): ItemStack {
         val itemStack = ItemStack(Material.PAPER)
@@ -94,6 +94,7 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
 
     class Builder(private val identifier: String) {
         private val stepsBuilder = ImmutableList.Builder<Step>()
+        private var difficulty: Double = 0.0
 
         fun mix(ticks: Long, cauldronType: String, ingredients: Map<Ingredient, Int>) = apply {
             stepsBuilder.add(MixStep(ticks, MixStep.CauldronType.fromString(cauldronType), ingredients))
@@ -109,7 +110,9 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
             stepsBuilder.add(AgeStep(ticks, AgeStep.BarrelType.fromString(barrelType)))
         }
 
-        fun build() = BreweryRecipe(identifier, stepsBuilder.build())
+        fun difficulty(value: Double) = apply { difficulty = value }
+
+        fun build() = BreweryRecipe(identifier, stepsBuilder.build(), difficulty)
     }
 
 }

@@ -46,7 +46,24 @@ object RecipeViewLoreWriter {
         val loreConfig = Recipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
 
-        if (loreConfig.emptyLineAtStart) result.add(Component.empty())
+        if (loreConfig.showDifficulty) {
+            if (loreConfig.emptyLineAboveDifficulty) result.add(Component.empty())
+            val difficulty = recipe.difficulty
+            val difficultyColor = "<" + difficultyColor(difficulty).asHexString() + ">"
+            result.add(
+                TranslationUtil.render(
+                    Component.translatable(
+                        "gui.recipes.lore.difficulty",
+                        Argument.tagResolver(
+                            Placeholder.unparsed("difficultycolor", difficultyColor),
+                            Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
+                        )
+                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                )
+            )
+        }
+
+        if (loreConfig.emptyLineAboveSteps) result.add(Component.empty())
 
         recipe.steps.forEachIndexed { index, step ->
             val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals)
@@ -124,7 +141,7 @@ object RecipeViewLoreWriter {
             }
         }
 
-        if (loreConfig.emptyLineAtEnd) result.add(Component.empty())
+        if (loreConfig.emptyLineBelowSteps) result.add(Component.empty())
 
         val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
         val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
@@ -137,6 +154,27 @@ object RecipeViewLoreWriter {
             }
         }
         return result
+    }
+
+    private fun formatDifficulty(difficulty: Double): String =
+        "%.2f".format(difficulty).trimEnd('0').trimEnd('.')
+
+    private fun difficultyColor(difficulty: Double): TextColor {
+        val green = TextColor.color(0x55FF55)
+        val yellow = TextColor.color(0xFFFF55)
+        val red = TextColor.color(0xFF5555)
+        val darkRed = TextColor.color(0xCC2222)
+
+        return if (difficulty <= 10.0) {
+            val normalized = (difficulty / 10.0).coerceIn(0.0, 1.0).toFloat()
+            when {
+                normalized < 0.5f -> TextColor.lerp(normalized / 0.5f, green, yellow)
+                else -> TextColor.lerp((normalized - 0.5f) / 0.5f, yellow, red)
+            }
+        } else {
+            val normalized = ((difficulty - 10.0) / 10.0).coerceIn(0.0, 1.0).toFloat()
+            TextColor.lerp(normalized, red, darkRed)
+        }
     }
 
     private fun buildTypeLine(lineKey: String, colorTagName: String, colorHex: String, typeKey: String, typePlaceholder: String): Component {

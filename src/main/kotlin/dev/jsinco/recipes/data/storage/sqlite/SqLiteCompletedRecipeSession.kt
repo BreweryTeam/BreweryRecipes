@@ -62,7 +62,7 @@ class SqLiteCompletedRecipeSession(private val storageSessionExecutor: StorageSe
                     JsonParser.parseString(result.getString("steps")).asJsonArray,
                     StepSerdes::deserializeStep
                 )
-                output.add(BreweryRecipe(result.getString("recipe_key"), steps))
+                output.add(BreweryRecipe(result.getString("recipe_key"), steps, 0.0))
             }
             return@runStatement output
         }

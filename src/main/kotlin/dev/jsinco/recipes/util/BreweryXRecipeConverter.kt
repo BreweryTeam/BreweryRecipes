@@ -15,6 +15,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 object BreweryXRecipeConverter {
     fun convert(recipe: BRecipe): BreweryRecipe {
         val recipeBuilder = BreweryRecipe.Builder(recipe.id)
+        recipeBuilder.difficulty(recipe.getDifficulty().toDouble())
         recipeBuilder.cook(
             recipe.cookingTime * 60L * 20L,
             "water",

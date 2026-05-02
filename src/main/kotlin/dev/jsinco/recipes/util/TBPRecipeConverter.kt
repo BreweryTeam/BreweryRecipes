@@ -20,11 +20,12 @@ object TBPRecipeConverter {
 
 
     fun convert(recipe: Recipe<ItemStack>): BreweryRecipe {
-        return convert(recipe.recipeName, recipe.steps)
+        return convert(recipe.recipeName, recipe.steps, recipe.brewDifficulty)
     }
 
-    fun convert(recipeKey: String, steps: List<BrewingStep>): BreweryRecipe {
+    fun convert(recipeKey: String, steps: List<BrewingStep>, difficulty: Double = 0.0): BreweryRecipe {
         val recipeBuilder = BreweryRecipe.Builder(recipeKey)
+        recipeBuilder.difficulty(difficulty)
         steps.forEach {
             when (it) {
                 is BrewingStep.Cook -> recipeBuilder.cook(
