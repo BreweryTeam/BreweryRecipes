@@ -20,10 +20,10 @@ object CooldownManager {
     private val pageCooldowns: MutableMap<UUID, Long> = mutableMapOf()
 
     fun tryOpen(player: Player): Boolean =
-        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "recipes.cooldown.open")
+        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "gui.cooldown.open")
 
     fun tryPageSwitch(player: Player): Boolean =
-        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "recipes.cooldown.page")
+        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "gui.cooldown.page")
 
     fun clearFor(playerUuid: UUID) {
         openCooldowns.remove(playerUuid)

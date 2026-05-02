@@ -58,7 +58,7 @@ object RecipeViewLoreWriter {
             result.add(
                 TranslationUtil.render(
                     Component.translatable(
-                        "recipes.display.recipe.step.header",
+                        "gui.recipes.lore.step.header",
                         Argument.tagResolver(
                             Placeholder.unparsed("ordinal", ordinal),
                             Placeholder.component("step", rendered)
@@ -80,7 +80,7 @@ object RecipeViewLoreWriter {
                             ?: Tag.selfClosingInserting(Component.empty())
                         else Tag.selfClosingInserting(Component.empty())
                     val ingredientComp = Component.translatable(
-                        "recipes.display.recipe.ingredient",
+                        "gui.recipes.lore.step.ingredient",
                         Argument.tagResolver(
                             Formatter.number("count", amount),
                             Placeholder.component("name", ingredient.displayName),
@@ -98,22 +98,22 @@ object RecipeViewLoreWriter {
 
             when (step) {
                 is CookStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                    "recipes.display.recipe.step.cauldron",
+                    "gui.recipes.lore.step.cauldron",
                     "cauldroncolor", step.cauldronType.colorHex,
-                    "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is MixStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                    "recipes.display.recipe.step.cauldron",
+                    "gui.recipes.lore.step.cauldron",
                     "cauldroncolor", step.cauldronType.colorHex,
-                    "recipes.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals)))
                 is AgeStep -> {
                     result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                        "recipes.display.recipe.step.barrel",
+                        "gui.recipes.lore.step.barrel",
                         "woodcolor", step.barrelType.colorHex,
-                        "recipes.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
+                        "gui.recipes.lore.step.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
                         "barrel_type"
                     ), index, recipeView.flaws, recipeView.invertedReveals)))
                 }

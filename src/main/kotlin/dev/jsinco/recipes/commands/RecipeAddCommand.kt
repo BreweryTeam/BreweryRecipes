@@ -32,7 +32,7 @@ object RecipeAddCommand {
             }
             context.source.sender.sendMessage(
                 Component.translatable(
-                    "recipes.command.add",
+                    "command.add",
                     TranslationArgumentUtil.players(targets),
                     TranslationArgumentUtil.recipe(recipe)
                 )
@@ -50,7 +50,7 @@ object RecipeAddCommand {
                                     .executes { context ->
                                         val sender = context.source.sender
                                         if (sender !is Player) {
-                                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                                            context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
                                             return@executes 1
                                         }
                                         applyToTargets(context, listOf(sender))

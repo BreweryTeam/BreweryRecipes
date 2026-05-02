@@ -28,14 +28,14 @@ data class BreweryRecipe(val identifier: String, val steps: List<Step>) : Recipe
         itemStack.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(
-                Component.translatable("recipes.loot.recipe.completed")
+                Component.translatable("spawning.item.name.completed")
                     .colorIfAbsent(NamedTextColor.WHITE)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             )
         )
         itemStack.setData(
             DataComponentTypes.LORE, ItemLore.lore(
-                listOf(Component.translatable("recipes.loot.right.click.to.discover"))
+                listOf(Component.translatable("spawning.item.lore"))
                     .map { it.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE) }
                     .map { it.colorIfAbsent(NamedTextColor.GRAY) }
                     .map(TranslationUtil::render)

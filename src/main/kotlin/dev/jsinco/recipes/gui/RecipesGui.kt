@@ -99,8 +99,8 @@ class RecipesGui(
 
     fun calculateGuiName(): Component {
         return if (player.hasPermission("recipes.override.view"))
-            Component.translatable("recipes.display.gui.name.admin")
-        else Component.translatable("recipes.display.gui.name")
+            Component.translatable("gui.name.admin")
+        else Component.translatable("gui.name")
     }
 
     override fun getInventory() = inventory

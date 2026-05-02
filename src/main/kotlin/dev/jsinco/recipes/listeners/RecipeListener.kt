@@ -34,7 +34,7 @@ class RecipeListener : Listener {
             }
         } else null
         val recipe = Recipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
-            event.player.sendMessage(Component.translatable("recipes.loot.expired.recipe"))
+            event.player.sendMessage(Component.translatable("spawning.item.expired"))
             return
         }
         val recipeView = flaw?.let {
@@ -49,7 +49,7 @@ class RecipeListener : Listener {
         )
         event.player.sendMessage(
             Component.translatable(
-                "recipes.loot.discovery",
+                "spawning.item.redeemed",
                 Argument.component(
                     "recipe_name",
                     Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
