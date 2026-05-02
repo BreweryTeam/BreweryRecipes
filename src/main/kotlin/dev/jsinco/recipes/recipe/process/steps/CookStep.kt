@@ -14,7 +14,7 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingre
     override fun getType(): StepType = StepType.COOK
     override fun display(): Component = Component.translatable(
         "gui.recipes.lore.step.cook",
-        Argument.tagResolver(Formatter.number("cooking_time", cookingTicks / cookingMinuteTicks))
+        Argument.tagResolver(Formatter.number("cooking_time", cookingTicks.toDouble() / cookingMinuteTicks))
     )
 
     override fun ingredients(): Map<Ingredient, Int> = ingredients
