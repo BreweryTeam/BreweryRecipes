@@ -12,7 +12,7 @@ import org.bukkit.Keyed
 
 class KeyedSerializer<T : Keyed>(private val registryKey: RegistryKey<T>, private val tClass: Class<T>) :
     ObjectSerializer<T> {
-    override fun supports(type: Class<in T>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return tClass.isAssignableFrom(type)
     }
 

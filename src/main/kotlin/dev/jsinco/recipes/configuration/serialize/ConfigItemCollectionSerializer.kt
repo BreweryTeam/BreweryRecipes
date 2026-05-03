@@ -8,7 +8,7 @@ import eu.okaeri.configs.serdes.ObjectSerializer
 import eu.okaeri.configs.serdes.SerializationData
 
 object ConfigItemCollectionSerializer : ObjectSerializer<ConfigItemCollection> {
-    override fun supports(type: Class<in ConfigItemCollection>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return ConfigItemCollection::class.java.isAssignableFrom(type)
     }
 

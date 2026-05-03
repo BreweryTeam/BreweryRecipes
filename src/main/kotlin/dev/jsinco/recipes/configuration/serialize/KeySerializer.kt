@@ -8,7 +8,7 @@ import eu.okaeri.configs.serdes.SerializationData
 import net.kyori.adventure.key.Key
 
 object KeySerializer : ObjectSerializer<Key> {
-    override fun supports(type: Class<in Key>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return Key::class.java.isAssignableFrom(type)
     }
 

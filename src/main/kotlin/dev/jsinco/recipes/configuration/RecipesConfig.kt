@@ -3,7 +3,7 @@ package dev.jsinco.recipes.configuration
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
-import java.util.Locale
+import java.util.*
 
 class RecipesConfig : OkaeriConfig() {
 
@@ -12,34 +12,6 @@ class RecipesConfig : OkaeriConfig() {
 
     @Comment("Migrate from the old BreweryX-Recipes-Addon?")
     var migrate: Boolean = true
-
-    @Comment(
-        "Crafting recipe for the recipe book item",
-        "Shapeless example (any arrangement):",
-        "  ingredients: [PAPER, BOOK]",
-        "Shaped example (exact grid):",
-        "  shaped: true",
-        "  shape: [\"AB \", \"   \", \"   \"]",
-        "  ingredient-map: {A: PAPER, B: BOOK}"
-    )
-    @CustomKey("recipe-book-crafting")
-    var recipeBookCrafting: CraftingRecipeConfig = CraftingRecipeConfig()
-
-    class CraftingRecipeConfig : OkaeriConfig() {
-        var enabled: Boolean = true
-        var shaped: Boolean = false
-
-        @Comment("Materials for a shapeless recipe (order does not matter)")
-        var ingredients: List<String> = listOf("PAPER", "BOOK")
-
-        @Comment("Row patterns for a shaped recipe (use spaces for empty slots, max 3 rows of 3)")
-        var shape: List<String> = listOf("AB ", "   ", "   ")
-
-        @Comment("Maps each character in 'shape' to a Material name:",
-            "https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html")
-        @CustomKey("ingredient-map")
-        var ingredientMap: Map<String, String> = mapOf("A" to "PAPER", "B" to "BOOK")
-    }
 
     @Comment(
         "How recipes are ordered in the recipe book:",
@@ -76,4 +48,7 @@ class RecipesConfig : OkaeriConfig() {
 
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
+
+    @CustomKey("recipes-book")
+    var book = RecipesBookConfig()
 }

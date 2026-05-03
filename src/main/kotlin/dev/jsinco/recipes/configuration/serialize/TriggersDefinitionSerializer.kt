@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.configuration.serialize
 
+import dev.jsinco.recipes.configuration.CraftingDefinition
 import dev.jsinco.recipes.configuration.spawning.triggers.*
 import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
@@ -12,7 +13,7 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.loot.LootTable
 
 object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
-    override fun supports(type: Class<in TriggersDefinition>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return TriggersDefinition::class.java.isAssignableFrom(type)
     }
 
@@ -38,6 +39,7 @@ object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
             )
         }
         `object`.mobDropTrigger?.let { data.addCollection("entities", it.entities.toList(), EntityType::class.java) }
+        `object`.craftingTrigger?.let { data.add("crafting", it.craftingDefinition) }
     }
 
     override fun deserialize(
@@ -49,12 +51,14 @@ object TriggersDefinitionSerializer : ObjectSerializer<TriggersDefinition> {
         val blockDropTrigger = data.getAsList("block", BlockType::class.java)
         val lootSpawnTrigger = data.getAsList("loot", String::class.java)
         val mobDropTrigger = data.getAsList("entities", EntityType::class.java)
+        val craftingTrigger = data.get("crafting", CraftingDefinition::class.java)
         val output = TriggersDefinition(
             premadeTrigger = premadeTrigger,
             inventoryFillTrigger = inventoryFillTrigger?.let { InventoryFillTrigger(*it.toTypedArray()) },
             blockDropTrigger = blockDropTrigger?.let { BlockDropTrigger(*it.toTypedArray()) },
             lootSpawnTrigger = lootSpawnTrigger?.let { LootSpawnTrigger.fromStrings(*it.toTypedArray()) },
-            mobDropTrigger = mobDropTrigger?.let { MobDropTrigger(*it.toTypedArray()) }
+            mobDropTrigger = mobDropTrigger?.let { MobDropTrigger(*it.toTypedArray()) },
+            craftingTrigger = craftingTrigger?.let { CraftingTrigger(it) }
         )
         return if (output.asList().isEmpty() && output.premadeTrigger?.isEmpty() ?: false) {
             null

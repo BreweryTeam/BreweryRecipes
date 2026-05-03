@@ -37,7 +37,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("dev.jsinco.brewery:thebrewingproject-bukkit:3.1.0")
     compileOnly("net.kyori:adventure-text-minimessage:4.24.0")
-    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
+    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:6.0.0-beta.27")
     implementation("com.zaxxer:HikariCP:7.0.2")
     testImplementation(platform("org.junit:junit-bom:6.0.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -169,7 +169,10 @@ fun computeAverageColor(image: BufferedImage, name: String, biomeOverrides: Map<
     for ((key, rgb) in biomeOverrides) {
         if (name.contains(key)) return "%06x".format(rgb)
     }
-    var sumR = 0.0; var sumG = 0.0; var sumB = 0.0; var totalAlpha = 0.0
+    var sumR = 0.0;
+    var sumG = 0.0;
+    var sumB = 0.0;
+    var totalAlpha = 0.0
     for (x in 0 until image.width) {
         for (y in 0 until image.height) {
             val argb = image.getRGB(x, y)
@@ -189,7 +192,8 @@ fun computeAverageColor(image: BufferedImage, name: String, biomeOverrides: Map<
 
 tasks.register("generateItemColors") {
     group = "build"
-    description = "Downloads the Minecraft client JAR and generates item-colors.json from texture alpha-weighted averages"
+    description =
+        "Downloads the Minecraft client JAR and generates item-colors.json from texture alpha-weighted averages"
     doLast {
         System.setProperty("java.awt.headless", "true")
         val outputFile = file("src/main/resources/item-colors.json")
@@ -241,7 +245,8 @@ tasks.register("generateItemColors") {
                             val image = ImageIO.read(stream) ?: return@forEach
                             colors[name] = computeAverageColor(image, name, biomeOverrides)
                         }
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                 }
         }
 

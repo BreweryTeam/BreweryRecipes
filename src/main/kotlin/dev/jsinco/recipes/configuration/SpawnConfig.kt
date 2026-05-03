@@ -11,6 +11,7 @@ import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
 import org.bukkit.entity.EntityType
 import org.bukkit.event.inventory.InventoryType
+import org.bukkit.inventory.ItemType
 
 class SpawnConfig : OkaeriConfig() {
 
@@ -132,6 +133,12 @@ class SpawnConfig : OkaeriConfig() {
                     BlockType.MUSHROOM_STEM,
                     BlockType.RED_MUSHROOM_BLOCK,
                     BlockType.BROWN_MUSHROOM_BLOCK
+                ),
+                craftingTrigger = CraftingTrigger(
+                    CraftingDefinition().also {
+                        it.shaped = false
+                        it.ingredients = listOf(ItemType.PAPER, ItemType.BROWN_MUSHROOM)
+                    }
                 )
             )
         ),
