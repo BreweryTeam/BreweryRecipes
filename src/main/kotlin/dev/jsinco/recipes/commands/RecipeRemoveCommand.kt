@@ -40,7 +40,7 @@ object RecipeRemoveCommand {
             }
             context.source.sender.sendMessage(
                 Component.translatable(
-                    "command.remove",
+                    "recipes.command.remove",
                     TranslationArgumentUtil.players(targets),
                     TranslationArgumentUtil.recipe(recipe)
                 )
@@ -54,7 +54,7 @@ object RecipeRemoveCommand {
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                             return@executes 1
                         }
                         applyToTargets(context, listOf(sender), RemoveTarget.ALL)
@@ -64,7 +64,7 @@ object RecipeRemoveCommand {
                             .executes { context ->
                                 val sender = context.source.sender
                                 if (sender !is Player) {
-                                    context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
+                                    context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                                     return@executes 1
                                 }
                                 applyToTargets(

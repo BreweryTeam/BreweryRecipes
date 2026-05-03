@@ -19,7 +19,7 @@ object RecipesCommand {
                 Commands.literal("reload")
                     .executes { context ->
                         Recipes.instance.reload()
-                        context.source.sender.sendMessage(Component.translatable("command.reload"))
+                        context.source.sender.sendMessage(Component.translatable("recipes.command.reload"))
                         1
                     }
                     .requires { it.sender.hasPermission("recipes.command.reload") }
@@ -29,13 +29,13 @@ object RecipesCommand {
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                             return@executes 1
                         }
                         giveBook(sender)
                         context.source.sender.sendMessage(
                             Component.translatable(
-                                "command.givebook",
+                                "recipes.command.givebook",
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
@@ -52,7 +52,7 @@ object RecipesCommand {
                                 }
                                 context.source.sender.sendMessage(
                                     Component.translatable(
-                                        "command.givebook",
+                                        "recipes.command.givebook",
                                         TranslationArgumentUtil.players(targets)
                                     )
                                 )
@@ -77,12 +77,12 @@ object RecipesCommand {
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                             return@executes 1
                         }
                         context.source.sender.sendMessage(
                             Component.translatable(
-                                "command.clear",
+                                "recipes.command.clear",
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
@@ -98,7 +98,7 @@ object RecipesCommand {
                                     .resolve(context.source)
                                 context.source.sender.sendMessage(
                                     Component.translatable(
-                                        "command.clear",
+                                        "recipes.command.clear",
                                         TranslationArgumentUtil.players(targets)
                                     )
                                 )

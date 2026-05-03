@@ -16,7 +16,7 @@ object RecipeOpenCommand {
             .executes { context ->
                 val sender = context.source.sender
                 if (sender !is Player) {
-                    context.source.sender.sendMessage(Component.translatable("command.invalid.sender"))
+                    context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
                     return@executes 1
                 }
                 GuiManager.openRecipeGui(sender)

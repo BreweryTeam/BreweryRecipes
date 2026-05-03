@@ -10,8 +10,8 @@ interface RecipeViewCreator {
 
     enum class Type(val recipeViewCreator: RecipeViewCreator, val lootTranslationKey: String) {
 
-        ENCRYPTED(EncryptedRecipeViewCreator, "spawning.item.name.encrypted"),
-        UNCERTAIN(UncertainRecipeViewCreator, "spawning.item.name.forgetful"),
-        DRUNK(DrunkRecipeViewCreator, "spawning.item.name.drunken");
+        ENCRYPTED(EncryptedRecipeViewCreator, "recipes.spawning.item.name.encrypted"),
+        UNCERTAIN(UncertainRecipeViewCreator, "recipes.spawning.item.name.forgetful"),
+        DRUNK(DrunkRecipeViewCreator, "recipes.spawning.item.name.drunken");
     }
 }

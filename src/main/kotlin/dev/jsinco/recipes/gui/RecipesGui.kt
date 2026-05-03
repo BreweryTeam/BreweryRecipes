@@ -108,8 +108,8 @@ class RecipesGui(
             RecipeBookMode.BREWED -> wildcard || player.hasPermission("recipes.override.view.notes")
         }
         return if (admin)
-            Component.translatable("gui.name.admin.$modeId")
-        else Component.translatable("gui.name.$modeId")
+            Component.translatable("recipes.gui.name.admin.$modeId")
+        else Component.translatable("recipes.gui.name.$modeId")
     }
 
     override fun getInventory() = inventory
