@@ -29,6 +29,7 @@ class GuiConfig : OkaeriConfig() {
             ConfigItem.Builder().noText(true).material(Material.GREEN_STAINED_GLASS_PANE).build()
         ),
     )
+
     @Comment("Override specific slots with whatever items you like")
     var overrides: List<GuiOverride> = listOf(
         GuiOverride.Builder()
@@ -66,10 +67,18 @@ class GuiConfig : OkaeriConfig() {
         GuiOverride.Builder()
             .pos("49")
             .item(
-                ConfigItem.Builder().material(Material.LILY_PAD)
-                    .name("<gray>Switch Mode")
+                ConfigItem.Builder().material(Material.LANTERN)
+                    .name("<gray>Fragments Mode")
                     .build()
-            ).type(GuiItem.Type.SWITCH_MODE)
+            ).type(GuiItem.Type.SET_MODE_FRAGMENTS)
+            .build(),
+        GuiOverride.Builder()
+            .pos("49")
+            .item(
+                ConfigItem.Builder().material(Material.SOUL_LANTERN)
+                    .name("<gray>Synthesized Mode")
+                    .build()
+            ).type(GuiItem.Type.SET_MODE_BREWED)
             .build(),
         GuiOverride.Builder()
             .pos("50")
@@ -88,6 +97,7 @@ class GuiConfig : OkaeriConfig() {
             ).type(GuiItem.Type.PREVIOUS_PAGE)
             .build()
     )
+
     @Comment("Settings related to the recipe items")
     var recipes: GuiRecipesSection = GuiRecipesSection()
 }
