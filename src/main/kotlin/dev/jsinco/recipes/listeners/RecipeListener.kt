@@ -2,6 +2,7 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.Recipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
+import dev.jsinco.recipes.util.PdcKeys
 import dev.jsinco.recipes.util.RecipeUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
@@ -48,10 +49,10 @@ class RecipeListener : Listener {
             return
         }
 
-        if (!pdc.has(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING)) return
-        val recipeIdentifier = pdc.get(RecipeUtil.RECIPE_KEY, PersistentDataType.STRING) ?: return
-        val flaw = if (pdc.has(RecipeUtil.FLAW_KEY)) {
-            val actual = pdc.get(RecipeUtil.FLAW_KEY, PersistentDataType.STRING)
+        if (!pdc.has(PdcKeys.RECIPE_KEY, PersistentDataType.STRING)) return
+        val recipeIdentifier = pdc.get(PdcKeys.RECIPE_KEY, PersistentDataType.STRING) ?: return
+        val flaw = if (pdc.has(PdcKeys.FLAW_KEY)) {
+            val actual = pdc.get(PdcKeys.FLAW_KEY, PersistentDataType.STRING)
             RecipeViewCreator.Type.entries.first { it.name.equals(actual, true) }
         } else null
         val recipe = Recipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {

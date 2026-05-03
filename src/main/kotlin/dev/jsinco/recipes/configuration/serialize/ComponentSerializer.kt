@@ -8,7 +8,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 
 object ComponentSerializer : ObjectSerializer<Component> {
-    override fun supports(type: Class<in Component>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return Component::class.java.isAssignableFrom(type)
     }
 

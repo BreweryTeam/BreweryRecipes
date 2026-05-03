@@ -7,7 +7,7 @@ import eu.okaeri.configs.serdes.SerializationData
 import java.util.*
 
 object LocaleSerializer : ObjectSerializer<Locale> {
-    override fun supports(type: Class<in Locale>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return type == Locale::class.java
     }
 

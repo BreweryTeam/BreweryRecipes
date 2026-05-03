@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.configuration
 
+import dev.jsinco.recipes.Recipes
 import eu.okaeri.configs.OkaeriConfig
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
@@ -10,12 +11,20 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 
 
 class ConfigItem : OkaeriConfig() {
+
+    companion object {
+        val IGNORED_DATA_TYPES = setOf(
+            DataComponentTypes.ITEM_MODEL,
+            DataComponentTypes.MAX_STACK_SIZE,
+        )
+    }
 
     var material: Material? = null
     var name: Component? = null
@@ -27,20 +36,27 @@ class ConfigItem : OkaeriConfig() {
 
     fun generateItem(): ItemStack {
         val item = ItemStack(material ?: Material.RED_STAINED_GLASS_PANE)
+        // Clear unwanted data
+        item.dataTypes
+            .filter { it !in IGNORED_DATA_TYPES }
+            .forEach { item.unsetData(it) }
         name?.let {
             item.setData(
-                DataComponentTypes.CUSTOM_NAME, it
-                    .decorationIfAbsent(
-                        TextDecoration.ITALIC,
-                        TextDecoration.State.FALSE
-                    ).colorIfAbsent(NamedTextColor.WHITE)
+                DataComponentTypes.CUSTOM_NAME, GlobalTranslator.render(
+                    it, Recipes.recipesConfig.language
+                ).decorationIfAbsent(
+                    TextDecoration.ITALIC,
+                    TextDecoration.State.FALSE
+                ).colorIfAbsent(NamedTextColor.WHITE)
             )
         }
         lore?.components?.let {
             item.setData(
                 DataComponentTypes.LORE, ItemLore.lore(
                     it.map { component ->
-                        component.decorationIfAbsent(
+                        GlobalTranslator.render(
+                            component, Recipes.recipesConfig.language
+                        ).decorationIfAbsent(
                             TextDecoration.ITALIC,
                             TextDecoration.State.FALSE
                         ).colorIfAbsent(NamedTextColor.WHITE)

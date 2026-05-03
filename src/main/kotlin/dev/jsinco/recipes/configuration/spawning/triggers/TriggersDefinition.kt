@@ -6,6 +6,7 @@ class TriggersDefinition(
     val lootSpawnTrigger: LootSpawnTrigger? = null,
     val mobDropTrigger: MobDropTrigger? = null,
     val premadeTrigger: List<PremadeTrigger>? = null,
+    val craftingTrigger: CraftingTrigger? = null
 ) {
     fun asList(): List<SpawnTrigger> {
         return buildList {
@@ -16,6 +17,7 @@ class TriggersDefinition(
             premadeTrigger?.let {
                 addAll(it.mapNotNull(PremadeTrigger::spawnTrigger))
             }
+            craftingTrigger?.let { add(it) }
         }
     }
 }

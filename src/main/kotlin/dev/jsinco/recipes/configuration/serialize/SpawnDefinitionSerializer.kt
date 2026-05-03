@@ -11,7 +11,7 @@ import eu.okaeri.configs.serdes.SerializationData
 
 object SpawnDefinitionSerializer : ObjectSerializer<SpawnDefinition> {
 
-    override fun supports(type: Class<in SpawnDefinition>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return SpawnDefinition::class.java.isAssignableFrom(type)
     }
 

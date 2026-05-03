@@ -10,7 +10,7 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Material
 
 object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
-    override fun supports(type: Class<in ConfigItem>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return ConfigItem::class.java.isAssignableFrom(type)
     }
 

@@ -8,7 +8,7 @@ import eu.okaeri.configs.serdes.SerializationData
 import net.kyori.adventure.text.Component
 
 object LoreSerializer : ObjectSerializer<Lore> {
-    override fun supports(type: Class<in Lore>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return Lore::class.java.isAssignableFrom(type)
     }
 

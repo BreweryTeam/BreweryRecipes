@@ -13,6 +13,7 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemType
 
 object RecipeGiveCommand {
 
@@ -24,9 +25,12 @@ object RecipeGiveCommand {
             specificFlawType: Boolean
         ): Int {
             val recipe = context.getArgument("recipe-key", BreweryRecipe::class.java)
-            var item = recipe.lootItem()
+            var item = recipe.lootItem(ItemType.PAPER.createItemStack())
             if (specificFlawType) {
-                item = recipe.lootItem(context.getArgument("flaw-type", RecipeViewCreator.Type::class.java))
+                item = recipe.lootItem(
+                    ItemType.PAPER.createItemStack(),
+                    context.getArgument("flaw-type", RecipeViewCreator.Type::class.java)
+                )
             }
             for (target in targets) {
                 if (!target.inventory.addItem(item).isEmpty()) {

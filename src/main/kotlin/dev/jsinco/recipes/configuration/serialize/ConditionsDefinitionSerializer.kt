@@ -8,7 +8,7 @@ import eu.okaeri.configs.serdes.SerializationData
 import org.bukkit.block.Biome
 
 object ConditionsDefinitionSerializer : ObjectSerializer<ConditionsDefinition> {
-    override fun supports(type: Class<in ConditionsDefinition>): Boolean {
+    override fun supports(type: Class<*>): Boolean {
         return ConditionsDefinition::class.java.isAssignableFrom(type)
     }
 
