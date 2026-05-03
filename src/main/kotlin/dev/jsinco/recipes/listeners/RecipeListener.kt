@@ -32,13 +32,13 @@ class RecipeListener : Listener {
         val legacyIdentifier = legacyRecipeKeys.firstNotNullOfOrNull { pdc.get(it, PersistentDataType.STRING) }
         if (Recipes.recipesConfig.migrate && legacyIdentifier != null) {
             val recipe = Recipes.brewingIntegration.getRecipe(legacyIdentifier) ?: run {
-                event.player.sendMessage(Component.translatable("spawning.item.expired"))
+                event.player.sendMessage(Component.translatable("recipes.spawning.item.expired"))
                 return
             }
             Recipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipe.generateCompletedView())
             event.player.sendMessage(
                 Component.translatable(
-                    "spawning.item.redeemed",
+                    "recipes.spawning.item.redeemed",
                     Argument.component(
                         "recipe_name",
                         Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
@@ -56,7 +56,7 @@ class RecipeListener : Listener {
             RecipeViewCreator.Type.entries.first { it.name.equals(actual, true) }
         } else null
         val recipe = Recipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
-            event.player.sendMessage(Component.translatable("spawning.item.expired"))
+            event.player.sendMessage(Component.translatable("recipes.spawning.item.expired"))
             return
         }
         val recipeView = flaw?.let {
@@ -65,7 +65,7 @@ class RecipeListener : Listener {
         Recipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipeView)
         event.player.sendMessage(
             Component.translatable(
-                "spawning.item.redeemed",
+                "recipes.spawning.item.redeemed",
                 Argument.component(
                     "recipe_name",
                     Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
