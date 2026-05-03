@@ -78,6 +78,8 @@ class RecipesGui(
         for (override in Recipes.guiConfig.overrides) {
             if (override.type == GuiItem.Type.PREVIOUS_PAGE && page == 0) continue
             if (override.type == GuiItem.Type.NEXT_PAGE && !hasNextPage()) continue
+            if (override.type == GuiItem.Type.SET_MODE_FRAGMENTS && mode == RecipeBookMode.FRAGMENTS) continue
+            if (override.type == GuiItem.Type.SET_MODE_BREWED && mode == RecipeBookMode.BREWED) continue
 
             for (slot in GUIUtil.getValidSlots(override.pos)) {
                 renderItem(GuiItem(override.item.generateItem(), override.type), slot)
