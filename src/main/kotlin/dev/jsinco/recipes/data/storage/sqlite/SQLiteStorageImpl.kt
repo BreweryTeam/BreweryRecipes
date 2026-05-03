@@ -72,5 +72,14 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         } catch (e: SQLException) {
             Logger.logErr(e)
         }
+        try {
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt ->
+                    stmt.execute("ALTER TABLE completed_recipe ADD COLUMN score REAL NOT NULL DEFAULT 0")
+                }
+            }
+        } catch (_: SQLException) {
+            // column already exists
+        }
     }
 }

@@ -19,12 +19,13 @@ class SqLiteCompletedRecipeSession(private val storageSessionExecutor: StorageSe
         return storageSessionExecutor.runStatement(
             """
             INSERT OR REPLACE INTO completed_recipe
-                  VALUES(?,?,?);
+                  VALUES(?,?,?,?);
         """.trimIndent()
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
             it.setString(2, recipe.identifier)
             it.setString(3, Serdes.serializeCollection(recipe.steps, StepSerdes::serializeStep).toString())
+            it.setDouble(4, recipe.score)
             it.execute()
             return@runStatement null
         }
@@ -50,7 +51,7 @@ class SqLiteCompletedRecipeSession(private val storageSessionExecutor: StorageSe
     override fun selectRecipeCompletions(playerUuid: UUID): CompletableFuture<List<BreweryRecipe>?> {
         return storageSessionExecutor.runStatement(
             """
-                SELECT recipe_key, steps FROM completed_recipe
+                SELECT recipe_key, steps, score FROM completed_recipe
                     WHERE player_uuid = ?;
             """
         ) {
@@ -62,7 +63,7 @@ class SqLiteCompletedRecipeSession(private val storageSessionExecutor: StorageSe
                     JsonParser.parseString(result.getString("steps")).asJsonArray,
                     StepSerdes::deserializeStep
                 )
-                output.add(BreweryRecipe(result.getString("recipe_key"), steps, 0.0))
+                output.add(BreweryRecipe(result.getString("recipe_key"), steps, 0.0, result.getDouble("score")))
             }
             return@runStatement output
         }

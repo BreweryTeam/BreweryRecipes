@@ -77,5 +77,14 @@ class MySQLStorageImpl : StorageImpl {
         } catch (e: SQLException) {
             Logger.logErr(e)
         }
+        try {
+            dataSource.connection.use { conn ->
+                conn.prepareStatement(
+                    "ALTER TABLE ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe ADD COLUMN score DOUBLE NOT NULL DEFAULT 0"
+                ).use(PreparedStatement::execute)
+            }
+        } catch (_: SQLException) {
+            // column already exists
+        }
     }
 }

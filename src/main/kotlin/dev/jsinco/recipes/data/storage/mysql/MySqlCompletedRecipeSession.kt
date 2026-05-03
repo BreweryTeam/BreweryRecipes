@@ -19,13 +19,16 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-            INSERT OR REPLACE INTO ${Recipes.recipesConfig.storage.mysql.prefix}completed_recipe
-                  VALUES(?,?,?);
+            INSERT INTO ${Recipes.recipesConfig.storage.mysql.prefix}completed_recipe
+                  VALUES(?,?,?,?)
+                  ON DUPLICATE KEY UPDATE steps = VALUES(steps), score = VALUES(score);
         """.trimIndent()
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
             it.setString(2, recipe.identifier)
             it.setString(3, Serdes.serializeCollection(recipe.steps, StepSerdes::serializeStep).toString())
+            it.setDouble(4, recipe.score)
+            it.execute()
             return@runStatement null
         }
     }
@@ -50,7 +53,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     override fun selectRecipeCompletions(playerUuid: UUID): CompletableFuture<List<BreweryRecipe>?> {
         return storageSessionExecutor.runStatement(
             """
-                SELECT recipe_key, steps FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe
+                SELECT recipe_key, steps, score FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe
                     WHERE player_uuid = ?;
             """
         ) {
@@ -62,7 +65,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
                     JsonParser.parseString(result.getString("steps")).asJsonArray,
                     StepSerdes::deserializeStep
                 )
-                output.add(BreweryRecipe(result.getString("recipe_key"), steps, 0.0))
+                output.add(BreweryRecipe(result.getString("recipe_key"), steps, 0.0, result.getDouble("score")))
             }
             return@runStatement output
         }
