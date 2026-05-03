@@ -10,6 +10,9 @@ class RecipesConfig : OkaeriConfig() {
     @Comment("The language to use when displaying messages and more")
     var language: Locale = Locale.US
 
+    @Comment("Migrate from the old BreweryX-Recipes-Addon?")
+    var migrate: Boolean = true
+
     @Comment(
         "Crafting recipe for the recipe book item",
         "Shapeless example (any arrangement):",
@@ -37,9 +40,6 @@ class RecipesConfig : OkaeriConfig() {
         @CustomKey("ingredient-map")
         var ingredientMap: Map<String, String> = mapOf("A" to "PAPER", "B" to "BOOK")
     }
-
-    @Comment("Migrate from the old BreweryX-Recipes-Addon?")
-    var migrate: Boolean = true
 
     @Comment(
         "How recipes are ordered in the recipe book:",
