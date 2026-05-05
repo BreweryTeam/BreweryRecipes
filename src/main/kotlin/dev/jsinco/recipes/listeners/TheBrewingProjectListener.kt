@@ -19,9 +19,9 @@ import org.bukkit.event.Listener
 data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
 
     companion object {
-        val COMPLETED_RECIPE_KEY: Key = Key.key("recipes", "completed_recipe")
-        val COMPLETED_SCORE_KEY: Key = Key.key("recipes", "completed_score")
-        val COMPLETED_BY_KEY: Key = Key.key("recipes", "completed_by")
+        val COMPLETED_RECIPE_KEY: Key = Key.key("breweryrecipes", "completed_recipe")
+        val COMPLETED_SCORE_KEY: Key = Key.key("breweryrecipes", "completed_score")
+        val COMPLETED_BY_KEY: Key = Key.key("breweryrecipes", "completed_by")
     }
 
     @EventHandler(ignoreCancelled = true)

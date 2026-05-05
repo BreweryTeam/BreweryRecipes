@@ -13,11 +13,11 @@ class MixStep(val mixingTicks: Long, val cauldronType: CauldronType?, val ingred
 
     override fun getType(): StepType = StepType.MIX
     override fun display(): Component = Component.translatable(
-        "recipes.gui.recipes.lore.step.mix",
+        "breweryrecipes.gui.recipes.lore.step.mix",
         Argument.tagResolver(Formatter.number("mixing_time", mixingTicks.toDouble() / cookingMinuteTicks))
     )
     override fun displayBrewNote(): Component = Component.translatable(
-        "recipes.gui.recipes.lore.brew-note.step.mix",
+        "breweryrecipes.gui.recipes.lore.brew-note.step.mix",
         Argument.tagResolver(Formatter.number("mixing_time", mixingTicks.toDouble() / cookingMinuteTicks))
     )
 

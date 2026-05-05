@@ -16,7 +16,7 @@ object RecipeOpenCommand {
             .executes { context ->
                 val sender = context.source.sender
                 if (sender !is Player) {
-                    context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                    context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                     return@executes 1
                 }
                 GuiManager.openRecipeGui(sender)
@@ -32,7 +32,7 @@ object RecipeOpenCommand {
                             GuiManager.openRecipeGui(target)
                         }
                         return@executes 1
-                    }.requires { it.sender.hasPermission("recipes.command.others") }
+                    }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
             )
     }
 

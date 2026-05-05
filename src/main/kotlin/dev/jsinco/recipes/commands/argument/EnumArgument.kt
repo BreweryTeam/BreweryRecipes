@@ -22,7 +22,7 @@ class EnumArgument<E : Enum<E>>(val eClass: Class<E>) : CustomArgumentType.Conve
             .serialize(
                 TranslationUtil.render(
                     Component.translatable(
-                        "recipes.command.invalid.argument",
+                        "breweryrecipes.command.invalid.argument",
                         Argument.numeric("argument", it.toString())
                     )
                 )

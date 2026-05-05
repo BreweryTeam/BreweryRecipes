@@ -49,6 +49,6 @@ class RecipesConfig : OkaeriConfig() {
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 
-    @CustomKey("recipes-book")
+    @CustomKey("breweryrecipes-book")
     var book = RecipesBookConfig()
 }

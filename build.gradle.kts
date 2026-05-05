@@ -137,32 +137,32 @@ bukkit {
     authors = listOf("Jsinco", "Thorinwasher, Mitality")
     name = rootProject.name
     permissions {
-        register("recipes.command") {
+        register("breweryrecipes.command") {
             children = listOf(
-                "recipes.command.add",
-                "recipes.command.remove",
-                "recipes.command.clear",
-                "recipes.command.give",
-                "recipes.command.givebook",
-                "recipes.command.open",
-                "recipes.command.reload",
-                "recipes.command.others"
+                "breweryrecipes.command.add",
+                "breweryrecipes.command.remove",
+                "breweryrecipes.command.clear",
+                "breweryrecipes.command.give",
+                "breweryrecipes.command.givebook",
+                "breweryrecipes.command.open",
+                "breweryrecipes.command.reload",
+                "breweryrecipes.command.others"
             )
         }
-        register("recipes.override.view") {
+        register("breweryrecipes.override.view") {
             children = listOf(
-                "recipes.override.view.fragments",
-                "recipes.override.view.notes"
+                "breweryrecipes.override.view.fragments",
+                "breweryrecipes.override.view.notes"
             )
         }
-        register("recipes.override.view.fragments")
-        register("recipes.override.view.notes")
+        register("breweryrecipes.override.view.fragments")
+        register("breweryrecipes.override.view.notes")
     }
     softDepend = listOf("BreweryX", "TheBrewingProject")
 }
 
 modrinth {
-    projectId.set("breweryrecipesaddon") // This can be the project ID or the slug. Either will work!
+    projectId.set("breweryrecipes") // This can be the project ID or the slug. Either will work!
     versionNumber.set(project.version.toString())
     versionType.set("release") // This is the default -- can also be `beta` or `alpha`
     uploadFile.set(tasks.shadowJar)

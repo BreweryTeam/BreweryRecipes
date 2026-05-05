@@ -102,14 +102,14 @@ class RecipesGui(
 
     fun calculateGuiName(): Component {
         val modeId = mode.identifier()
-        val wildcard = player.hasPermission("recipes.override.view")
+        val wildcard = player.hasPermission("breweryrecipes.override.view")
         val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> wildcard || player.hasPermission("recipes.override.view.fragments")
-            RecipeBookMode.BREWED -> wildcard || player.hasPermission("recipes.override.view.notes")
+            RecipeBookMode.FRAGMENTS -> wildcard || player.hasPermission("breweryrecipes.override.view.fragments")
+            RecipeBookMode.BREWED -> wildcard || player.hasPermission("breweryrecipes.override.view.notes")
         }
         return if (admin)
-            Component.translatable("recipes.gui.name.admin.$modeId")
-        else Component.translatable("recipes.gui.name.$modeId")
+            Component.translatable("breweryrecipes.gui.name.admin.$modeId")
+        else Component.translatable("breweryrecipes.gui.name.$modeId")
     }
 
     override fun getInventory() = inventory

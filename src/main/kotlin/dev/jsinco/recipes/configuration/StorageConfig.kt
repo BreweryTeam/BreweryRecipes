@@ -25,13 +25,13 @@ class StorageConfig : OkaeriConfig() {
         var port: Int = 3306
 
         @Comment("The username for connecting to the MySQL database")
-        var user: String = "recipes"
+        var user: String = "breweryrecipes"
 
         @Comment("The password for the specified MySQL user")
         var password: String = "supersafe"
 
         @Comment("Name of the database to store bodyhealth data in")
-        var database: String = "recipes"
+        var database: String = "breweryrecipes"
 
         @Comment(
             "A prefix for table names to avoid conflicts",

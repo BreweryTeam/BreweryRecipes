@@ -55,7 +55,7 @@ object RecipeViewLoreWriter {
             result.add(
                 TranslationUtil.render(
                     Component.translatable(
-                        "recipes.gui.recipes.lore.difficulty",
+                        "breweryrecipes.gui.recipes.lore.difficulty",
                         Argument.tagResolver(
                             TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
                             Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
@@ -77,7 +77,7 @@ object RecipeViewLoreWriter {
             result.add(
                 TranslationUtil.render(
                     Component.translatable(
-                        "recipes.gui.recipes.lore.step.header",
+                        "breweryrecipes.gui.recipes.lore.step.header",
                         Argument.tagResolver(
                             Placeholder.unparsed("ordinal", ordinal),
                             Placeholder.component("step", rendered)
@@ -99,7 +99,7 @@ object RecipeViewLoreWriter {
                             ?: Tag.selfClosingInserting(Component.empty())
                         else Tag.selfClosingInserting(Component.empty())
                     val ingredientComp = Component.translatable(
-                        "recipes.gui.recipes.lore.step.ingredient",
+                        "breweryrecipes.gui.recipes.lore.step.ingredient",
                         Argument.tagResolver(
                             Formatter.number("count", amount),
                             Placeholder.component("name", ingredient.displayName),
@@ -117,19 +117,19 @@ object RecipeViewLoreWriter {
 
             when (step) {
                 is CookStep -> step.cauldronType?.let { result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                    "recipes.gui.recipes.lore.step.cauldron",
-                    "recipes.gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
+                    "breweryrecipes.gui.recipes.lore.step.cauldron",
+                    "breweryrecipes.gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals))) }
                 is MixStep -> step.cauldronType?.let { result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                    "recipes.gui.recipes.lore.step.cauldron",
-                    "recipes.gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
+                    "breweryrecipes.gui.recipes.lore.step.cauldron",
+                    "breweryrecipes.gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
                 ), index, recipeView.flaws, recipeView.invertedReveals))) }
                 is AgeStep -> {
                     result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
-                        "recipes.gui.recipes.lore.step.barrel",
-                        "recipes.gui.recipes.lore.step.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
+                        "breweryrecipes.gui.recipes.lore.step.barrel",
+                        "breweryrecipes.gui.recipes.lore.step.barrel.type.${step.barrelType.name.lowercase(Locale.ROOT)}",
                         "barrel_type"
                     ), index, recipeView.flaws, recipeView.invertedReveals)))
                 }
