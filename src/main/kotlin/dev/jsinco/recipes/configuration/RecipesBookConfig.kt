@@ -13,6 +13,6 @@ class RecipesBookConfig : OkaeriConfig() {
     @CustomKey("item")
     var item = ConfigItem.Builder()
         .material(Material.WRITTEN_BOOK)
-        .name(Component.translatable("spawning.item.book"))
+        .name(Component.translatable("breweryrecipes.item.book"))
         .build()
 }

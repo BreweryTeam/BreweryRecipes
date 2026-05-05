@@ -32,14 +32,14 @@ data class BreweryRecipe(
         base.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(
-                Component.translatable("recipes.spawning.item.name.completed")
+                Component.translatable("breweryrecipes.spawning.item.name.completed")
                     .colorIfAbsent(NamedTextColor.WHITE)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             )
         )
         base.setData(
             DataComponentTypes.LORE, ItemLore.lore(
-                listOf(Component.translatable("recipes.spawning.item.lore"))
+                listOf(Component.translatable("breweryrecipes.spawning.item.lore"))
                     .map { it.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE) }
                     .map { it.colorIfAbsent(NamedTextColor.GRAY) }
                     .map(TranslationUtil::render)

@@ -13,11 +13,11 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType?, val ingr
 
     override fun getType(): StepType = StepType.COOK
     override fun display(): Component = Component.translatable(
-        "recipes.gui.recipes.lore.step.cook",
+        "breweryrecipes.gui.recipes.lore.step.cook",
         Argument.tagResolver(Formatter.number("cooking_time", cookingTicks.toDouble() / cookingMinuteTicks))
     )
     override fun displayBrewNote(): Component = Component.translatable(
-        "recipes.gui.recipes.lore.brew-note.step.cook",
+        "breweryrecipes.gui.recipes.lore.brew-note.step.cook",
         Argument.tagResolver(Formatter.number("cooking_time", cookingTicks.toDouble() / cookingMinuteTicks))
     )
 

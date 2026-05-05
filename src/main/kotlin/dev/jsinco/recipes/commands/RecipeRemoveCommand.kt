@@ -40,7 +40,7 @@ object RecipeRemoveCommand {
             }
             context.source.sender.sendMessage(
                 Component.translatable(
-                    "recipes.command.remove",
+                    "breweryrecipes.command.remove",
                     TranslationArgumentUtil.players(targets),
                     TranslationArgumentUtil.recipe(recipe)
                 )
@@ -54,7 +54,7 @@ object RecipeRemoveCommand {
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                             return@executes 1
                         }
                         applyToTargets(context, listOf(sender), RemoveTarget.ALL)
@@ -64,7 +64,7 @@ object RecipeRemoveCommand {
                             .executes { context ->
                                 val sender = context.source.sender
                                 if (sender !is Player) {
-                                    context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                                    context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                                     return@executes 1
                                 }
                                 applyToTargets(
@@ -86,7 +86,7 @@ object RecipeRemoveCommand {
                                             context.getArgument("remove-target", RemoveTarget::class.java)
                                         )
                                     })
-                    ).requires { it.sender.hasPermission("recipes.command.others") }
+                    ).requires { it.sender.hasPermission("breweryrecipes.command.others") }
             )
     }
 

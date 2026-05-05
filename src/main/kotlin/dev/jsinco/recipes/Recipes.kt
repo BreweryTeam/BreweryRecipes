@@ -81,7 +81,7 @@ class Recipes : JavaPlugin() {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
-        recipesConfig.book.craftingRecipe.register(BookUtil.createBook(), "recipes_book")
+        recipesConfig.book.craftingRecipe.register(BookUtil.createBook(), "breweryrecipes_book")
         spawnConfig.recipeSpawning
             .forEachIndexed { index, definition -> definition.registerRecipe(index) }
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(
@@ -171,7 +171,7 @@ class Recipes : JavaPlugin() {
         }
         recipeGuiItemCache.clearGlobal()
         RecipeViewLoreWriter.bumpVersion()
-        recipesConfig.book.craftingRecipe.register(recipesConfig.book.item.generateItem(), "recipes_book")
+        recipesConfig.book.craftingRecipe.register(recipesConfig.book.item.generateItem(), "breweryrecipes_book")
         spawnConfig.recipeSpawning
             .forEachIndexed { index, definition -> definition.registerRecipe(index) }
     }

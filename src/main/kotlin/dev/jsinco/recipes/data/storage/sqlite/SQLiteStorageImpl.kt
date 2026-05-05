@@ -28,7 +28,7 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
 
     private fun setupDataSource(): HikariDataSource {
         val config = HikariConfig()
-        val databaseFile = File(dataFolder, "recipes.sqlite")
+        val databaseFile = File(dataFolder, "breweryrecipes.sqlite")
         val jdbcUrl = "jdbc:sqlite:${databaseFile.absolutePath}"
 
         config.jdbcUrl = jdbcUrl

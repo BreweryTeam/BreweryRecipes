@@ -14,28 +14,28 @@ import org.bukkit.entity.Player
 object RecipesCommand {
 
     fun command(): LiteralCommandNode<CommandSourceStack> {
-        return Commands.literal("recipes")
+        return Commands.literal("breweryrecipes")
             .then(
                 Commands.literal("reload")
                     .executes { context ->
                         Recipes.instance.reload()
-                        context.source.sender.sendMessage(Component.translatable("recipes.command.reload"))
+                        context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.reload"))
                         1
                     }
-                    .requires { it.sender.hasPermission("recipes.command.reload") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.reload") }
             )
             .then(
                 Commands.literal("givebook")
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                             return@executes 1
                         }
                         giveBook(sender)
                         context.source.sender.sendMessage(
                             Component.translatable(
-                                "recipes.command.givebook",
+                                "breweryrecipes.command.givebook",
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
@@ -52,37 +52,37 @@ object RecipesCommand {
                                 }
                                 context.source.sender.sendMessage(
                                     Component.translatable(
-                                        "recipes.command.givebook",
+                                        "breweryrecipes.command.givebook",
                                         TranslationArgumentUtil.players(targets)
                                     )
                                 )
                                 1
-                            }.requires { it.sender.hasPermission("recipes.command.others") }
+                            }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
                     )
-                    .requires { it.sender.hasPermission("recipes.command.givebook") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.givebook") }
             ).then(
                 RecipeOpenCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.open") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.open") }
             ).then(
                 RecipeAddCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.add") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.add") }
             ).then(
                 RecipeRemoveCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.remove") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.remove") }
             ).then(
                 RecipeGiveCommand.command()
-                    .requires { it.sender.hasPermission("recipes.command.give") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.give") }
             ).then(
                 Commands.literal("clear")
                     .executes { context ->
                         val sender = context.source.sender
                         if (sender !is Player) {
-                            context.source.sender.sendMessage(Component.translatable("recipes.command.invalid.sender"))
+                            context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                             return@executes 1
                         }
                         context.source.sender.sendMessage(
                             Component.translatable(
-                                "recipes.command.clear",
+                                "breweryrecipes.command.clear",
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
@@ -98,7 +98,7 @@ object RecipesCommand {
                                     .resolve(context.source)
                                 context.source.sender.sendMessage(
                                     Component.translatable(
-                                        "recipes.command.clear",
+                                        "breweryrecipes.command.clear",
                                         TranslationArgumentUtil.players(targets)
                                     )
                                 )
@@ -107,9 +107,9 @@ object RecipesCommand {
                                     Recipes.completedRecipeManager.removeAll(target.uniqueId)
                                 }
                                 1
-                            }.requires { it.sender.hasPermission("recipes.command.others") }
+                            }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
                     )
-                    .requires { it.sender.hasPermission("recipes.command.clear") }
+                    .requires { it.sender.hasPermission("breweryrecipes.command.clear") }
             ).build()
     }
 

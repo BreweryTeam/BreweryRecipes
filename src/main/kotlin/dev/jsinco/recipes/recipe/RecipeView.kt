@@ -40,15 +40,15 @@ class RecipeView(
     override fun displayName(brewDisplayName: Component): Component {
         val fragmentation = fragmentation()
         val translationName = if (fragmentation == 0.0) {
-            "recipes.gui.recipes.name.complete"
+            "breweryrecipes.gui.recipes.name.complete"
         } else if (fragmentation < 25.0) {
-            "recipes.gui.recipes.name.slightly-fragmented"
+            "breweryrecipes.gui.recipes.name.slightly-fragmented"
         } else if (fragmentation < 50.0) {
-            "recipes.gui.recipes.name.moderately-fragmented"
+            "breweryrecipes.gui.recipes.name.moderately-fragmented"
         } else if (fragmentation < 75.0) {
-            "recipes.gui.recipes.name.heavily-fragmented"
+            "breweryrecipes.gui.recipes.name.heavily-fragmented"
         } else {
-            "recipes.gui.recipes.name.severely-fragmented"
+            "breweryrecipes.gui.recipes.name.severely-fragmented"
         }
         return Component.translatable(translationName, Argument.component("name", brewDisplayName))
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)

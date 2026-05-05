@@ -35,7 +35,7 @@ interface BrewingIntegration {
             if (scoreComponent != null) {
                 var line = TranslationUtil.render(
                     Component.translatable(
-                        "recipes.gui.recipes.lore.quality",
+                        "breweryrecipes.gui.recipes.lore.quality",
                         Argument.component("qualitystars", scoreComponent)
                     ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                         .colorIfAbsent(NamedTextColor.GRAY)

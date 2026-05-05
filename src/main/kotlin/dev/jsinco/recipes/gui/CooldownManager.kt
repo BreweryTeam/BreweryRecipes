@@ -21,13 +21,13 @@ object CooldownManager {
     private val modeSwitchCooldowns: MutableMap<UUID, Long> = mutableMapOf()
 
     fun tryOpen(player: Player): Boolean =
-        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "recipes.gui.cooldown.open")
+        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "breweryrecipes.gui.cooldown.open")
 
     fun tryPageSwitch(player: Player): Boolean =
-        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "recipes.gui.cooldown.page")
+        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "breweryrecipes.gui.cooldown.page")
 
     fun tryModeSwitch(player: Player): Boolean =
-        tryConsume(player, modeSwitchCooldowns, Recipes.recipesConfig.modeSwitchCooldownTicks, "recipes.gui.cooldown.mode")
+        tryConsume(player, modeSwitchCooldowns, Recipes.recipesConfig.modeSwitchCooldownTicks, "breweryrecipes.gui.cooldown.mode")
 
     fun clearFor(playerUuid: UUID) {
         openCooldowns.remove(playerUuid)

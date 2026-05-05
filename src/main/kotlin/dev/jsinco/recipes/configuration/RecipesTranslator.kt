@@ -145,7 +145,7 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
     }
 
     override fun name(): Key {
-        return Key.key("recipes:global_translator")
+        return Key.key("breweryrecipes:global_translator")
     }
 
     public override fun getMiniMessageString(key: String, locale: Locale): String? {
