@@ -7,11 +7,11 @@ import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
+import org.bukkit.Material
 import org.bukkit.block.Biome
 import org.bukkit.block.BlockType
 import org.bukkit.entity.EntityType
 import org.bukkit.event.inventory.InventoryType
-import org.bukkit.inventory.ItemType
 
 class SpawnConfig : OkaeriConfig() {
 
@@ -137,7 +137,7 @@ class SpawnConfig : OkaeriConfig() {
                 craftingTrigger = CraftingTrigger(
                     CraftingDefinition().also {
                         it.shaped = false
-                        it.ingredients = listOf(ItemType.PAPER, ItemType.BROWN_MUSHROOM)
+                        it.ingredients = listOf(Material.PAPER, Material.BROWN_MUSHROOM)
                     }
                 )
             )
