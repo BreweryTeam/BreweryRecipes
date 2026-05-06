@@ -106,11 +106,11 @@ data class BreweryRecipe(
         private var difficulty: Double = 0.0
         private var score: Double = 0.0
 
-        fun mix(ticks: Long, cauldronType: String, ingredients: Map<Ingredient, Int>) = apply {
+        fun mix(ticks: Long, cauldronType: String?, ingredients: Map<Ingredient, Int>) = apply {
             stepsBuilder.add(MixStep(ticks, MixStep.CauldronType.fromString(cauldronType), ingredients))
         }
 
-        fun cook(ticks: Long, cauldronType: String, ingredients: Map<Ingredient, Int>) = apply {
+        fun cook(ticks: Long, cauldronType: String?, ingredients: Map<Ingredient, Int>) = apply {
             stepsBuilder.add(CookStep(ticks, CookStep.CauldronType.fromString(cauldronType), ingredients))
         }
 

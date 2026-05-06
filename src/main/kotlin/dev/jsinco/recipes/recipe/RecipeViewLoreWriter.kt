@@ -116,16 +116,16 @@ object RecipeViewLoreWriter {
             }
 
             when (step) {
-                is CookStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
+                is CookStep -> step.cauldronType?.let { result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                     "gui.recipes.lore.step.cauldron",
-                    "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
-                ), index, recipeView.flaws, recipeView.invertedReveals)))
-                is MixStep -> result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
+                ), index, recipeView.flaws, recipeView.invertedReveals))) }
+                is MixStep -> step.cauldronType?.let { result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                     "gui.recipes.lore.step.cauldron",
-                    "gui.recipes.lore.step.cauldron.type.${step.cauldronType.name.lowercase(Locale.ROOT)}",
+                    "gui.recipes.lore.step.cauldron.type.${it.name.lowercase(Locale.ROOT)}",
                     "cauldron_type"
-                ), index, recipeView.flaws, recipeView.invertedReveals)))
+                ), index, recipeView.flaws, recipeView.invertedReveals))) }
                 is AgeStep -> {
                     result.add(TranslationUtil.render(applyFlaws(buildTypeLine(
                         "gui.recipes.lore.step.barrel",

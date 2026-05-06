@@ -31,13 +31,13 @@ object TBPRecipeConverter {
             when (it) {
                 is BrewingStep.Cook -> recipeBuilder.cook(
                     it.time().moment(),
-                    it.cauldronType().name,
+                    it.cauldronType()?.name,
                     mapIngredients(it.ingredients())
                 )
 
                 is BrewingStep.Distill -> recipeBuilder.distill(it.runs().toLong())
                 is BrewingStep.Age -> recipeBuilder.age(it.time().moment(), it.barrelType().name())
-                is BrewingStep.Mix -> recipeBuilder.mix(it.time().moment(), it.cauldronType().name, mapIngredients(it.ingredients()))
+                is BrewingStep.Mix -> recipeBuilder.mix(it.time().moment(), it.cauldronType()?.name, mapIngredients(it.ingredients()))
             }
         }
         return recipeBuilder.build()
@@ -57,7 +57,7 @@ object TBPRecipeConverter {
                                 mapOf(IngredientMeta.DISPLAY_NAME to key.displayName)
                             )
                         },
-                        CauldronType.valueOf(step.cauldronType.name)
+                        CauldronType.valueOf(step.cauldronType?.name ?: CauldronType.WATER.name)
                     )
 
                     is MixStep -> brewManager.mixingStep(step.mixingTicks, step.ingredients.mapKeys { (key, _) ->
@@ -65,7 +65,7 @@ object TBPRecipeConverter {
                             ingredientManager.getIngredient(key.key).join().orElse(null) ?: return null,
                             mapOf(IngredientMeta.DISPLAY_NAME to key.displayName)
                         )
-                    }, CauldronType.valueOf(step.cauldronType.name))
+                    }, CauldronType.valueOf(step.cauldronType?.name ?: CauldronType.WATER.name))
 
                     is AgeStep -> brewManager.agingStep(
                         step.agingTicks,

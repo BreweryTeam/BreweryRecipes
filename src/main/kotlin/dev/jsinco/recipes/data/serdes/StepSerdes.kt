@@ -29,7 +29,7 @@ object StepSerdes {
         val output = JsonObject()
         output.addProperty("type", StepType.MIX.name)
         output.addProperty("ticks", step.mixingTicks)
-        output.addProperty("cauldron-type", step.cauldronType.name)
+        output.addProperty("cauldron-type", step.cauldronType?.name)
         output.add(
             "ingredients",
             serializeIngredients(step.ingredients)
@@ -52,7 +52,7 @@ object StepSerdes {
         val output = JsonObject()
         output.addProperty("type", StepType.COOK.name)
         output.addProperty("ticks", step.cookingTicks)
-        output.addProperty("cauldron-type", step.cauldronType.name)
+        output.addProperty("cauldron-type", step.cauldronType?.name)
         output.add(
             "ingredients",
             serializeIngredients(step.ingredients)

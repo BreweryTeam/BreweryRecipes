@@ -8,7 +8,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingredients: Map<Ingredient, Int>) :
+class CookStep(val cookingTicks: Long, val cauldronType: CauldronType?, val ingredients: Map<Ingredient, Int>) :
     IngredientStep {
 
     override fun getType(): StepType = StepType.COOK
@@ -30,8 +30,8 @@ class CookStep(val cookingTicks: Long, val cauldronType: CauldronType, val ingre
 
         companion object {
             @JvmStatic
-            fun fromString(type: String?): CauldronType {
-                if (type == null) return WATER
+            fun fromString(type: String?): CauldronType? {
+                if (type == null) return null
                 return when (type.trim().lowercase()) {
                     "snow" -> SNOW
                     "lava" -> LAVA
