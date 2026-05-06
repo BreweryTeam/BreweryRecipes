@@ -149,7 +149,14 @@ bukkit {
                 "recipes.command.others"
             )
         }
-        register("recipes.override.view")
+        register("recipes.override.view") {
+            children = listOf(
+                "recipes.override.view.fragments",
+                "recipes.override.view.notes"
+            )
+        }
+        register("recipes.override.view.fragments")
+        register("recipes.override.view.notes")
     }
     softDepend = listOf("BreweryX", "TheBrewingProject")
 }
