@@ -2,13 +2,12 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.TreeMap
-import java.util.zip.ZipFile
-import javax.imageio.ImageIO
-import io.papermc.hangarpublishplugin.model.Platforms
 import java.awt.image.BufferedImage
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.*
+import java.util.zip.ZipFile
+import javax.imageio.ImageIO
 
 plugins {
     kotlin("jvm") version "2.2.20"
@@ -20,7 +19,7 @@ plugins {
 }
 
 group = "dev.jsinco.recipes"
-version = "1.1.1"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
