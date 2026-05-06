@@ -2,7 +2,7 @@ package dev.jsinco.recipes.integration
 
 import dev.jsinco.brewery.api.brew.BrewQuality
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
@@ -92,8 +92,8 @@ object TbpBrewingIntegration : BrewingIntegration {
             ?.customColor()
     }
 
-    override fun enable(recipes: Recipes) {
-        Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(getApi()), recipes)
+    override fun enable(breweryRecipes: BreweryRecipes) {
+        Bukkit.getPluginManager().registerEvents(TheBrewingProjectListener(getApi()), breweryRecipes)
     }
 
     override fun score(recipe: BreweryRecipe): Double {

@@ -36,9 +36,9 @@ import java.io.File
 // Allow recipes for brews to be collected from randomly generated chests and make some recipes rarer than others
 // Has a gui that shows all the recipes the player has collected and how to make them
 // Pulls directly from the Brewery plugin's config.yml file
-class Recipes : JavaPlugin() {
+class BreweryRecipes : JavaPlugin() {
     companion object {
-        lateinit var instance: Recipes
+        lateinit var instance: BreweryRecipes
         lateinit var recipesConfig: RecipesConfig
         lateinit var guiConfig: GuiConfig
         lateinit var spawnConfig: SpawnConfig

@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.configuration
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import eu.okaeri.configs.OkaeriConfig
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
@@ -43,7 +43,7 @@ class ConfigItem : OkaeriConfig() {
         name?.let {
             item.setData(
                 DataComponentTypes.CUSTOM_NAME, GlobalTranslator.render(
-                    it, Recipes.recipesConfig.language
+                    it, BreweryRecipes.recipesConfig.language
                 ).decorationIfAbsent(
                     TextDecoration.ITALIC,
                     TextDecoration.State.FALSE
@@ -55,7 +55,7 @@ class ConfigItem : OkaeriConfig() {
                 DataComponentTypes.LORE, ItemLore.lore(
                     it.map { component ->
                         GlobalTranslator.render(
-                            component, Recipes.recipesConfig.language
+                            component, BreweryRecipes.recipesConfig.language
                         ).decorationIfAbsent(
                             TextDecoration.ITALIC,
                             TextDecoration.State.FALSE

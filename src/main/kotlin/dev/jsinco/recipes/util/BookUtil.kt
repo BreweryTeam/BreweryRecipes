@@ -1,13 +1,13 @@
 package dev.jsinco.recipes.util
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
 object BookUtil {
 
     fun createBook(): ItemStack {
-        val item = Recipes.recipesConfig.book.item.generateItem()
+        val item = BreweryRecipes.recipesConfig.book.item.generateItem()
         item.editPersistentDataContainer { pdc ->
             pdc.set(PdcKeys.BOOK_KEY, PersistentDataType.INTEGER, 1)
         }

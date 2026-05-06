@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.configuration.spawning
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.ConfigItem
 import dev.jsinco.recipes.configuration.spawning.triggers.TriggersDefinition
 import dev.jsinco.recipes.recipe.BreweryRecipe
@@ -42,7 +42,7 @@ data class SpawnDefinition(
     }
 
     private fun applicableRecipes(): List<BreweryRecipe> {
-        return Recipes.brewingIntegration.allRecipes()
+        return BreweryRecipes.brewingIntegration.allRecipes()
             .filter { recipeWhitelist.isNullOrEmpty() || recipeWhitelist.contains(it.identifier) }
             .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.identifier) }
     }

@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.data.storage.mysql
 
 import com.google.gson.JsonParser
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.serdes.Serdes
 import dev.jsinco.recipes.data.serdes.StepSerdes
 import dev.jsinco.recipes.data.storage.CompletedRecipeStorageSession
@@ -19,7 +19,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-            INSERT INTO ${Recipes.recipesConfig.storage.mysql.prefix}completed_recipe
+            INSERT INTO ${BreweryRecipes.recipesConfig.storage.mysql.prefix}completed_recipe
                   VALUES(?,?,?,?)
                   ON DUPLICATE KEY UPDATE steps = VALUES(steps), score = VALUES(score);
         """.trimIndent()
@@ -39,7 +39,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-                DELETE FROM ${Recipes.recipesConfig.storage.mysql.prefix}completed_recipe
+                DELETE FROM ${BreweryRecipes.recipesConfig.storage.mysql.prefix}completed_recipe
                     WHERE player_uuid = ? AND recipe_key = ?;
             """.trimIndent()
         ) {
@@ -53,7 +53,7 @@ class MySqlCompletedRecipeSession(private val storageSessionExecutor: StorageSes
     override fun selectRecipeCompletions(playerUuid: UUID): CompletableFuture<List<BreweryRecipe>?> {
         return storageSessionExecutor.runStatement(
             """
-                SELECT recipe_key, steps, score FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe
+                SELECT recipe_key, steps, score FROM ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe
                     WHERE player_uuid = ?;
             """
         ) {

@@ -89,7 +89,7 @@ tasks {
 
             val webhook = DiscordWebhook(System.getenv("DISCORD_WEBHOOK") ?: return@doLast, false)
             webhook.message = "@everyone"
-            webhook.embedTitle = "Recipes - v${project.version}"
+            webhook.embedTitle = "BreweryRecipes - v${project.version}"
             webhook.embedDescription = readChangeLog()
             webhook.embedThumbnailUrl =
                 "https://cdn.modrinth.com/data/F6Rdllwv/a51de91e8f7dca5303e4055c0d54e2e510efae7d.png"
@@ -114,24 +114,8 @@ tasks {
     }
 }
 
-hangarPublish {
-    publications.register("plugin") {
-        version.set(project.version.toString())
-        channel.set("Release")
-        id.set("Recipes-BreweryX-Addon")
-        apiKey.set(System.getenv("HANGAR_TOKEN") ?: return@register)
-        platforms {
-            register(Platforms.PAPER) {
-                jar.set(tasks.shadowJar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("1.21.x"))
-            }
-        }
-        changelog.set(readChangeLog())
-    }
-}
-
 bukkit {
-    main = "dev.jsinco.recipes.Recipes"
+    main = "dev.jsinco.recipes.BreweryRecipes"
     foliaSupported = false
     apiVersion = "1.21"
     authors = listOf("Jsinco", "Thorinwasher, Mitality")
@@ -161,16 +145,6 @@ bukkit {
     softDepend = listOf("BreweryX", "TheBrewingProject")
 }
 
-modrinth {
-    projectId.set("breweryrecipes") // This can be the project ID or the slug. Either will work!
-    versionNumber.set(project.version.toString())
-    versionType.set("release") // This is the default -- can also be `beta` or `alpha`
-    uploadFile.set(tasks.shadowJar)
-    token.set(System.getenv("MODRINTH_TOKEN") ?: return@modrinth)
-    loaders.addAll("bukkit", "spigot", "paper", "purpur", "folia")
-    gameVersions.addAll("1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4")
-    changelog.set(readChangeLog())
-}
 
 fun computeAverageColor(image: BufferedImage, name: String, biomeOverrides: Map<String, Int>): String {
     for ((key, rgb) in biomeOverrides) {

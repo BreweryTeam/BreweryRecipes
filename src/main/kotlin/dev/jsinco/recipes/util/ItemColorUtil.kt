@@ -1,14 +1,14 @@
 package dev.jsinco.recipes.util
 
 import com.google.gson.JsonParser
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 
 object ItemColorUtil {
 
     private val colors: Map<String, String> by lazy { load() }
 
     private fun load(): Map<String, String> {
-        val stream = Recipes::class.java.getResourceAsStream("/item-colors.json") ?: return emptyMap()
+        val stream = BreweryRecipes::class.java.getResourceAsStream("/item-colors.json") ?: return emptyMap()
         return try {
             JsonParser.parseReader(stream.reader()).asJsonObject
                 .entrySet()

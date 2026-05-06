@@ -1,9 +1,8 @@
 package dev.jsinco.recipes.listeners
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.util.PdcKeys
-import dev.jsinco.recipes.util.RecipeUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.NamespacedKey
@@ -30,18 +29,18 @@ class RecipeListener : Listener {
 
         val pdc = item.persistentDataContainer
         val legacyIdentifier = legacyRecipeKeys.firstNotNullOfOrNull { pdc.get(it, PersistentDataType.STRING) }
-        if (Recipes.recipesConfig.migrate && legacyIdentifier != null) {
-            val recipe = Recipes.brewingIntegration.getRecipe(legacyIdentifier) ?: run {
+        if (BreweryRecipes.recipesConfig.migrate && legacyIdentifier != null) {
+            val recipe = BreweryRecipes.brewingIntegration.getRecipe(legacyIdentifier) ?: run {
                 event.player.sendMessage(Component.translatable("breweryrecipes.spawning.item.expired"))
                 return
             }
-            Recipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipe.generateCompletedView())
+            BreweryRecipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipe.generateCompletedView())
             event.player.sendMessage(
                 Component.translatable(
                     "breweryrecipes.spawning.item.redeemed",
                     Argument.component(
                         "recipe_name",
-                        Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                        BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
                     )
                 )
             )
@@ -55,20 +54,20 @@ class RecipeListener : Listener {
             val actual = pdc.get(PdcKeys.FLAW_KEY, PersistentDataType.STRING)
             RecipeViewCreator.Type.entries.first { it.name.equals(actual, true) }
         } else null
-        val recipe = Recipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
             event.player.sendMessage(Component.translatable("breweryrecipes.spawning.item.expired"))
             return
         }
         val recipeView = flaw?.let {
             recipe.generate(Random.nextDouble(50.0, 100.0), it)
         } ?: recipe.generate(0.0)
-        Recipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipeView)
+        BreweryRecipes.recipeViewManager.insertOrMergeView(event.player.uniqueId, recipeView)
         event.player.sendMessage(
             Component.translatable(
                 "breweryrecipes.spawning.item.redeemed",
                 Argument.component(
                     "recipe_name",
-                    Recipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                    BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
                 )
             )
         )

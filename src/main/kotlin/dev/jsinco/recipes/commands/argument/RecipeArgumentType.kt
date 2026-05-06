@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
@@ -32,14 +32,14 @@ object RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> 
 
 
     override fun convert(nativeType: String): BreweryRecipe {
-        return Recipes.brewingIntegration.getRecipe(nativeType) ?: throw UNKNOWN_VALUE.create(nativeType)
+        return BreweryRecipes.brewingIntegration.getRecipe(nativeType) ?: throw UNKNOWN_VALUE.create(nativeType)
     }
 
     override fun <S : Any> listSuggestions(
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        Recipes.brewingIntegration.allRecipes()
+        BreweryRecipes.brewingIntegration.allRecipes()
             .map { it.identifier }
             .filter { recipeName -> recipeName.contains(builder.remainingLowerCase) }
             .map(this::sanitizeName)

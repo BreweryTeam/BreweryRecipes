@@ -4,7 +4,7 @@ import com.dre.brewery.configuration.ConfigManager
 import com.dre.brewery.configuration.files.Config
 import com.dre.brewery.recipe.BRecipe
 import com.dre.brewery.utility.BUtil
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
@@ -65,7 +65,7 @@ object BreweryXBrewingIntegration : BrewingIntegration {
             .associateBy { it.identifier }
     }
 
-    override fun enable(recipes: Recipes) {
+    override fun enable(breweryRecipes: BreweryRecipes) {
     }
 
     override fun brewIngredientColor(ingredientKey: String): Color? =

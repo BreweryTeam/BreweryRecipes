@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.recipe
 
 import com.google.common.collect.ImmutableList
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.recipe.process.Ingredient
 import dev.jsinco.recipes.recipe.process.Step
@@ -16,7 +16,6 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
@@ -87,7 +86,7 @@ data class BreweryRecipe(
     override fun toLore(): List<Component> {
         return RecipeViewLoreWriter.writeLore(
             generateCompletedView(),
-            Recipes.brewingIntegration,
+            BreweryRecipes.brewingIntegration,
             steps,
             isBrewNote = true
         ) ?: emptyList()
@@ -98,7 +97,7 @@ data class BreweryRecipe(
     }
 
     override fun scoreEquivalent(): Double {
-        return Recipes.brewingIntegration.score(this)
+        return BreweryRecipes.brewingIntegration.score(this)
     }
 
     class Builder(private val identifier: String) {

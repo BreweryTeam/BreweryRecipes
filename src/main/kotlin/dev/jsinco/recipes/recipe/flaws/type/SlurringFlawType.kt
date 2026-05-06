@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.recipe.flaws.type
 
 import com.google.gson.JsonParser
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.FlawConfig
 import dev.jsinco.recipes.recipe.flaws.FlawTextModificationWriter
 import dev.jsinco.recipes.recipe.flaws.FlawTextModifications
@@ -20,8 +20,8 @@ object SlurringFlawType : FlawType {
 
     private fun retrieveDrunkenReplacements(): List<DrunkenTextReplacement> {
         val destinationFile = File(
-            Recipes.instance.dataFolder,
-            "locale/${Recipes.recipesConfig.language.toLanguageTag()}.drunk_text.json"
+            BreweryRecipes.instance.dataFolder,
+            "locale/${BreweryRecipes.recipesConfig.language.toLanguageTag()}.drunk_text.json"
         )
         FileUtil.saveResourceIfExists("/locale/en-US.drunk_text.json", destinationFile, false)
         FileInputStream(destinationFile).use { inputStream ->

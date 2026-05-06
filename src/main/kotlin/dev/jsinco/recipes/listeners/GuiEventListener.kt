@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.listeners
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.CooldownManager
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.gui.GuiManager
@@ -21,7 +21,7 @@ import org.bukkit.persistence.PersistentDataType
 class GuiEventListener : Listener {
 
     companion object {
-        val GUI_ITEM_TYPE = Recipes.key("gui_item_type")
+        val GUI_ITEM_TYPE = BreweryRecipes.key("gui_item_type")
     }
 
     @EventHandler

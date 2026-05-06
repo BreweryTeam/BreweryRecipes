@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.listeners
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
 import dev.jsinco.recipes.configuration.spawning.triggers.InventoryFillTrigger
 import dev.jsinco.recipes.configuration.spawning.triggers.LootSpawnTrigger
@@ -23,7 +23,7 @@ class RecipeSpawningListener : Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onLootGenerate(event: LootGenerateEvent) {
-        for (spawnDefinition in Recipes.spawnConfig.recipeSpawning) {
+        for (spawnDefinition in BreweryRecipes.spawnConfig.recipeSpawning) {
             if (spawnDefinition.enabled == false) {
                 continue
             }
@@ -58,7 +58,7 @@ class RecipeSpawningListener : Listener {
         if (caught !is Item) {
             return
         }
-        for (spawnDefinition in Recipes.spawnConfig.recipeSpawning) {
+        for (spawnDefinition in BreweryRecipes.spawnConfig.recipeSpawning) {
             if (spawnDefinition.enabled == false) {
                 continue
             }
@@ -88,7 +88,7 @@ class RecipeSpawningListener : Listener {
     fun onEntityDeath(event: EntityDeathEvent) {
         val entity = event.entity
 
-        for (spawnDefinition in Recipes.spawnConfig.recipeSpawning) {
+        for (spawnDefinition in BreweryRecipes.spawnConfig.recipeSpawning) {
             if (spawnDefinition.enabled == false) continue
             if (!conditionsMatch(spawnDefinition, event.entity.location)) continue
             if (spawnDefinition.triggers?.mobDropTrigger?.entities?.contains(entity.type) ?: false ||
@@ -103,7 +103,7 @@ class RecipeSpawningListener : Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onBlockDrop(event: BlockDropItemEvent) {
-        for (spawnDefinition in Recipes.spawnConfig.recipeSpawning) {
+        for (spawnDefinition in BreweryRecipes.spawnConfig.recipeSpawning) {
             if (spawnDefinition.enabled == false) continue
             if (!conditionsMatch(spawnDefinition, event.blockState.location)) continue
             if (spawnDefinition.triggers?.blockDropTrigger?.blocks?.contains(event.blockState.type.asBlockType()!!) ?: false ||

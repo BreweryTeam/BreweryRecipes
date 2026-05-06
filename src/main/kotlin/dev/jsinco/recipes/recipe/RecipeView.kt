@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
@@ -34,7 +34,7 @@ class RecipeView(
     }
 
     override fun toLore(): List<Component>? {
-        return RecipeViewLoreWriter.writeLore(this, Recipes.brewingIntegration)
+        return RecipeViewLoreWriter.writeLore(this, BreweryRecipes.brewingIntegration)
     }
 
     override fun displayName(brewDisplayName: Component): Component {

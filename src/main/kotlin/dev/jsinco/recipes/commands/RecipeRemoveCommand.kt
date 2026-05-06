@@ -2,7 +2,7 @@ package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.commands.argument.EnumArgument
 import dev.jsinco.recipes.commands.argument.RecipeArgumentType
 import dev.jsinco.recipes.recipe.BreweryRecipe
@@ -26,13 +26,13 @@ object RecipeRemoveCommand {
             val recipe = context.getArgument("recipe-key", BreweryRecipe::class.java)
             for (target in targets) {
                 if (removeTarget != RemoveTarget.HISTORY) {
-                    Recipes.recipeViewManager.removeView(
+                    BreweryRecipes.recipeViewManager.removeView(
                         target.uniqueId,
                         recipe.identifier
                     )
                 }
                 if (removeTarget != RemoveTarget.FLAW) {
-                    Recipes.completedRecipeManager.removeCompletion(
+                    BreweryRecipes.completedRecipeManager.removeCompletion(
                         target.uniqueId,
                         recipe.identifier
                     )

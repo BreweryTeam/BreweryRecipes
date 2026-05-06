@@ -1,13 +1,13 @@
 package dev.jsinco.recipes.gui
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
 data class GuiItem(private val item: ItemStack, val type: Type) {
     companion object {
-        private val TYPE_KEY = Recipes.key("gui_item_type")
+        private val TYPE_KEY = BreweryRecipes.key("gui_item_type")
     }
 
     init {

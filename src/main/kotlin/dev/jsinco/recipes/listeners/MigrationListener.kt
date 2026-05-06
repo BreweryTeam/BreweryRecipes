@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.listeners
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import net.kyori.adventure.util.TriState
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
@@ -13,7 +13,7 @@ class MigrationListener : Listener {
     private val permissionTemplate: String
 
     init {
-        val configFile = File(Recipes.instance.dataFolder.parentFile, "BreweryX/addons/Recipes/recipesConfig.yml")
+        val configFile = File(BreweryRecipes.instance.dataFolder.parentFile, "BreweryX/addons/Recipes/recipesConfig.yml")
         permissionTemplate = if (configFile.exists()) {
             val config = YamlConfiguration.loadConfiguration(configFile)
             config.getString("recipe-permission-node")
@@ -26,11 +26,11 @@ class MigrationListener : Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        if (!Recipes.recipesConfig.migrate) return
-        for (recipe in Recipes.brewingIntegration.allRecipes()) {
+        if (!BreweryRecipes.recipesConfig.migrate) return
+        for (recipe in BreweryRecipes.brewingIntegration.allRecipes()) {
             val permission = permissionTemplate.replace("%recipe%", recipe.identifier)
             if (event.player.permissionValue(permission) != TriState.TRUE) continue
-            Recipes.recipeViewManager.insertOrMergeView(
+            BreweryRecipes.recipeViewManager.insertOrMergeView(
                 event.player.uniqueId,
                 recipe.generateCompletedView()
             )

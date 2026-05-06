@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.PersistencyLinkedCache
 import dev.jsinco.recipes.data.storage.StorageImpl
 import java.util.*
@@ -39,7 +39,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         recipeViews.removeIf { it.recipeIdentifier == recipeView.recipeIdentifier }
         recipeViews.add(recipeView)
         storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, recipeView)
-        Recipes.recipeGuiItemCache.invalidate(playerUuid, recipeView.recipeIdentifier)
+        BreweryRecipes.recipeGuiItemCache.invalidate(playerUuid, recipeView.recipeIdentifier)
     }
 
     fun insertOrMergeView(playerUuid: UUID, incoming: RecipeView) {
@@ -50,7 +50,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
             val minimalized = RecipeViewLoreWriter.clearRedundantFlaws(incoming)
             list.add(minimalized) // No existing view for this recipe yet, add one
             storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
-            Recipes.recipeGuiItemCache.invalidate(playerUuid, minimalized.recipeIdentifier)
+            BreweryRecipes.recipeGuiItemCache.invalidate(playerUuid, minimalized.recipeIdentifier)
             return
         }
 
@@ -59,7 +59,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         val minimalized = RecipeViewLoreWriter.clearRedundantFlaws(merged)
         list[idx] = minimalized // replace in memory, just to be sure
         storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
-        Recipes.recipeGuiItemCache.invalidate(playerUuid, minimalized.recipeIdentifier)
+        BreweryRecipes.recipeGuiItemCache.invalidate(playerUuid, minimalized.recipeIdentifier)
     }
 
     fun removeView(playerUuid: UUID, recipeKey: String) {
@@ -68,7 +68,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         }
         recipeViews.removeIf { it.recipeIdentifier == recipeKey }
         storageImpl.recipeViewSession().removeRecipeView(playerUuid, recipeKey)
-        Recipes.recipeGuiItemCache.invalidate(playerUuid, recipeKey)
+        BreweryRecipes.recipeGuiItemCache.invalidate(playerUuid, recipeKey)
     }
 
     fun removeAll(playerUuid: UUID) {
@@ -76,10 +76,10 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         views?.forEach {
             storageImpl.recipeViewSession().removeRecipeView(playerUuid, it.recipeIdentifier)
         }
-        Recipes.recipeGuiItemCache.clearAll(playerUuid)
+        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
     override fun clearAll(playerUuid: UUID) {
-        Recipes.recipeGuiItemCache.clearAll(playerUuid)
+        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 }

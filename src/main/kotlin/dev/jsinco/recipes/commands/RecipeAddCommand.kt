@@ -3,7 +3,7 @@ package dev.jsinco.recipes.commands
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.commands.argument.EnumArgument
 import dev.jsinco.recipes.commands.argument.RecipeArgumentType
 import dev.jsinco.recipes.recipe.BreweryRecipe
@@ -25,7 +25,7 @@ object RecipeAddCommand {
             val flawLevel = context.getArgument("flaw-level", Double::class.java)
             val flawType = context.getArgument("flaw-type", RecipeViewCreator.Type::class.java)
             for (target in targets) {
-                Recipes.recipeViewManager.insertOrMergeView(
+                BreweryRecipes.recipeViewManager.insertOrMergeView(
                     target.uniqueId,
                     recipe.generate(flawLevel, flawType)
                 )

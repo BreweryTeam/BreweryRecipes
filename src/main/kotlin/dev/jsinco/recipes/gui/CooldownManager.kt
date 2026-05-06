@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.gui
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
@@ -21,13 +21,13 @@ object CooldownManager {
     private val modeSwitchCooldowns: MutableMap<UUID, Long> = mutableMapOf()
 
     fun tryOpen(player: Player): Boolean =
-        tryConsume(player, openCooldowns, Recipes.recipesConfig.openCooldownTicks, "breweryrecipes.gui.cooldown.open")
+        tryConsume(player, openCooldowns, BreweryRecipes.recipesConfig.openCooldownTicks, "breweryrecipes.gui.cooldown.open")
 
     fun tryPageSwitch(player: Player): Boolean =
-        tryConsume(player, pageCooldowns, Recipes.recipesConfig.pageCooldownTicks, "breweryrecipes.gui.cooldown.page")
+        tryConsume(player, pageCooldowns, BreweryRecipes.recipesConfig.pageCooldownTicks, "breweryrecipes.gui.cooldown.page")
 
     fun tryModeSwitch(player: Player): Boolean =
-        tryConsume(player, modeSwitchCooldowns, Recipes.recipesConfig.modeSwitchCooldownTicks, "breweryrecipes.gui.cooldown.mode")
+        tryConsume(player, modeSwitchCooldowns, BreweryRecipes.recipesConfig.modeSwitchCooldownTicks, "breweryrecipes.gui.cooldown.mode")
 
     fun clearFor(playerUuid: UUID) {
         openCooldowns.remove(playerUuid)

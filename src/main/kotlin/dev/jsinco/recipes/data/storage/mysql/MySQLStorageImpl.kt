@@ -2,7 +2,7 @@ package dev.jsinco.recipes.data.storage.mysql
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.StorageType
 import dev.jsinco.recipes.data.storage.CompletedRecipeStorageSession
 import dev.jsinco.recipes.data.storage.RecipeViewStorageSession
@@ -34,10 +34,10 @@ class MySQLStorageImpl : StorageImpl {
     private fun setupDataSource(): HikariDataSource {
         val config = HikariConfig()
         val jdbcUrl =
-            "jdbc:mysql://${Recipes.Companion.recipesConfig.storage.mysql.host}:${Recipes.Companion.recipesConfig.storage.mysql.port}/${Recipes.Companion.recipesConfig.storage.mysql.database}"
+            "jdbc:mysql://${BreweryRecipes.Companion.recipesConfig.storage.mysql.host}:${BreweryRecipes.Companion.recipesConfig.storage.mysql.port}/${BreweryRecipes.Companion.recipesConfig.storage.mysql.database}"
         config.jdbcUrl = jdbcUrl
-        config.username = Recipes.Companion.recipesConfig.storage.mysql.user
-        config.password = Recipes.Companion.recipesConfig.storage.mysql.password
+        config.username = BreweryRecipes.Companion.recipesConfig.storage.mysql.user
+        config.password = BreweryRecipes.Companion.recipesConfig.storage.mysql.password
 
         config.poolName = "MySQLPool"
         config.connectionTestQuery = "SELECT 1"
@@ -53,7 +53,7 @@ class MySQLStorageImpl : StorageImpl {
 
     override fun createTables() {
         val createRecipeViewStatement = """
-            CREATE TABLE IF NOT EXISTS ${Recipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view (
+            CREATE TABLE IF NOT EXISTS ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view (
               player_uuid BINARY(16) NOT NULL,
               recipe_key VARCHAR(255) NOT NULL, /* MySQL doesn't allow TEXT as PK */
               recipe_flaws JSON NOT NULL,
@@ -62,7 +62,7 @@ class MySQLStorageImpl : StorageImpl {
             );
         """.trimIndent()
         val createRecipeHistoryStatement = """
-            CREATE TABLE IF NOT EXISTS ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe(
+            CREATE TABLE IF NOT EXISTS ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe(
               player_uuid BINARY(16) NOT NULL,
               recipe_key VARCHAR(255) NOT NULL,
               steps JSON NOT NULL,
@@ -80,7 +80,7 @@ class MySQLStorageImpl : StorageImpl {
         try {
             dataSource.connection.use { conn ->
                 conn.prepareStatement(
-                    "ALTER TABLE ${Recipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe ADD COLUMN score DOUBLE NOT NULL DEFAULT 0"
+                    "ALTER TABLE ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}completed_recipe ADD COLUMN score DOUBLE NOT NULL DEFAULT 0"
                 ).use(PreparedStatement::execute)
             }
         } catch (_: SQLException) {

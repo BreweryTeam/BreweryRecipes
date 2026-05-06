@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.integration.BrewingIntegration
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
@@ -41,10 +41,10 @@ object RecipeViewLoreWriter {
     fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null, isBrewNote: Boolean = false): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
-        val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
         val stepsToRender = stepsOverride ?: recipe.steps
         val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
-        val loreConfig = Recipes.guiConfig.recipes.lore
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
         val noIndentIndices = mutableSetOf<Int>()
 
@@ -93,7 +93,7 @@ object RecipeViewLoreWriter {
                         ?.let { Tag.styling(it) }
                         ?: Tag.selfClosingInserting(Component.empty())
                     val brewColorTag = if (ingredient.key.startsWith("brewery:"))
-                        Recipes.brewingIntegration.brewIngredientColor(ingredient.key)
+                        BreweryRecipes.brewingIntegration.brewIngredientColor(ingredient.key)
                             ?.let { TextColor.color(it.asRGB()) }
                             ?.let { Tag.styling(it) }
                             ?: Tag.selfClosingInserting(Component.empty())
@@ -237,7 +237,7 @@ private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
     }
 
     fun estimateFragmentation(recipeView: RecipeView): Double {
-        val recipe = Recipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return 100.0
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return 100.0
         if (recipe.steps.isEmpty()) return 0.0
 
         var fragmentation = 0.0
@@ -262,7 +262,7 @@ private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
 
     fun clearRedundantFlaws(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
         val applicableFlaws = mutableSetOf<Flaw>()
-        val recipe = Recipes.brewingIntegration.getRecipe(view.recipeIdentifier) ?: return view
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(view.recipeIdentifier) ?: return view
         recipe.steps.forEachIndexed { index, step ->
             compileTextModifications(resolveTranslatablesForMutation(buildBaseStep(step)), index, view.flaws)
                 .keys.forEach { applicableFlaws.add(it) }
@@ -278,7 +278,7 @@ private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
     }
 
     fun mergeFlaws(base: RecipeView, toSubtract: RecipeView): RecipeView {
-        val recipe = Recipes.brewingIntegration.getRecipe(base.recipeIdentifier) ?: return base
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(base.recipeIdentifier) ?: return base
         val flawPositions = mutableListOf<MutableSet<Int>>()
         for (i in 0..<recipe.steps.size) {
             val step = recipe.steps[i]

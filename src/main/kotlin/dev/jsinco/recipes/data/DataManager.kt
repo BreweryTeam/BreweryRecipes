@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.data
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.storage.StorageImpl
 import dev.jsinco.recipes.data.storage.mysql.MySQLStorageImpl
 import dev.jsinco.recipes.data.storage.sqlite.SQLiteStorageImpl
@@ -12,7 +12,7 @@ class DataManager(val dataFolder: File) {
 
     init {
         if (!dataFolder.exists()) dataFolder.mkdirs()
-        storageImpl = createStorage(StorageType.fromString(Recipes.recipesConfig.storage.type))
+        storageImpl = createStorage(StorageType.fromString(BreweryRecipes.recipesConfig.storage.type))
         storageImpl.createTables()
     }
 

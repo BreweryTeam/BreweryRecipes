@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.tree.LiteralCommandNode
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.TranslationArgumentUtil
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -18,7 +18,7 @@ object RecipesCommand {
             .then(
                 Commands.literal("reload")
                     .executes { context ->
-                        Recipes.instance.reload()
+                        BreweryRecipes.instance.reload()
                         context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.reload"))
                         1
                     }
@@ -86,8 +86,8 @@ object RecipesCommand {
                                 TranslationArgumentUtil.players(listOf(sender))
                             )
                         )
-                        Recipes.recipeViewManager.removeAll(sender.uniqueId)
-                        Recipes.completedRecipeManager.removeAll(sender.uniqueId)
+                        BreweryRecipes.recipeViewManager.removeAll(sender.uniqueId)
+                        BreweryRecipes.completedRecipeManager.removeAll(sender.uniqueId)
                         1
                     }
                     .then(
@@ -103,8 +103,8 @@ object RecipesCommand {
                                     )
                                 )
                                 for (target in targets) {
-                                    Recipes.recipeViewManager.removeAll(target.uniqueId)
-                                    Recipes.completedRecipeManager.removeAll(target.uniqueId)
+                                    BreweryRecipes.recipeViewManager.removeAll(target.uniqueId)
+                                    BreweryRecipes.completedRecipeManager.removeAll(target.uniqueId)
                                 }
                                 1
                             }.requires { it.sender.hasPermission("breweryrecipes.command.others") }

@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.configuration
 
-import dev.jsinco.recipes.Recipes.Companion.key
+import dev.jsinco.recipes.BreweryRecipes.Companion.key
 import dev.jsinco.recipes.util.Logger
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment

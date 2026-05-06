@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.gui
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.GUIUtil
 import net.kyori.adventure.text.Component
@@ -37,10 +37,10 @@ class RecipesGui(
 
     fun findRecipeSlots(): List<Int> {
         val output = (0..<54).toMutableList()
-        for (borderEntry in Recipes.guiConfig.borders) {
+        for (borderEntry in BreweryRecipes.guiConfig.borders) {
             output.removeAll(borderEntry.key.positions.toList())
         }
-        for (guiOverride in Recipes.guiConfig.overrides) {
+        for (guiOverride in BreweryRecipes.guiConfig.overrides) {
             for (slot in GUIUtil.getValidSlots(guiOverride.pos)) {
                 output.remove(slot)
             }
@@ -65,7 +65,7 @@ class RecipesGui(
         inventory.clear()
         resolveUntil((page + 1) * pageRecipeCapacity)
 
-        for (borderEntry in Recipes.guiConfig.borders) {
+        for (borderEntry in BreweryRecipes.guiConfig.borders) {
             val borderType = borderEntry.key
             val palette = borderEntry.value
             for (i in 0..<borderType.positions.size) {
@@ -75,7 +75,7 @@ class RecipesGui(
             }
         }
 
-        for (override in Recipes.guiConfig.overrides) {
+        for (override in BreweryRecipes.guiConfig.overrides) {
             if (override.type == GuiItem.Type.PREVIOUS_PAGE && page == 0) continue
             if (override.type == GuiItem.Type.NEXT_PAGE && !hasNextPage()) continue
             if (override.type == GuiItem.Type.SET_MODE_FRAGMENTS && mode == RecipeBookMode.FRAGMENTS) continue

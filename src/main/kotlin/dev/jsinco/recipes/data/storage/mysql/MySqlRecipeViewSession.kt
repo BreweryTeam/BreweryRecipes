@@ -2,7 +2,7 @@ package dev.jsinco.recipes.data.storage.mysql
 
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.serdes.FlawSerdes
 import dev.jsinco.recipes.data.serdes.Serdes
 import dev.jsinco.recipes.data.storage.RecipeViewStorageSession
@@ -21,7 +21,7 @@ class MySqlRecipeViewSession(private val storageSessionExecutor: StorageSessionE
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-                INSERT OR REPLACE INTO ${Recipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
+                INSERT OR REPLACE INTO ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
                   VALUES(?,?,?,?);
             """
         ) {
@@ -44,7 +44,7 @@ class MySqlRecipeViewSession(private val storageSessionExecutor: StorageSessionE
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-                DELETE FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
+                DELETE FROM ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
                     WHERE player_uuid = ? AND recipe_key = ?;
             """.trimIndent()
         ) {
@@ -58,7 +58,7 @@ class MySqlRecipeViewSession(private val storageSessionExecutor: StorageSessionE
     override fun selectRecipeViews(playerUuid: UUID): CompletableFuture<List<RecipeView>?> {
         return storageSessionExecutor.runStatement(
             """
-                SELECT recipe_key, recipe_flaws, inverted_reveals FROM ${Recipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
+                SELECT recipe_key, recipe_flaws, inverted_reveals FROM ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
                     WHERE player_uuid = ?;
             """
         ) {

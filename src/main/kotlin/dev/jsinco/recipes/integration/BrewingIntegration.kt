@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.integration
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        val customItemConfig = Recipes.guiConfig.recipes.customItem
+        val customItemConfig = BreweryRecipes.guiConfig.recipes.customItem
         val item = if (customItemConfig.enabled) {
             customItemConfig.item.generateItem()
         } else {
@@ -27,9 +27,9 @@ interface BrewingIntegration {
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
             DataComponentTypes.CUSTOM_NAME,
-            GlobalTranslator.render(displayName, Recipes.recipesConfig.language)
+            GlobalTranslator.render(displayName, BreweryRecipes.recipesConfig.language)
         )
-        val loreConfig = Recipes.guiConfig.recipes.lore
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
         val finalLore = if (loreConfig.showBrewScore && recipeDisplay is BreweryRecipe) {
             val scoreComponent = scoreDisplayName(recipeDisplay)
             if (scoreComponent != null) {
@@ -65,7 +65,7 @@ interface BrewingIntegration {
     fun getRecipe(id: String): BreweryRecipe?
     fun reload()
 
-    fun enable(recipes: Recipes)
+    fun enable(breweryRecipes: BreweryRecipes)
     fun score(recipe: BreweryRecipe): Double
     fun scoreDisplayName(recipe: BreweryRecipe): Component? = null
 }

@@ -8,7 +8,7 @@ import dev.jsinco.brewery.bukkit.api.event.transaction.CauldronExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.DistilleryExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.ItemTransactionEvent
 import dev.jsinco.brewery.bukkit.api.transaction.ItemSource
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import dev.jsinco.recipes.util.metadata.UuidMetaDataType
 import net.kyori.adventure.key.Key
@@ -54,7 +54,7 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         val brewModified = brew.withMeta(COMPLETED_RECIPE_KEY, MetaDataType.STRING, recipeKey)
             .withMeta(COMPLETED_BY_KEY, UuidMetaDataType, player.uniqueId)
             .withMeta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE, scoreValue)
-        Recipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
+        BreweryRecipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
             player.uniqueId,
             TBPRecipeConverter.convert(recipe.recipeName, brew.steps, score = scoreValue)
         )

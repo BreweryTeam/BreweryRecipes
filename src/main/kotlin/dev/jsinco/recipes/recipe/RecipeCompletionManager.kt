@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.recipe
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.PersistencyLinkedCache
 import dev.jsinco.recipes.data.storage.StorageImpl
 import dev.jsinco.recipes.recipe.process.Step
@@ -19,7 +19,7 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         if (existing != null) {
             if (existing.score > recipe.score) return
             if (existing.score == recipe.score) {
-                val ideal = Recipes.brewingIntegration.getRecipe(recipe.identifier) ?: return
+                val ideal = BreweryRecipes.brewingIntegration.getRecipe(recipe.identifier) ?: return
                 val existingMismatches = typeMismatches(existing.steps, ideal.steps)
                 val newMismatches = typeMismatches(recipe.steps, ideal.steps)
                 if (existingMismatches < newMismatches) return
@@ -31,14 +31,14 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         storageImpl.completedRecipeSession()
             .insertOrUpdateRecipeCompletion(uuid, recipe)
         backing.computeIfAbsent(uuid) { mutableMapOf() }[recipe.identifier] = recipe
-        Recipes.recipeGuiItemCache.invalidate(uuid, recipe.identifier)
+        BreweryRecipes.recipeGuiItemCache.invalidate(uuid, recipe.identifier)
     }
 
     fun removeCompletion(uuid: UUID, recipeKey: String) {
         storageImpl.completedRecipeSession()
             .removeRecipeCompletion(uuid, recipeKey)
         backing[uuid]?.remove(recipeKey)
-        Recipes.recipeGuiItemCache.invalidate(uuid, recipeKey)
+        BreweryRecipes.recipeGuiItemCache.invalidate(uuid, recipeKey)
     }
 
     fun contains(playerUuid: UUID, recipeKey: String): Boolean {
@@ -50,12 +50,12 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         recipes?.forEach {
             storageImpl.completedRecipeSession().removeRecipeCompletion(playerUuid, it.key)
         }
-        Recipes.recipeGuiItemCache.clearAll(playerUuid)
+        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
     override fun clearAll(playerUuid: UUID) {
         backing.remove(playerUuid)
-        Recipes.recipeGuiItemCache.clearAll(playerUuid)
+        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
     override fun initiateCacheFor(playerUuid: UUID) {

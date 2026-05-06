@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.gui
 
-import dev.jsinco.recipes.Recipes
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.RecipeSortOrder
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
@@ -12,7 +12,7 @@ object GuiManager {
 
     fun openRecipeGui(player: Player) {
         if (!CooldownManager.tryOpen(player)) return
-        openWithMode(player, Recipes.guiConfig.defaultMode)
+        openWithMode(player, BreweryRecipes.guiConfig.defaultMode)
     }
 
     fun openWithMode(player: Player, mode: RecipeBookMode) {
@@ -23,20 +23,20 @@ object GuiManager {
         }
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
-                RecipeBookMode.FRAGMENTS -> Recipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
-                RecipeBookMode.BREWED -> Recipes.brewingIntegration.allRecipes()
+                RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
+                RecipeBookMode.BREWED -> BreweryRecipes.brewingIntegration.allRecipes()
             }
         } else {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> {
-                    val recipeViews = Recipes.recipeViewManager.getViews(player.uniqueId)
+                    val recipeViews = BreweryRecipes.recipeViewManager.getViews(player.uniqueId)
                         .associateBy { it.recipeIdentifier }
-                    Recipes.brewingIntegration.allRecipes()
+                    BreweryRecipes.brewingIntegration.allRecipes()
                         .map(BreweryRecipe::recipeKey)
                         .mapNotNull { recipeViews[it] }
                 }
                 RecipeBookMode.BREWED -> {
-                    Recipes.completedRecipeManager.getCompletedRecipes(player.uniqueId).toList()
+                    BreweryRecipes.completedRecipeManager.getCompletedRecipes(player.uniqueId).toList()
                 }
             }
         }
@@ -46,8 +46,8 @@ object GuiManager {
             mode,
             sortDisplays(recipeDisplays, mode),
             { display ->
-                Recipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {
-                    Recipes.brewingIntegration.createGuiItem(display)
+                BreweryRecipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {
+                    BreweryRecipes.brewingIntegration.createGuiItem(display)
                 }
             }
         )
@@ -56,7 +56,7 @@ object GuiManager {
     }
 
     private fun sortDisplays(displays: Collection<RecipeDisplay>, mode: RecipeBookMode): List<RecipeDisplay> {
-        val baseSorted = when (Recipes.recipesConfig.recipeSortOrder) {
+        val baseSorted = when (BreweryRecipes.recipesConfig.recipeSortOrder) {
             RecipeSortOrder.AS_PROVIDED -> displays.toList()
             RecipeSortOrder.ALPHABETICAL_IDENTIFIER ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.recipeKey() })
@@ -66,10 +66,10 @@ object GuiManager {
         }
 
         return when {
-            mode == RecipeBookMode.FRAGMENTS && Recipes.recipesConfig.groupFragmentsByCompleteness ->
+            mode == RecipeBookMode.FRAGMENTS && BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
                 baseSorted.sortedBy { fragmentationGroup(it) }
 
-            mode == RecipeBookMode.BREWED && Recipes.recipesConfig.groupBrewNotesByScore ->
+            mode == RecipeBookMode.BREWED && BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
                 baseSorted.sortedByDescending { it.scoreEquivalent() }
 
             else -> baseSorted
@@ -88,8 +88,8 @@ object GuiManager {
     }
 
     private fun plainName(recipeId: String): String {
-        val component = Recipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
-        val rendered = GlobalTranslator.render(component, Recipes.recipesConfig.language)
+        val component = BreweryRecipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
+        val rendered = GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
         return PlainTextComponentSerializer.plainText().serialize(rendered)
     }
 
