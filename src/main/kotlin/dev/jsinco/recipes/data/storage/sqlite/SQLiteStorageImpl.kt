@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.data.storage.sqlite
 
+import com.google.common.io.Files
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.jsinco.recipes.data.StorageType
@@ -27,8 +28,14 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
     }
 
     private fun setupDataSource(): HikariDataSource {
-        val config = HikariConfig()
+        val old = File(dataFolder.parent, "Recipes/breweryrecipes.sqlite");
         val databaseFile = File(dataFolder, "breweryrecipes.sqlite")
+        if (old.exists() && !databaseFile.exists()) {
+            Logger.log("Migrating from old Recipes plugin folder")
+            databaseFile.createNewFile()
+            Files.copy(old, databaseFile)
+        }
+        val config = HikariConfig()
         val jdbcUrl = "jdbc:sqlite:${databaseFile.absolutePath}"
 
         config.jdbcUrl = jdbcUrl
