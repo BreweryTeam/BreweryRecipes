@@ -16,10 +16,9 @@ object GuiManager {
     }
 
     fun openWithMode(player: Player, mode: RecipeBookMode) {
-        val wildcard = player.hasPermission("breweryrecipes.override.view")
         val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> wildcard || player.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> wildcard || player.hasPermission("breweryrecipes.override.view.notes")
+            RecipeBookMode.FRAGMENTS -> player.hasPermission("breweryrecipes.override.view.fragments")
+            RecipeBookMode.BREWED -> player.hasPermission("breweryrecipes.override.view.notes")
         }
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {

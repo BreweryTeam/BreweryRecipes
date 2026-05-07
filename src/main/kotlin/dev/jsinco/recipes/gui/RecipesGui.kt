@@ -102,10 +102,9 @@ class RecipesGui(
 
     fun calculateGuiName(): Component {
         val modeId = mode.identifier()
-        val wildcard = player.hasPermission("breweryrecipes.override.view")
         val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> wildcard || player.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> wildcard || player.hasPermission("breweryrecipes.override.view.notes")
+            RecipeBookMode.FRAGMENTS -> player.hasPermission("breweryrecipes.override.view.fragments")
+            RecipeBookMode.BREWED -> player.hasPermission("breweryrecipes.override.view.notes")
         }
         return if (admin)
             Component.translatable("breweryrecipes.gui.name.admin.$modeId")
