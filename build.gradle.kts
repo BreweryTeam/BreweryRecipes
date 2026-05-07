@@ -2,12 +2,14 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.*
 import java.util.zip.ZipFile
 import javax.imageio.ImageIO
+import kotlin.math.pow
 
 plugins {
     kotlin("jvm") version "2.2.20"
@@ -144,29 +146,78 @@ bukkit {
     softDepend = listOf("BreweryX", "TheBrewingProject")
 }
 
+data class Bucket(
+    var count: Int = 0,
+    var sumR: Double = 0.0,
+    var sumG: Double = 0.0,
+    var sumB: Double = 0.0,
+    var sumS: Double = 0.0,
+    var sumV: Double = 0.0
+)
 
-fun computeAverageColor(image: BufferedImage, name: String, biomeOverrides: Map<String, Int>): String {
+fun computeDistinctiveColor(
+    image: BufferedImage,
+    name: String,
+    biomeOverrides: Map<String, Int>
+): String {
     for ((key, rgb) in biomeOverrides) {
-        if (name.contains(key)) return "%06x".format(rgb)
+        if (name.contains(key)) {
+            return "%06x".format(rgb)
+        }
     }
-    var sumR = 0.0;
-    var sumG = 0.0;
-    var sumB = 0.0;
-    var totalAlpha = 0.0
+
+    val buckets = Array(36) { Bucket() }
+
     for (x in 0 until image.width) {
         for (y in 0 until image.height) {
             val argb = image.getRGB(x, y)
-            val a = ((argb shr 24) and 0xff) / 255.0
-            sumR += ((argb shr 16) and 0xff) * a
-            sumG += ((argb shr 8) and 0xff) * a
-            sumB += (argb and 0xff) * a
-            totalAlpha += a
+
+            val a = (argb ushr 24) and 0xff
+            if (a < 32) continue
+
+            val r = (argb ushr 16) and 0xff
+            val g = (argb ushr 8) and 0xff
+            val b = argb and 0xff
+
+            val hsv = Color.RGBtoHSB(r, g, b, null)
+            val h = hsv[0]
+            val s = hsv[1]
+            val v = hsv[2]
+
+            // Ignore very dark pixels
+            if (v < 0.15f) continue
+
+            val bucketIndex =
+                (h * buckets.size).toInt().coerceIn(0, buckets.lastIndex)
+
+            val bucket = buckets[bucketIndex]
+
+            bucket.count++
+            bucket.sumR += r
+            bucket.sumG += g
+            bucket.sumB += b
+            bucket.sumS += s.toDouble()
+            bucket.sumV += v.toDouble()
         }
     }
-    if (totalAlpha == 0.0) return "808080"
-    val r = (sumR / totalAlpha).toInt().coerceIn(0, 255)
-    val g = (sumG / totalAlpha).toInt().coerceIn(0, 255)
-    val b = (sumB / totalAlpha).toInt().coerceIn(0, 255)
+
+    // Require a bucket to cover at least 3% of the image
+    val minPixels = maxOf(2, (image.width * image.height * 0.03).toInt())
+
+    val best = buckets
+        .filter { it.count >= minPixels }
+        .maxByOrNull {
+            val avgS = it.sumS / it.count
+            val avgV = it.sumV / it.count
+
+            it.count.toDouble().pow(0.65) * avgS.pow(1.8) * avgV
+        }
+        ?: return "808080"
+
+    val r = (best.sumR / best.count).toInt().coerceIn(0, 255)
+    val g = (best.sumG / best.count).toInt().coerceIn(0, 255)
+    val b = (best.sumB / best.count).toInt().coerceIn(0, 255)
+
     return "%06x".format((r shl 16) or (g shl 8) or b)
 }
 
@@ -223,7 +274,7 @@ tasks.register("generateItemColors") {
                     try {
                         jar.getInputStream(entry).use { stream ->
                             val image = ImageIO.read(stream) ?: return@forEach
-                            colors[name] = computeAverageColor(image, name, biomeOverrides)
+                            colors[name] = computeDistinctiveColor(image, name, biomeOverrides)
                         }
                     } catch (_: Exception) {
                     }
