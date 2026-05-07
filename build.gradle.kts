@@ -158,10 +158,10 @@ data class Bucket(
 fun computeDistinctiveColor(
     image: BufferedImage,
     name: String,
-    biomeOverrides: Map<String, Int>
+    overrides: Map<String, Int>
 ): String {
-    for ((key, rgb) in biomeOverrides) {
-        if (name.contains(key)) {
+    for ((pattern, rgb) in overrides) {
+        if (globMatches(pattern, name)) {
             return "%06x".format(rgb)
         }
     }
@@ -221,6 +221,16 @@ fun computeDistinctiveColor(
     return "%06x".format((r shl 16) or (g shl 8) or b)
 }
 
+fun globMatches(pattern: String, value: String): Boolean {
+    val regex = pattern
+        .split("*")
+        .joinToString(".*") { Regex.escape(it) }
+        .let { "^$it$" }
+        .toRegex(RegexOption.IGNORE_CASE)
+
+    return regex.matches(value)
+}
+
 tasks.register("generateItemColors") {
     group = "build"
     description =
@@ -228,16 +238,16 @@ tasks.register("generateItemColors") {
     doLast {
         System.setProperty("java.awt.headless", "true")
         val outputFile = file("src/main/resources/item-colors.json")
-        val biomeOverrides = mapOf(
-            "short_grass" to 0x7cbd6b, "tall_grass" to 0x7cbd6b,
-            "fern" to 0x7cbd6b,
-            "_leaves" to 0x71a74d,
-            "vine" to 0x48b518,
-            "sugar_cane" to 0x8eb971,
-            "lily_pad" to 0x208030,
-            "seagrass" to 0x4d9e3f, "kelp" to 0x4d9e3f,
-            "dry_grass" to 0xa89060,
-            "dry_bush" to 0x946b44, "bush" to 0x71a74d,
+        val overrides = mapOf(
+            "short_grass*" to 0x7cbd6b, "tall_grass*" to 0x7cbd6b,
+            "sugar_cane*" to 0x8eb971, "lily_pad*" to 0x208030,
+            "*seagrass*" to 0x4d9e3f, "kelp*" to 0x4d9e3f,
+            "bush*" to 0x71a74d, "*dry_bush*" to 0x946b44,
+            "*fern*" to 0x7cbd6b, "*vine*" to 0x48b518,
+            "*dry_grass*" to 0xa89060,
+            "*_leaves" to 0x71a74d,
+            "lantern" to 0xffd56b,
+            "blaze_powder" to 0xFFA100
         )
         val textureDirs = listOf("assets/minecraft/textures/item/", "assets/minecraft/textures/block/")
 
@@ -274,7 +284,7 @@ tasks.register("generateItemColors") {
                     try {
                         jar.getInputStream(entry).use { stream ->
                             val image = ImageIO.read(stream) ?: return@forEach
-                            colors[name] = computeDistinctiveColor(image, name, biomeOverrides)
+                            colors[name] = computeDistinctiveColor(image, name, overrides)
                         }
                     } catch (_: Exception) {
                     }
