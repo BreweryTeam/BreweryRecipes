@@ -21,8 +21,9 @@ class MySqlRecipeViewSession(private val storageSessionExecutor: StorageSessionE
     ): CompletableFuture<Void?> {
         return storageSessionExecutor.runStatement(
             """
-                INSERT OR REPLACE INTO ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
-                  VALUES(?,?,?,?);
+                INSERT INTO ${BreweryRecipes.Companion.recipesConfig.storage.mysql.prefix}recipe_view
+                  VALUES(?,?,?,?)
+                  ON DUPLICATE KEY UPDATE recipe_flaws = VALUES(recipe_flaws), inverted_reveals = VALUES(inverted_reveals);
             """
         ) {
             it.setBytes(1, UuidUtil.toBytes(playerUuid))
