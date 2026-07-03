@@ -14,6 +14,7 @@ import dev.jsinco.recipes.recipe.process.steps.AgeStep
 import dev.jsinco.recipes.recipe.process.steps.CookStep
 import dev.jsinco.recipes.recipe.process.steps.DistillStep
 import dev.jsinco.recipes.recipe.process.steps.MixStep
+import net.kyori.adventure.text.Component
 import org.bukkit.inventory.ItemStack
 
 object TBPRecipeConverter {
@@ -23,7 +24,12 @@ object TBPRecipeConverter {
         return convert(recipe.recipeName, recipe.steps, recipe.brewDifficulty)
     }
 
-    fun convert(recipeKey: String, steps: List<BrewingStep>, difficulty: Double = 0.0, score: Double = 0.0): BreweryRecipe {
+    fun convert(
+        recipeKey: String,
+        steps: List<BrewingStep>,
+        difficulty: Double = 0.0,
+        score: Double = 0.0
+    ): BreweryRecipe {
         val recipeBuilder = BreweryRecipe.Builder(recipeKey)
         recipeBuilder.difficulty(difficulty)
         recipeBuilder.score(score)
@@ -37,7 +43,11 @@ object TBPRecipeConverter {
 
                 is BrewingStep.Distill -> recipeBuilder.distill(it.runs().toLong())
                 is BrewingStep.Age -> recipeBuilder.age(it.time().moment(), it.barrelType().name())
-                is BrewingStep.Mix -> recipeBuilder.mix(it.time().moment(), it.cauldronType()?.name, mapIngredients(it.ingredients()))
+                is BrewingStep.Mix -> recipeBuilder.mix(
+                    it.time().moment(),
+                    it.cauldronType()?.name,
+                    mapIngredients(it.ingredients())
+                )
             }
         }
         return recipeBuilder.build()
@@ -85,7 +95,7 @@ object TBPRecipeConverter {
             .map { entry ->
                 dev.jsinco.recipes.recipe.process.Ingredient(
                     entry.key.key().toString(),
-                    entry.key.displayName()
+                    entry.key.displayName() ?: Component.text(entry.key.key().toString()) // somehow this can be null
                 ) to entry.value
             }
             .toMap()
