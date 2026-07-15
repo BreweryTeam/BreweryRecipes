@@ -36,7 +36,8 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun onCauldronExtract(event: CauldronExtractEvent) {
-        val brew = actOnBrew(event.brewSource.brew, event.player ?: return) ?: return
+        val prevBrew = api.brewManager.fromItem(event.itemResult.get()).orElse(null) ?: return
+        val brew = actOnBrew(prevBrew, event.player ?: return) ?: return
         event.setResult(brew)
     }
 
