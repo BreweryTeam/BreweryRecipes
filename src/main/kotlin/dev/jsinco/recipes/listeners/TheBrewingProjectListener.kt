@@ -43,7 +43,7 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
     private fun actOnBrew(brew: Brew, player: Player): Brew? {
         val recipe = brew.closestRecipe(api.recipeRegistry).orElse(null) ?: return null
         val score = brew.score(recipe)
-        if (!score.completed()) {
+        if (!score.completed() || score.brewQuality() == null) {
             return null
         }
         val scoreValue = score.score()
