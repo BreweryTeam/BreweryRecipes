@@ -29,7 +29,7 @@
 
 ## <div align="center">Installation</div>
 
-<div align="center">Download the plugin from either [hangar](https://hangar.papermc.io/BreweryTeam/BreweryRecipes) or [modrinth](https://modrinth.com/plugin/breweryrecipes) and then put the plugin into the `./plugins` folder.</div>
+<div align="center">Download the plugin from either <a href="https://hangar.papermc.io/BreweryTeam/BreweryRecipes">hangar</a> or <a href="https://modrinth.com/plugin/breweryrecipes">modrinth</a> and then put the plugin into the `./plugins` folder.</div>
 
 > [!CAUTION]
 > This is no longer a BreweryX only addon. <br> Just put it into the plugins folder like any other plugin
