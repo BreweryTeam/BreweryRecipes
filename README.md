@@ -10,7 +10,7 @@
 
 ## <div align="center">Gameplay</div>
 
-<div align="center">Start by crafting a recipe book with one `minecraft:book` and one `minecraft:paper`.</div>
+<div align="center">Start by crafting a recipe book with one <code>minecraft:book</code> and one <code>minecraft:paper</code>.</div>
 
 <p>
 <div align="center">The recipe gui</div>
@@ -32,10 +32,10 @@
 <div align="center">Download the plugin from either <a href="https://hangar.papermc.io/BreweryTeam/BreweryRecipes">hangar</a> or <a href="https://modrinth.com/plugin/breweryrecipes">modrinth</a> and then put the plugin into the `./plugins` folder.</div>
 
 > [!CAUTION]
-> This is no longer a BreweryX only addon. <br> Just put it into the plugins folder like any other plugin
+> This is **no longer** a **BreweryX addon**. <br> Just put it into the plugins folder like any other plugin
 
 > [!IMPORTANT]
-> This plugin needs either TheBrewingProject or BreweryX to function
+> This plugin **needs** either **TheBrewingProject** or **BreweryX** to function
 
 
 ## Contributing
