@@ -55,6 +55,7 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
             val existing = list[idx]
             val merged = RecipeViewLoreWriter.mergeFlaws(existing, incoming)
             val minimalized = RecipeViewLoreWriter.clearRedundantFlaws(merged)
+            list[idx] = minimalized
             return@synchronized minimalized
         }
         storageImpl.recipeViewSession().insertOrUpdateRecipeView(playerUuid, minimalized)
