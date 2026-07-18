@@ -16,7 +16,7 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
     val backing = synchronizedMap(mutableMapOf<UUID, MutableMap<String, BreweryRecipe>>())
 
     fun insertOrUpdateRecipeCompletion(uuid: UUID, recipe: BreweryRecipe) {
-        val existing = backing[uuid]?.get(recipe.identifier)
+        val existing = synchronized(backing) { backing[uuid]?.get(recipe.identifier) }
         if (existing != null) {
             if (existing.score > recipe.score) return
             if (existing.score == recipe.score) {

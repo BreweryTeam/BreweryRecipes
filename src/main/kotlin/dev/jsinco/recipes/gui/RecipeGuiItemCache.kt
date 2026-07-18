@@ -28,9 +28,11 @@ class RecipeGuiItemCache : PersistencyLinkedCache {
     }
 
     fun invalidate(playerUuid: UUID, recipeIdentifier: String) {
-        val playerMap = playerCache[playerUuid] ?: return
-        RecipeBookMode.entries.forEach { mode ->
-            playerMap.remove("${mode.identifier()}:$recipeIdentifier")
+        synchronized(playerCache) {
+            val playerMap = playerCache[playerUuid] ?: return
+            RecipeBookMode.entries.forEach { mode ->
+                playerMap.remove("${mode.identifier()}:$recipeIdentifier")
+            }
         }
     }
 

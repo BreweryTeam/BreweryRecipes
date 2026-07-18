@@ -42,10 +42,13 @@ class PlayerEventListener(
     }
 
     fun tick() {
-        val toRemove = forRemoval.filter { it.value < System.currentTimeMillis() }
-            .map { it.key }
+        val toRemove = synchronized(forRemoval) {
+            forRemoval.filter { it.value < System.currentTimeMillis() }
+                .map { it.key }
+        }
         toRemove.forEach(forRemoval::remove)
-        persistencyLinkedCaches.forEach {
+        persistencyLinkedCaches.forEach()
+        {
             toRemove.forEach(it::clearAll)
         }
     }
