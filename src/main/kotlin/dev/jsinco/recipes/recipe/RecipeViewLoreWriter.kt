@@ -86,7 +86,7 @@ object RecipeViewLoreWriter {
         return line
     }
 
-private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
+    private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
         return TranslationUtil.render(if (isBrewNote) step.displayBrewNote() else step.display())
     }
 
@@ -241,21 +241,13 @@ private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
                 if (rendered !is TranslatableComponent) {
                     resolveTranslatablesForMutation(rendered).style(withChildren.style())
                 } else {
-                    Component.text(humanizeTranslationKey(withChildren.key()))
-                        .style(withChildren.style())
+                    Component.text(
+                        BreweryRecipes.instance.translator?.findClientSideTranslation(rendered.key()) ?: rendered.key()
+                    )
                 }
             }
 
             else -> withChildren
-        }
-    }
-
-    private fun humanizeTranslationKey(key: String): String {
-        // e.g. "block.minecraft.short_grass" -> "Short Grass"
-        val part = key.substringAfterLast('.')
-        if (part.isEmpty()) return key
-        return part.split('_').joinToString(" ") { w ->
-            w.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
         }
     }
 

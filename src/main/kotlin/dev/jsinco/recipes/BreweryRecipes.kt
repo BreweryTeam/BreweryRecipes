@@ -60,7 +60,7 @@ class BreweryRecipes : JavaPlugin() {
     }
 
     lateinit var storageImpl: StorageImpl
-    private var translator: RecipesTranslator? = null
+    var translator: RecipesTranslator? = null
 
     override fun onEnable() {
         recipesConfig = readConfig()
