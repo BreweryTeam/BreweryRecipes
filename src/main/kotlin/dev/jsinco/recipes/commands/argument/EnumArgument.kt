@@ -42,7 +42,7 @@ class EnumArgument<E : Enum<E>>(
 
     @Throws(CommandSyntaxException::class)
     override fun convert(nativeType: String): E {
-        return eClass.enumConstants.first { nativeType.equals(it.name, true) }
+        return eClass.enumConstants.firstOrNull { nativeType.equals(it.name, true) }
             ?: throw UNKNOWN_VALUE.create(nativeType)
     }
 
