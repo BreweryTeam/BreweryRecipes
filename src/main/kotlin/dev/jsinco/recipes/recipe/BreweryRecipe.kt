@@ -16,6 +16,7 @@ import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
@@ -31,7 +32,12 @@ data class BreweryRecipe(
         base.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(
-                Component.translatable("breweryrecipes.spawning.item.name.completed")
+                Component.translatable(
+                    "breweryrecipes.spawning.item.name.completed", Argument.component(
+                        "brew",
+                        BreweryRecipes.brewingIntegration.brewDisplayName(identifier) ?: Component.text(identifier)
+                    )
+                )
                     .colorIfAbsent(NamedTextColor.WHITE)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             )
@@ -60,7 +66,14 @@ data class BreweryRecipe(
         output.setData(
             DataComponentTypes.CUSTOM_NAME,
             TranslationUtil.render(
-                Component.translatable(recipeViewCreatorType.lootTranslationKey)
+                Component.translatable(
+                    recipeViewCreatorType.lootTranslationKey, Argument.component(
+                        "brew",
+                        BreweryRecipes.brewingIntegration.brewDisplayName(identifier)?.color(null) ?: Component.text(
+                            identifier
+                        )
+                    )
+                )
                     .colorIfAbsent(NamedTextColor.WHITE)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             )
