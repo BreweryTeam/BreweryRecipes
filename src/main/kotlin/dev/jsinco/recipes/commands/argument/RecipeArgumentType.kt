@@ -23,7 +23,7 @@ object RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> 
                 TranslationUtil.render(
                     Component.translatable(
                         "breweryrecipes.command.invalid.argument",
-                        Argument.numeric("argument", it.toString())
+                        Argument.string("argument", it.toString())
                     )
                 )
             )

@@ -4,6 +4,7 @@ import dev.jsinco.recipes.recipe.flaws.type.FlawType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import java.util.function.BiConsumer
+import java.util.function.Consumer
 import java.util.regex.Pattern
 import kotlin.random.Random
 
@@ -41,7 +42,7 @@ object FlawTextModificationWriter {
         flaw: Flaw,
         offsets: Map<Int, Int>
     ): Component {
-        return text.replaceText {
+        return text.replaceText(Consumer {
             var pos = 0
             val invertedOffsets = invertOffsets(offsets)
             val invalidPoints = findInvalid(offsets)
@@ -87,7 +88,7 @@ object FlawTextModificationWriter {
                 )
                 return@replacement builder.build()
             }
-        }
+        })
     }
 
     private fun findInvalid(offsets: Map<Int, Int>): Set<Int> {

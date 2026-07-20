@@ -23,7 +23,7 @@ class EnumArgument<E : Enum<E>>(val eClass: Class<E>) : CustomArgumentType.Conve
                 TranslationUtil.render(
                     Component.translatable(
                         "breweryrecipes.command.invalid.argument",
-                        Argument.numeric("argument", it.toString())
+                        Argument.string("argument", it.toString())
                     )
                 )
             )
