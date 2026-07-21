@@ -11,11 +11,9 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -160,7 +159,7 @@ public class DataGenerator {
             if (!(versionMeta instanceof JsonObject jsonObject)) {
                 throw new IllegalArgumentException("Invalid format of game manifest!");
             }
-            for (Map.Entry<String, JsonElement> entry : jsonObject.get("objects").getAsJsonObject().asMap().entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : jsonObject.get("objects").getAsJsonObject().entrySet()) {
                 Matcher matcher = LANG_RE.matcher(entry.getKey());
                 if (!matcher.matches()) {
                     continue;
@@ -178,18 +177,19 @@ public class DataGenerator {
 
     private static void downloadLangFile(Locale locale, File targetFolder, String hash) throws IOException {
         File destinationFile = new File(targetFolder, "%s.json".formatted(locale.toLanguageTag()));
-        File parentFile = destinationFile.getParentFile();
-        if (!parentFile.exists() && !parentFile.mkdirs()) {
-            throw new IOException("Could not create directory: " + parentFile);
-        }
-        if (!destinationFile.exists() && !destinationFile.createNewFile()) {
-            throw new IOException("Could not create file: " + destinationFile);
-        }
         String urlString = "https://resources.download.minecraft.net/%s/%s".formatted(hash.substring(0, 2), hash);
         URL url = URI.create(urlString).toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        try (InputStream inputStream = connection.getInputStream(); OutputStream outputStream = new FileOutputStream(destinationFile)) {
-            inputStream.transferTo(outputStream);
+        try (InputStream inputStream = connection.getInputStream(); InputStreamReader reader = new InputStreamReader(inputStream)) {
+            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+            List<String> toRemove = new ArrayList<>();
+            for (Map.Entry<String, JsonElement> property : jsonObject.entrySet()) {
+                if (!property.getKey().startsWith("item.minecraft.") && !property.getKey().startsWith("block.minecraft.")) {
+                    toRemove.add(property.getKey());
+                }
+            }
+            toRemove.forEach(jsonObject::remove);
+            JsonUtil.dump(jsonObject, destinationFile);
         }
     }
 
