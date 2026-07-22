@@ -32,8 +32,12 @@ object CorrectionFlawType : FlawType {
         val scale = intensity.coerceIn(15.0, 100.0) / 100.0
         val range = scale * original / 2
 
-        val rng = Random(seed + numberStart)
-        val offset = rng.nextDouble(-range, range)
+        val offset = if (range == 0.0) {
+            0.0
+        } else {
+            val rng = Random(seed + numberStart)
+            rng.nextDouble(-range, range)
+        }
 
         return original + offset
     }
