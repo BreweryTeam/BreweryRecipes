@@ -46,6 +46,10 @@ class RecipesConfig : OkaeriConfig() {
     @CustomKey("mode-switch-cooldown-ticks")
     var modeSwitchCooldownTicks: Long = 5L
 
+    @Comment("Whether players see a message and sound when they complete recipe for the first time")
+    @CustomKey("show-recipe-complete-message")
+    var showRecipeCompleteMessage: Boolean = true
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 
