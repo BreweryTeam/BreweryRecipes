@@ -2,10 +2,11 @@ package dev.jsinco.recipes.recipe.flaws.creation
 
 import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeView
+import kotlin.random.Random
 
 interface RecipeViewCreator {
 
-    fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double): RecipeView
+    fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double, random: Random = Random.Default): RecipeView
 
 
     enum class Type(val recipeViewCreator: RecipeViewCreator, val lootTranslationKey: String) {

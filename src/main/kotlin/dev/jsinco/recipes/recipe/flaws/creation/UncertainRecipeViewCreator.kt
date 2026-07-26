@@ -12,13 +12,13 @@ import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
 import kotlin.random.Random
 
 object UncertainRecipeViewCreator : RecipeViewCreator {
-    override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double): RecipeView {
+    override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double, random: Random): RecipeView {
         val arbitraryTargetFlawIntensity = expectedFlawLevel * 0.4
         var flawIntensity = 0.0
         val flaws = mutableListOf<Flaw>()
         var maximumLoops = 10
         while (arbitraryTargetFlawIntensity > flawIntensity && maximumLoops-- > 0) {
-            val random1 = Random.nextInt(3)
+            val random1 = random.nextInt(3)
             val flawType = when (random1) {
                 0 -> ReplacementFlawType("?")
                 1 -> InaccuracyFlawType
@@ -26,22 +26,22 @@ object UncertainRecipeViewCreator : RecipeViewCreator {
                 else -> throw IllegalStateException("Unreachable code, someone messed up")
             }
             val extent = if (random1 == 0 || random1 == 2) {
-                if (Random.nextInt(2) == 1) {
-                    FlawExtent.compileAfterPoint(breweryRecipe.steps.size)
+                if (random.nextInt(2) == 1) {
+                    FlawExtent.compileAfterPoint(breweryRecipe.steps.size, random)
                 } else {
-                    FlawExtent.compileStepRange(breweryRecipe.steps.size)
+                    FlawExtent.compileStepRange(breweryRecipe.steps.size, random)
                 }
             } else {
-                when (Random.nextInt(3)) {
+                when (random.nextInt(3)) {
                     0 -> FlawExtent.Everywhere
-                    1 -> FlawExtent.compileStepRange(breweryRecipe.steps.size)
-                    2 -> FlawExtent.compileWholeStep(breweryRecipe.steps.size)
+                    1 -> FlawExtent.compileStepRange(breweryRecipe.steps.size, random)
+                    2 -> FlawExtent.compileWholeStep(breweryRecipe.steps.size, random)
                     else -> throw IllegalStateException("Unreachable code, someone messed up")
                 }
             }
-            flaws.add(Flaw(flawType, FlawConfig(extent, Random.nextInt(), expectedFlawLevel)))
-            flawIntensity = RecipeViewLoreWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
+            flaws.add(Flaw(flawType, FlawConfig(extent, random.nextInt(), expectedFlawLevel)))
+            flawIntensity = RecipeViewLoreWriter.estimateFragmentation(RecipeView(breweryRecipe.identifier, flaws))
         }
-        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
+        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView(breweryRecipe.identifier, flaws))
     }
 }
