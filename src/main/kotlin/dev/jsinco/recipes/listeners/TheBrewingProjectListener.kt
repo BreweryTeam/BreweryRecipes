@@ -12,6 +12,10 @@ import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import dev.jsinco.recipes.util.metadata.UuidMetaDataType
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -55,11 +59,25 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         val brewModified = brew.withMeta(COMPLETED_RECIPE_KEY, MetaDataType.STRING, recipeKey)
             .withMeta(COMPLETED_BY_KEY, UuidMetaDataType, player.uniqueId)
             .withMeta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE, scoreValue)
-        BreweryRecipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
+        val existing = BreweryRecipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
             player.uniqueId,
             TBPRecipeConverter.convert(recipe.recipeName, brew.completedSteps, score = scoreValue)
         )
+        if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
+            learnNewRecipeFeedback(player, recipe.recipeName)
+        }
         return brewModified
+    }
+
+    private fun learnNewRecipeFeedback(player: Player, recipeIdentifier: String) {
+        val displayName = BreweryRecipes.brewingIntegration.brewDisplayName(recipeIdentifier) ?: return
+        player.sendMessage(
+            Component.translatable(
+                "breweryrecipes.learn.new",
+                Argument.component("name", displayName)
+            )
+        )
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f)
     }
 
     private fun onInventoryExtract(event: ItemTransactionEvent<ItemSource.ItemBasedSource>, player: Player?) {
