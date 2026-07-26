@@ -11,22 +11,22 @@ import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
 import kotlin.random.Random
 
 object EncryptedRecipeViewCreator : RecipeViewCreator {
-    override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double): RecipeView {
+    override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double, random: Random): RecipeView {
         var flawFragmentation = 0.0
         val flaws = mutableListOf<Flaw>()
         val arbitraryTargetFlawIntensity = expectedFlawLevel * 0.8
         var maximumLoops = 10
         while (arbitraryTargetFlawIntensity > flawFragmentation && maximumLoops-- > 0) {
-            val flawType = when (Random.nextInt(3)) {
+            val flawType = when (random.nextInt(3)) {
                 0 -> ObfuscationFlawType
                 1 -> ReplacementFlawType(" ")
                 2 -> ReplacementFlawType("  ")
                 else -> throw IllegalStateException("Unreachable code, someone messed up")
             }
-            flaws.add(Flaw(flawType, FlawConfig(FlawExtent.Everywhere, Random.nextInt(), expectedFlawLevel * 2 / 3)))
+            flaws.add(Flaw(flawType, FlawConfig(FlawExtent.Everywhere, random.nextInt(), expectedFlawLevel * 2 / 3)))
             flawFragmentation =
-                RecipeViewLoreWriter.estimateFragmentation(RecipeView.of(breweryRecipe.identifier, flaws))
+                RecipeViewLoreWriter.estimateFragmentation(RecipeView(breweryRecipe.identifier, flaws))
         }
-        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
+        return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView(breweryRecipe.identifier, flaws))
     }
 }

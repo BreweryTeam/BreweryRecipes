@@ -26,6 +26,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.util.*
+import kotlin.random.Random
 
 object RecipeViewLoreWriter {
 
@@ -41,7 +42,7 @@ object RecipeViewLoreWriter {
     fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null, isBrewNote: Boolean = false): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
-        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
+        val recipe = brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
         val stepsToRender = stepsOverride ?: recipe.steps
         val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
@@ -93,7 +94,7 @@ object RecipeViewLoreWriter {
                         ?.let { Tag.styling(it) }
                         ?: Tag.selfClosingInserting(Component.empty())
                     val brewColorTag = if (ingredient.key.startsWith("brewery:"))
-                        BreweryRecipes.brewingIntegration.brewIngredientColor(ingredient.key)
+                        brewingIntegration.brewIngredientColor(ingredient.key)
                             ?.let { TextColor.color(it.asRGB()) }
                             ?.let { Tag.styling(it) }
                             ?: Tag.selfClosingInserting(Component.empty())
@@ -184,8 +185,7 @@ object RecipeViewLoreWriter {
         ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
 
-
-private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
+   private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
         return TranslationUtil.render(if (isBrewNote) step.displayBrewNote() else step.display())
     }
 
@@ -271,17 +271,89 @@ private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
         val newFlaws = view.flaws.filter { applicableFlaws.contains(it) }
         val pct = estimateFragmentation(view)
         return if (pct < thresholdPercent) {
-            RecipeView(view.recipeIdentifier, emptyList(), emptyList())
+            RecipeView(view.recipeIdentifier)
         } else {
             RecipeView(view.recipeIdentifier, newFlaws, view.invertedReveals)
+        }
+    }
+
+    /**
+     * Defragments the given recipe view by randomly revealing one character at a time
+     * until [estimateFragmentation] drops below the [thresholdPercent].
+     *
+     * @param view a fragmented recipe view
+     * @param thresholdPercent the fragmentation target percentage (0.0 to 100.0)
+     * @return a new recipe view with additional characters revealed
+     */
+    fun defragmentUntil(view: RecipeView, thresholdPercent: Double, random: Random = Random.Default): RecipeView {
+        var currentFragmentation = estimateFragmentation(view)
+        if (currentFragmentation <= thresholdPercent) {
+            return view
+        }
+        if (thresholdPercent <= 1.0) {
+            return RecipeView(view.recipeIdentifier)
+        }
+
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(view.recipeIdentifier) ?: return view
+        if (recipe.steps.isEmpty()) return view
+
+        val baseLengthsPerStep = mutableListOf<Int>()
+        val candidateStepAndPos = mutableListOf<Pair<Int, Int>>()
+        for (stepIdx in recipe.steps.indices) {
+            val base = resolveTranslatablesForMutation(buildBaseStep(recipe.steps[stepIdx]))
+            val approxBaseLength = PlainTextComponentSerializer.plainText().serialize(base).length
+            baseLengthsPerStep.add(approxBaseLength)
+            val modifications = compileTextModifications(base, stepIdx, view.flaws)
+                .map {
+                    it.key to it.value.withMatching { pos ->
+                        view.invertedReveals.isEmpty() || view.invertedReveals[stepIdx].contains(pos)
+                    }
+                }.toMap()
+
+            for ((_, mods) in modifications) {
+                for ((pos, mod) in mods.modifiedPoints) {
+                    if (mod !is FlawTextModifications.NoModification) {
+                        candidateStepAndPos.add(Pair(stepIdx, pos))
+                    }
+                }
+            }
+        }
+
+        candidateStepAndPos.shuffle(random)
+
+        val newInvertedReveals = if (view.invertedReveals.isEmpty()) {
+            recipe.steps.indices.map { stepIdx -> (0 until baseLengthsPerStep[stepIdx]).toMutableSet() }.toMutableList()
+        } else {
+            val reveals = view.invertedReveals.map { it.toMutableSet() }.toMutableList()
+            while (reveals.size < recipe.steps.size) {
+                reveals.add(mutableSetOf())
+            }
+            reveals
+        }
+
+        for ((stepIdx, pos) in candidateStepAndPos) {
+            if (currentFragmentation <= thresholdPercent) break
+            if (pos !in newInvertedReveals[stepIdx]) continue
+
+            newInvertedReveals[stepIdx].remove(pos)
+            val newView = RecipeView(view.recipeIdentifier, view.flaws, newInvertedReveals)
+            currentFragmentation = estimateFragmentation(newView)
+        }
+
+        val allFullyRevealed = newInvertedReveals.withIndex().all { (stepIdx, ir) ->
+            ir.isEmpty() || ir.size == baseLengthsPerStep[stepIdx]
+        }
+        return if (allFullyRevealed) {
+            RecipeView(view.recipeIdentifier, view.flaws)
+        } else {
+            RecipeView(view.recipeIdentifier, view.flaws, newInvertedReveals)
         }
     }
 
     fun mergeFlaws(base: RecipeView, toSubtract: RecipeView): RecipeView {
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(base.recipeIdentifier) ?: return base
         val flawPositions = mutableListOf<MutableSet<Int>>()
-        for (i in 0..<recipe.steps.size) {
-            val step = recipe.steps[i]
+        for ((i, step) in recipe.steps.withIndex()) {
             val positions = mutableSetOf<Int>()
             for (flaw in toSubtract.flaws) {
                 if (flawApplies(i, flaw)) {
