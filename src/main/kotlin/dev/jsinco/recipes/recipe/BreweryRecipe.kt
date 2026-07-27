@@ -74,12 +74,21 @@ data class BreweryRecipe(
     }
 
     fun generate(expectedFlawLevel: Double, random: Random = Random.Default): RecipeView {
-        val collection = RecipeViewCreator.Type.entries.random()
+        val collection = RecipeViewCreator.Type.entries.random(random)
         return generate(expectedFlawLevel, collection, random)
     }
 
     fun generate(expectedFlawLevel: Double, flawViewType: RecipeViewCreator.Type, random: Random = Random.Default): RecipeView {
         return flawViewType.recipeViewCreator.create(this, expectedFlawLevel, random)
+    }
+
+    fun generateFullyFlawedView(random: Random = Random.Default): RecipeView {
+        val collection = RecipeViewCreator.Type.entries.random(random)
+        return generateFullyFlawedView(collection, random)
+    }
+
+    fun generateFullyFlawedView(flawViewType: RecipeViewCreator.Type, random: Random = Random.Default): RecipeView {
+        return flawViewType.recipeViewCreator.createFullyFlawed(this, random)
     }
 
     override fun recipeKey(): String = identifier
