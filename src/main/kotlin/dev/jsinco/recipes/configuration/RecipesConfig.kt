@@ -47,11 +47,18 @@ class RecipesConfig : OkaeriConfig() {
     var modeSwitchCooldownTicks: Long = 5L
 
     @Comment(
-        "Whether players see a message and sound when they complete recipe for the first time.",
+        "Whether players see a message and sound when they complete a recipe for the first time.",
         "Only available for TheBrewingProject."
     )
     @CustomKey("show-recipe-complete-message")
     var showRecipeCompleteMessage: Boolean = true
+
+    @Comment(
+        "Whether players see a message and sound when they perfect (5-stars) a recipe for the first time.",
+        "Only available for TheBrewingProject."
+    )
+    @CustomKey("show-recipe-perfect-message")
+    var showRecipePerfectMessage: Boolean = true
 
     @Comment(
         "Whether players learn part of the true recipe by creating brews.",

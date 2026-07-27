@@ -67,12 +67,17 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
             player.uniqueId,
             TBPRecipeConverter.convert(recipe.recipeName, brew.completedSteps, score = scoreValue)
         )
+
         if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
-            completeNewRecipeFeedback(player, recipe.recipeName)
+            completeRecipeFeedback(player, recipe.recipeName)
+        }
+        if (existing != null && existing.score < 100.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage) {
+            perfectRecipeFeedback(player, recipe.recipeName)
         }
         if (BreweryRecipes.recipesConfig.incrementalLearning) {
             learn(player, brew, recipe)
         }
+
         return brewModified
     }
 
@@ -93,11 +98,19 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
                 (brew.meta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE) ?: Double.MIN_VALUE) < score
     }
 
-    private fun completeNewRecipeFeedback(player: Player, recipeIdentifier: String) {
+    private fun completeRecipeFeedback(player: Player, recipeIdentifier: String) {
+        recipeFeedback(player, recipeIdentifier, "breweryrecipes.learn.new")
+    }
+
+    private fun perfectRecipeFeedback(player: Player, recipeIdentifier: String) {
+        recipeFeedback(player, recipeIdentifier, "breweryrecipes.learn.perfect")
+    }
+
+    private fun recipeFeedback(player: Player, recipeIdentifier: String, translationKey: String) {
         val displayName = BreweryRecipes.brewingIntegration.brewDisplayName(recipeIdentifier) ?: return
         player.sendMessage(
             Component.translatable(
-                "breweryrecipes.learn.new",
+                translationKey,
                 Argument.component("name", displayName)
             )
         )
