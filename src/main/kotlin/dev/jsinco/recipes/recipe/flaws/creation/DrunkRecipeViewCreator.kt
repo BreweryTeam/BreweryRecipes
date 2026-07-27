@@ -11,6 +11,7 @@ import dev.jsinco.recipes.recipe.flaws.type.SlurringFlawType
 import kotlin.random.Random
 
 object DrunkRecipeViewCreator : RecipeViewCreator {
+
     override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double, random: Random): RecipeView {
         val flaws = mutableListOf<Flaw>()
         if (random.nextBoolean() && expectedFlawLevel > 40) {
@@ -35,4 +36,9 @@ object DrunkRecipeViewCreator : RecipeViewCreator {
         )
         return RecipeView(breweryRecipe.identifier, flaws)
     }
+
+    override fun createFullyFlawed(breweryRecipe: BreweryRecipe, random: Random): RecipeView {
+        return create(breweryRecipe, 100.0, random)
+    }
+
 }

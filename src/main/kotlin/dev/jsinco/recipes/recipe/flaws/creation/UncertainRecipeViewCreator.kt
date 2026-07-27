@@ -8,10 +8,12 @@ import dev.jsinco.recipes.recipe.flaws.FlawConfig
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
 import dev.jsinco.recipes.recipe.flaws.type.CorrectionFlawType
 import dev.jsinco.recipes.recipe.flaws.type.InaccuracyFlawType
+import dev.jsinco.recipes.recipe.flaws.type.ObfuscationFlawType
 import dev.jsinco.recipes.recipe.flaws.type.ReplacementFlawType
 import kotlin.random.Random
 
 object UncertainRecipeViewCreator : RecipeViewCreator {
+
     override fun create(breweryRecipe: BreweryRecipe, expectedFlawLevel: Double, random: Random): RecipeView {
         val arbitraryTargetFlawIntensity = expectedFlawLevel * 0.4
         var flawIntensity = 0.0
@@ -44,4 +46,11 @@ object UncertainRecipeViewCreator : RecipeViewCreator {
         }
         return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView(breweryRecipe.identifier, flaws))
     }
+
+    override fun createFullyFlawed(breweryRecipe: BreweryRecipe, random: Random): RecipeView {
+        return RecipeView(breweryRecipe.identifier, listOf(
+            Flaw(ReplacementFlawType("?"), FlawConfig(FlawExtent.Everywhere, random.nextInt(), 100.0))
+        ))
+    }
+
 }
