@@ -1,7 +1,6 @@
 package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.BreweryRecipes
-import dev.jsinco.recipes.configuration.LoreConfig
 import dev.jsinco.recipes.integration.BrewingIntegration
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
@@ -45,6 +44,7 @@ object RecipeViewLoreWriter {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeDisplay.recipeKey()) ?: return null
+        val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, recipe.identifier)
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
         val noIndentIndices = mutableSetOf<Int>()
@@ -54,6 +54,10 @@ object RecipeViewLoreWriter {
                 if (!loreConfig.applyIndentationToBrewScore) noIndentIndices.add(result.size + noIndentIndex)
                 result.addAll(lore)
             }
+        }
+
+        if (!isBrewNote && !details.hint.isEmpty()) {
+            result.addAll(writeHintLore(details.hint))
         }
 
         val showDifficulty = if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty
@@ -68,6 +72,14 @@ object RecipeViewLoreWriter {
             result.addAll(writeStepsLore(stepsToRender, view, isBrewNote))
         }
 
+        if (!isBrewNote && !details.effect.isEmpty()) {
+            result.addAll(writeEffectLore(details.effect))
+        }
+
+        if (!isBrewNote && details.author != null) {
+            result.addAll(writeAuthorLore(details.author))
+        }
+
         val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
         val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
         if (prefix != null || suffix != null) {
@@ -80,6 +92,48 @@ object RecipeViewLoreWriter {
             }
         }
         return result
+    }
+
+    private fun writeHintLore(
+        hint: List<String>
+    ): List<Component> {
+        return hint.map { line ->
+            TranslationUtil.render(
+                Component.translatable(
+                    "breweryrecipes.gui.recipes.lore.hint",
+                    Argument.string("hint", line)
+                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.GRAY)
+            )
+        }
+    }
+
+    private fun writeEffectLore(
+        effect: List<String>
+    ): List<Component> {
+        return effect.map { line ->
+            TranslationUtil.render(
+                Component.translatable(
+                    "breweryrecipes.gui.recipes.lore.effect",
+                    Argument.string("effect", line)
+                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.GRAY)
+            )
+        }
+    }
+
+    private fun writeAuthorLore(
+        author: String
+    ): List<Component> {
+        return listOf(
+            TranslationUtil.render(
+                Component.translatable(
+                    "breweryrecipes.gui.recipes.lore.author",
+                    Argument.string("author", author)
+                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.GRAY)
+            )
+        )
     }
 
     private fun writeScoreLore(

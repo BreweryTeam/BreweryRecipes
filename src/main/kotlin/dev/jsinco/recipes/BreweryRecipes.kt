@@ -2,6 +2,7 @@ package dev.jsinco.recipes
 
 import dev.jsinco.recipes.commands.RecipesCommand
 import dev.jsinco.recipes.configuration.GuiConfig
+import dev.jsinco.recipes.configuration.DetailsConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
@@ -42,6 +43,7 @@ class BreweryRecipes : JavaPlugin() {
         lateinit var recipesConfig: RecipesConfig
         lateinit var guiConfig: GuiConfig
         lateinit var spawnConfig: SpawnConfig
+        lateinit var detailsConfig: DetailsConfig
         lateinit var recipeViewManager: RecipeViewManager
         lateinit var completedRecipeManager: RecipeCompletionManager
         lateinit var recipeGuiItemCache: RecipeGuiItemCache
@@ -62,6 +64,7 @@ class BreweryRecipes : JavaPlugin() {
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()
+        detailsConfig = readDetailsConfig()
         storageImpl = DataManager(dataFolder).storageImpl
         recipeViewManager = RecipeViewManager(storageImpl)
         completedRecipeManager = RecipeCompletionManager(storageImpl)
@@ -155,6 +158,16 @@ class BreweryRecipes : JavaPlugin() {
         }
     }
 
+    private fun readDetailsConfig(): DetailsConfig {
+        return ConfigManager.create(DetailsConfig::class.java) {
+            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
+            it.withBindFile(File(this.dataFolder, "details.yml"))
+            it.saveDefaults()
+            it.load(true)
+            it.save()
+        }
+    }
+
     override fun onLoad() {
         instance = this
     }
@@ -164,6 +177,7 @@ class BreweryRecipes : JavaPlugin() {
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()
+        detailsConfig = readDetailsConfig()
         translator?.let { GlobalTranslator.translator().removeSource(it) }
         translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language).also {
             it.reload()
