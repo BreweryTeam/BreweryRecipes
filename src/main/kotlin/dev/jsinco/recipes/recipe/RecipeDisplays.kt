@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.recipe
 
+import dev.jsinco.recipes.recipe.process.Step
 import net.kyori.adventure.text.Component
 
 class RecipeDisplays(val recipeKey: String, vararg val recipeDisplays: RecipeDisplay) : RecipeDisplay {
@@ -26,4 +27,13 @@ class RecipeDisplays(val recipeKey: String, vararg val recipeDisplays: RecipeDis
     override fun scoreEquivalent(): Double {
         return recipeDisplays.maxOf { it.scoreEquivalent() }
     }
+
+    override fun displaySteps(): List<Step>? {
+        throw NotImplementedError()
+    }
+
+    override fun generateView(): RecipeView? {
+        throw NotImplementedError()
+    }
+
 }

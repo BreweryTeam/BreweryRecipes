@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.configuration.LoreConfig
 import dev.jsinco.recipes.integration.BrewingIntegration
 import dev.jsinco.recipes.recipe.flaws.Flaw
 import dev.jsinco.recipes.recipe.flaws.FlawExtent
@@ -29,6 +30,8 @@ import java.util.*
 
 object RecipeViewLoreWriter {
 
+    private val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
+
     var cookingMinuteTicks = 20L * 60L
     var agingYearTicks = 20L * 60L * 20L
 
@@ -38,36 +41,99 @@ object RecipeViewLoreWriter {
         version++
     }
 
-    fun writeLore(recipeView: RecipeView, brewingIntegration: BrewingIntegration, stepsOverride: List<Step>? = null, isBrewNote: Boolean = false): List<Component>? {
+    fun writeLore(recipeDisplay: RecipeDisplay, brewingIntegration: BrewingIntegration, isBrewNote: Boolean = false): List<Component>? {
         cookingMinuteTicks = brewingIntegration.cookingMinuteTicks()
         agingYearTicks = brewingIntegration.agingYearTicks()
-        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeView.recipeIdentifier) ?: return null
-        val stepsToRender = stepsOverride ?: recipe.steps
-        val ordinals = listOf("①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩")
+        val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeDisplay.recipeKey()) ?: return null
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
         val result = mutableListOf<Component>()
         val noIndentIndices = mutableSetOf<Int>()
 
-        if (if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty) {
-            if (loreConfig.emptyLineAboveBrewDifficulty) result.add(Component.empty())
-            val difficulty = recipe.difficulty
-            if (!loreConfig.applyIndentationToBrewDifficulty) noIndentIndices.add(result.size)
-            result.add(
-                TranslationUtil.render(
-                    Component.translatable(
-                        "breweryrecipes.gui.recipes.lore.difficulty",
-                        Argument.tagResolver(
-                            TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
-                            Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
-                        )
-                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                )
-            )
+        if (loreConfig.showBrewScore && recipeDisplay is BreweryRecipe) {
+            writeScoreLore(recipeDisplay, brewingIntegration)?.let { (lore, noIndentIndex) ->
+                if (!loreConfig.applyIndentationToBrewScore) noIndentIndices.add(result.size + noIndentIndex)
+                result.addAll(lore)
+            }
         }
 
+        val showDifficulty = if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty
+        if (showDifficulty) {
+            val (lore, noIndentIndex) = writeDifficultyLore(recipe)
+            if (!loreConfig.applyIndentationToBrewDifficulty) noIndentIndices.add(result.size + noIndentIndex)
+            result.addAll(lore)
+        }
+
+        recipeDisplay.generateView()?.let { view ->
+            val stepsToRender = recipeDisplay.displaySteps() ?: recipe.steps
+            result.addAll(writeStepsLore(stepsToRender, view, isBrewNote))
+        }
+
+        val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
+        val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
+        if (prefix != null || suffix != null) {
+            return result.mapIndexed { index, line ->
+                if (index in noIndentIndices) return@mapIndexed line
+                var out = line
+                if (prefix != null) out = prefix.append(out)
+                if (suffix != null) out = out.append(suffix)
+                out
+            }
+        }
+        return result
+    }
+
+    private fun writeScoreLore(
+        recipeDisplay: BreweryRecipe,
+        brewingIntegration: BrewingIntegration
+    ): Pair<List<Component>, Int>? {
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
+        val scoreComponent = brewingIntegration.scoreDisplayName(recipeDisplay) ?: return null
+        val line = TranslationUtil.render(
+            Component.translatable(
+                "breweryrecipes.gui.recipes.lore.quality",
+                Argument.component("qualitystars", scoreComponent)
+            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .colorIfAbsent(NamedTextColor.GRAY)
+        )
+        val scoreLines = mutableListOf<Component>()
+        if (loreConfig.emptyLineAboveBrewScore) scoreLines.add(Component.empty())
+        scoreLines.add(line)
+        return Pair(scoreLines, scoreLines.size - 1)
+    }
+
+    private fun writeDifficultyLore(
+        recipe: BreweryRecipe
+    ): Pair<List<Component>, Int> {
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
+
+        val result = mutableListOf<Component>()
+        if (loreConfig.emptyLineAboveBrewDifficulty) result.add(Component.empty())
+        val difficulty = recipe.difficulty
+        result.add(
+            TranslationUtil.render(
+                Component.translatable(
+                    "breweryrecipes.gui.recipes.lore.difficulty",
+                    Argument.tagResolver(
+                        TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
+                        Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
+                    )
+                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            )
+        )
+        return Pair(result, result.size - 1)
+    }
+
+    private fun writeStepsLore(
+        steps: List<Step>,
+        recipeView: RecipeView,
+        isBrewNote: Boolean
+    ): List<Component> {
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
+
+        val result = mutableListOf<Component>()
         if (loreConfig.emptyLineAboveSteps) result.add(Component.empty())
 
-        stepsToRender.forEachIndexed { index, step ->
+        steps.forEachIndexed { index, step ->
             val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals, isBrewNote)
                 .colorIfAbsent(NamedTextColor.GRAY)
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
@@ -97,7 +163,7 @@ object RecipeViewLoreWriter {
                             ?.let { TextColor.color(it.asRGB()) }
                             ?.let { Tag.styling(it) }
                             ?: Tag.selfClosingInserting(Component.empty())
-                        else Tag.selfClosingInserting(Component.empty())
+                    else Tag.selfClosingInserting(Component.empty())
                     val ingredientComp = Component.translatable(
                         "breweryrecipes.gui.recipes.lore.step.ingredient",
                         Argument.tagResolver(
@@ -135,24 +201,12 @@ object RecipeViewLoreWriter {
                 }
             }
 
-            if (loreConfig.emptyLineBetweenSteps && index < stepsToRender.size - 1) {
+            if (loreConfig.emptyLineBetweenSteps && index < steps.size - 1) {
                 result.add(Component.empty())
             }
         }
 
         if (loreConfig.emptyLineBelowSteps) result.add(Component.empty())
-
-        val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
-        val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
-        if (prefix != null || suffix != null) {
-            return result.mapIndexed { index, line ->
-                if (index in noIndentIndices) return@mapIndexed line
-                var out = line
-                if (prefix != null) out = prefix.append(out)
-                if (suffix != null) out = out.append(suffix)
-                out
-            }
-        }
         return result
     }
 

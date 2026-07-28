@@ -2,6 +2,7 @@ package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.Flaw
+import dev.jsinco.recipes.recipe.process.Step
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
@@ -57,5 +58,9 @@ class RecipeView(
     override fun scoreEquivalent(): Double {
         return 1 - fragmentation() / 100
     }
+
+    override fun displaySteps(): List<Step>? = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier)?.steps
+
+    override fun generateView(): RecipeView = this
 
 }
