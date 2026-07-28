@@ -46,100 +46,51 @@ object RecipeViewLoreWriter {
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeDisplay.recipeKey()) ?: return null
         val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, recipe.identifier)
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
-        val result = mutableListOf<Component>()
-        val noIndentIndices = mutableSetOf<Int>()
+        val sections = mutableListOf<List<Component>>()
 
         if (loreConfig.showBrewScore && recipeDisplay is BreweryRecipe) {
-            writeScoreLore(recipeDisplay, brewingIntegration)?.let { (lore, noIndentIndex) ->
-                if (!loreConfig.applyIndentationToBrewScore) noIndentIndices.add(result.size + noIndentIndex)
-                result.addAll(lore)
+            writeScoreLore(recipeDisplay, brewingIntegration)?.let { lore ->
+                sections.add(listOf(lore))
             }
         }
 
         if (!isBrewNote && !details.hint.isEmpty()) {
-            result.addAll(writeHintLore(details.hint))
+            sections.add(writeHintLore(details.hint))
         }
 
         val showDifficulty = if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty
         if (showDifficulty) {
-            val (lore, noIndentIndex) = writeDifficultyLore(recipe)
-            if (!loreConfig.applyIndentationToBrewDifficulty) noIndentIndices.add(result.size + noIndentIndex)
-            result.addAll(lore)
+            sections.add(listOf(writeDifficultyLore(recipe)))
         }
 
         recipeDisplay.generateView()?.let { view ->
             val stepsToRender = recipeDisplay.displaySteps() ?: recipe.steps
-            result.addAll(writeStepsLore(stepsToRender, view, isBrewNote))
+            sections.add(writeStepsLore(stepsToRender, view, isBrewNote))
         }
 
         if (!isBrewNote && !details.effect.isEmpty()) {
-            result.addAll(writeEffectLore(details.effect))
+            sections.add(writeEffectLore(details.effect))
         }
 
         if (!isBrewNote && details.author != null) {
-            result.addAll(writeAuthorLore(details.author))
+            sections.add(listOf(writeAuthorLore(details.author)))
         }
 
-        val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
-        val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
-        if (prefix != null || suffix != null) {
-            return result.mapIndexed { index, line ->
-                if (index in noIndentIndices) return@mapIndexed line
-                var out = line
-                if (prefix != null) out = prefix.append(out)
-                if (suffix != null) out = out.append(suffix)
-                out
-            }
+        val joinedLore = if (loreConfig.emptyLineBetweenSections) {
+            sections.flatMap { section -> section + listOf(Component.empty()) }
+                .dropLast(1) // remove the last newline
+        } else {
+            sections.flatten()
         }
-        return result
-    }
-
-    private fun writeHintLore(
-        hint: List<String>
-    ): List<Component> {
-        return hint.map { line ->
-            TranslationUtil.render(
-                Component.translatable(
-                    "breweryrecipes.gui.recipes.lore.hint",
-                    Argument.string("hint", line)
-                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                    .colorIfAbsent(NamedTextColor.GRAY)
-            )
-        }
-    }
-
-    private fun writeEffectLore(
-        effect: List<String>
-    ): List<Component> {
-        return effect.map { line ->
-            TranslationUtil.render(
-                Component.translatable(
-                    "breweryrecipes.gui.recipes.lore.effect",
-                    Argument.string("effect", line)
-                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                    .colorIfAbsent(NamedTextColor.GRAY)
-            )
-        }
-    }
-
-    private fun writeAuthorLore(
-        author: String
-    ): List<Component> {
-        return listOf(
-            TranslationUtil.render(
-                Component.translatable(
-                    "breweryrecipes.gui.recipes.lore.author",
-                    Argument.string("author", author)
-                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                    .colorIfAbsent(NamedTextColor.GRAY)
-            )
-        )
+        val top = if (loreConfig.emptyLineAtTop) listOf(Component.empty()) else emptyList()
+        val bottom = if (loreConfig.emptyLineAtBottom) listOf(Component.empty()) else emptyList()
+        return top + joinedLore + bottom
     }
 
     private fun writeScoreLore(
         recipeDisplay: BreweryRecipe,
         brewingIntegration: BrewingIntegration
-    ): Pair<List<Component>, Int>? {
+    ): Component? {
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
         val scoreComponent = brewingIntegration.scoreDisplayName(recipeDisplay) ?: return null
         val line = TranslationUtil.render(
@@ -149,32 +100,48 @@ object RecipeViewLoreWriter {
             ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                 .colorIfAbsent(NamedTextColor.GRAY)
         )
-        val scoreLines = mutableListOf<Component>()
-        if (loreConfig.emptyLineAboveBrewScore) scoreLines.add(Component.empty())
-        scoreLines.add(line)
-        return Pair(scoreLines, scoreLines.size - 1)
+        return if (loreConfig.applyIndentationToBrewScore) {
+            applyAffixes(line)
+        } else {
+            line
+        }
+    }
+
+    private fun writeHintLore(
+        hint: List<String>
+    ): List<Component> {
+        return hint.map { line ->
+            applyAffixes(
+                TranslationUtil.render(
+                    Component.translatable(
+                        "breweryrecipes.gui.recipes.lore.hint",
+                        Argument.string("hint", line)
+                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                        .colorIfAbsent(NamedTextColor.GRAY)
+                )
+            )
+        }
     }
 
     private fun writeDifficultyLore(
         recipe: BreweryRecipe
-    ): Pair<List<Component>, Int> {
+    ): Component {
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
-
-        val result = mutableListOf<Component>()
-        if (loreConfig.emptyLineAboveBrewDifficulty) result.add(Component.empty())
         val difficulty = recipe.difficulty
-        result.add(
-            TranslationUtil.render(
-                Component.translatable(
-                    "breweryrecipes.gui.recipes.lore.difficulty",
-                    Argument.tagResolver(
-                        TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
-                        Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
-                    )
-                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-            )
+        val line = TranslationUtil.render(
+            Component.translatable(
+                "breweryrecipes.gui.recipes.lore.difficulty",
+                Argument.tagResolver(
+                    TagResolver.resolver("difficultycolor", Tag.styling(difficultyColor(difficulty))),
+                    Placeholder.unparsed("difficulty", formatDifficulty(difficulty))
+                )
+            ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
         )
-        return Pair(result, result.size - 1)
+        return if (loreConfig.applyIndentationToBrewDifficulty) {
+            applyAffixes(line)
+        } else {
+            line
+        }
     }
 
     private fun writeStepsLore(
@@ -185,8 +152,6 @@ object RecipeViewLoreWriter {
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
 
         val result = mutableListOf<Component>()
-        if (loreConfig.emptyLineAboveSteps) result.add(Component.empty())
-
         steps.forEachIndexed { index, step ->
             val stepComponent = renderStep(step, index, recipeView.flaws, recipeView.invertedReveals, isBrewNote)
                 .colorIfAbsent(NamedTextColor.GRAY)
@@ -260,8 +225,50 @@ object RecipeViewLoreWriter {
             }
         }
 
-        if (loreConfig.emptyLineBelowSteps) result.add(Component.empty())
         return result
+    }
+
+    private fun writeEffectLore(
+        effect: List<String>
+    ): List<Component> {
+        return effect.map { line ->
+            applyAffixes(
+                TranslationUtil.render(
+                    Component.translatable(
+                        "breweryrecipes.gui.recipes.lore.effect",
+                        Argument.string("effect", line)
+                    ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                        .colorIfAbsent(NamedTextColor.GRAY)
+                )
+            )
+        }
+    }
+
+    private fun writeAuthorLore(
+        author: String
+    ): Component {
+        return applyAffixes(
+            TranslationUtil.render(
+                Component.translatable(
+                    "breweryrecipes.gui.recipes.lore.author",
+                    Argument.string("author", author)
+                ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.GRAY)
+            )
+        )
+    }
+
+    private fun applyAffixes(line: Component): Component {
+        val loreConfig = BreweryRecipes.guiConfig.recipes.lore
+        val prefix = if (loreConfig.indentation > 0) Component.text(" ".repeat(loreConfig.indentation)) else null
+        val suffix = if (loreConfig.trailingSpaces > 0) Component.text(" ".repeat(loreConfig.trailingSpaces)) else null
+        if (prefix != null || suffix != null) {
+            var out = line
+            if (prefix != null) out = prefix.append(out)
+            if (suffix != null) out = out.append(suffix)
+            return out
+        }
+        return line
     }
 
     private fun formatDifficulty(difficulty: Double): String =
