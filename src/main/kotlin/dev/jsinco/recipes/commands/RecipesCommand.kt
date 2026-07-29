@@ -2,6 +2,7 @@ package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.tree.LiteralCommandNode
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.gui.RecipeBookMode
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.TranslationArgumentUtil
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -110,6 +111,12 @@ object RecipesCommand {
                             }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
                     )
                     .requires { it.sender.hasPermission("breweryrecipes.command.clear") }
+            ).then(
+                RecipeAdminCommand.command()
+                    .requires { stack ->
+                        val sender = stack.sender
+                        return@requires sender is Player && RecipeBookMode.entries.any { it.hasOverridePermission(sender) }
+                    }
             ).build()
     }
 

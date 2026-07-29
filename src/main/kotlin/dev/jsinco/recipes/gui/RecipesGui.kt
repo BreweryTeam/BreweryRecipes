@@ -11,12 +11,13 @@ import org.bukkit.inventory.InventoryHolder
 class RecipesGui(
     private val player: Player,
     val mode: RecipeBookMode,
+    val admin: Boolean,
     private val recipeDisplays: List<RecipeDisplay>,
     private val itemResolver: (RecipeDisplay) -> GuiItem?,
     size: Int = 54
 ) : InventoryHolder {
 
-    private val inventory = Bukkit.createInventory(this, size, calculateGuiName())
+    private val inventory = Bukkit.createInventory(this, size, mode.guiName(admin))
 
     private val recipesSlots = findRecipeSlots()
     private val pageRecipeCapacity = recipesSlots.size
@@ -99,17 +100,6 @@ class RecipesGui(
 
     fun open() = open(player)
     fun open(player: Player) = player.openInventory(inventory)
-
-    fun calculateGuiName(): Component {
-        val modeId = mode.identifier()
-        val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> player.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> player.hasPermission("breweryrecipes.override.view.notes")
-        }
-        return if (admin)
-            Component.translatable("breweryrecipes.gui.name.admin.$modeId")
-        else Component.translatable("breweryrecipes.gui.name.$modeId")
-    }
 
     override fun getInventory() = inventory
 }

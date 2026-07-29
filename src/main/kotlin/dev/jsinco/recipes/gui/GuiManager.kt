@@ -10,16 +10,12 @@ import org.bukkit.entity.Player
 
 object GuiManager {
 
-    fun openRecipeGui(player: Player) {
+    fun openRecipeGui(player: Player, admin: Boolean = false) {
         if (!CooldownManager.tryOpen(player)) return
-        openWithMode(player, BreweryRecipes.guiConfig.defaultMode)
+        openWithMode(player, BreweryRecipes.guiConfig.defaultMode, admin)
     }
 
-    fun openWithMode(player: Player, mode: RecipeBookMode) {
-        val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> player.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> player.hasPermission("breweryrecipes.override.view.notes")
-        }
+    fun openWithMode(player: Player, mode: RecipeBookMode, admin: Boolean = false) {
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
@@ -43,6 +39,7 @@ object GuiManager {
         val gui = RecipesGui(
             player,
             mode,
+            admin,
             sortDisplays(recipeDisplays, mode),
             { display ->
                 BreweryRecipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {

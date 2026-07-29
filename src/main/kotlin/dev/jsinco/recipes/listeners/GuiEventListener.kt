@@ -38,11 +38,11 @@ class GuiEventListener : Listener {
                 GuiItem.Type.NEXT_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.nextPage()
                 GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.previousPage()
                 GuiItem.Type.SWITCH_MODE -> {
-                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, gui.mode.next())
+                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, gui.mode.next(), gui.admin)
                 }
                 else -> {
                     val targetMode = type.targetMode() ?: return
-                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, targetMode)
+                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(player, targetMode, gui.admin)
                 }
             }
         }
