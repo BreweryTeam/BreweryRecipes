@@ -22,6 +22,7 @@ import dev.jsinco.recipes.recipe.RecipeViewManager
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.ClassUtil
 import eu.okaeri.configs.ConfigManager
+import eu.okaeri.configs.serdes.OkaeriSerdes
 import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.registry.RegistryKey
@@ -115,7 +116,7 @@ class BreweryRecipes : JavaPlugin() {
 
     private fun readConfig(): RecipesConfig {
         return ConfigManager.create(RecipesConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
+            it.withConfigurer(YamlBukkitConfigurer(), *configSerdes())
             it.withBindFile(File(this.dataFolder, "config.yml"))
             it.saveDefaults()
             it.load(true)
@@ -125,7 +126,7 @@ class BreweryRecipes : JavaPlugin() {
 
     private fun readGuiConfig(): GuiConfig {
         val config = ConfigManager.create(GuiConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
+            it.withConfigurer(YamlBukkitConfigurer(), *configSerdes())
             it.withBindFile(File(this.dataFolder, "gui.yml"))
             it.saveDefaults()
             it.load(true)
@@ -135,8 +136,8 @@ class BreweryRecipes : JavaPlugin() {
         return config
     }
 
-    private fun configSerializers(): SerdesPackBuilder {
-        return SerdesPackBuilder()
+    private fun configSerdes(): Array<OkaeriSerdes> = arrayOf(
+        SerdesPackBuilder()
             .add(ComponentSerializer)
             .add(KeySerializer)
             .add(ConfigItemSerializer)
@@ -150,11 +151,13 @@ class BreweryRecipes : JavaPlugin() {
             .add(KeyedSerializer(RegistryKey.ITEM, ItemType::class.java))
             .add(SpawnDefinitionSerializer)
             .add(DetailsEntrySerializer)
-    }
+            .build(),
+        SectionEntryTransformer
+    )
 
     private fun readSpawnConfig(): SpawnConfig {
         return ConfigManager.create(SpawnConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
+            it.withConfigurer(YamlBukkitConfigurer(), *configSerdes())
             it.withBindFile(File(this.dataFolder, "spawning.yml"))
             it.saveDefaults()
             it.load(true)
@@ -164,7 +167,7 @@ class BreweryRecipes : JavaPlugin() {
 
     private fun readDetailsConfig(): DetailsConfig {
         return ConfigManager.create(DetailsConfig::class.java) {
-            it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
+            it.withConfigurer(YamlBukkitConfigurer(), *configSerdes())
             it.withBindFile(File(this.dataFolder, "details.yml"))
             it.saveDefaults()
             it.load(true)

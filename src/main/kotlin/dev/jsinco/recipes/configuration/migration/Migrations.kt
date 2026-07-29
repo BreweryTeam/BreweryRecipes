@@ -4,6 +4,6 @@ import eu.okaeri.configs.migrate.ConfigMigration
 
 object Migrations {
     fun guiMigrations(): Array<ConfigMigration> = arrayOf(
-        G001_empty_lines_rework
+        G001_lore_rework
     )
 }
