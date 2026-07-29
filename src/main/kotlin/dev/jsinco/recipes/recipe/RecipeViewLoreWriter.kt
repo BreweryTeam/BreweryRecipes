@@ -58,7 +58,13 @@ object RecipeViewLoreWriter {
             sections.add(writeHintLore(details.hint))
         }
 
-        val showDifficulty = if (isBrewNote) loreConfig.showDifficultyInBrewNotes else loreConfig.showBrewDifficulty
+        val showDifficulty = if (recipeDisplay is MissingRecipe) {
+            loreConfig.showDifficultyInMissingRecipes
+        } else if (isBrewNote) {
+            loreConfig.showDifficultyInBrewNotes
+        } else {
+            loreConfig.showBrewDifficulty
+        }
         if (showDifficulty) {
             sections.add(listOf(writeDifficultyLore(recipe)))
         }

@@ -30,6 +30,10 @@ class LoreConfig : OkaeriConfig() {
     @CustomKey("show-difficulty-in-brew-notes")
     var showDifficultyInBrewNotes: Boolean = false
 
+    @Comment("Show the recipe's difficulty if the recipe has not been seen yet?")
+    @CustomKey("show-difficulty-in-missing-recipes")
+    var showDifficultyInMissingRecipes: Boolean = false
+
     @Comment("Apply indentation and trailing spaces to the difficulty line?")
     @CustomKey("apply-indentation-to-brew-difficulty")
     var applyIndentationToBrewDifficulty: Boolean = true

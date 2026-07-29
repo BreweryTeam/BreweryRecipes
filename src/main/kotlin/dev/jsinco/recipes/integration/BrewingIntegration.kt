@@ -3,23 +3,33 @@ package dev.jsinco.recipes.integration
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.MissingRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Color
 import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        val customItemConfig = BreweryRecipes.guiConfig.recipes.customItem
-        val item = if (customItemConfig.enabled) {
-            customItemConfig.item.generateItem()
+        val item = if (recipeDisplay is MissingRecipe) {
+            BreweryRecipes.guiConfig.recipes.missingItem.generateItem()
         } else {
-            createItem(recipeDisplay) ?: return null
+            val customItemConfig = BreweryRecipes.guiConfig.recipes.customItem
+            if (customItemConfig.enabled) {
+                customItemConfig.item.generateItem()
+            } else {
+                createItem(recipeDisplay.recipeKey()) ?: return null
+            }
         }
-        val displayName = recipeDisplay.displayName(item.effectiveName())
+        val brewDisplayName = brewDisplayName(recipeDisplay.recipeKey())
+            ?.color(null)
+            ?.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            ?: return null
+        val displayName = recipeDisplay.displayName(brewDisplayName)
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
             DataComponentTypes.CUSTOM_NAME,
@@ -29,7 +39,7 @@ interface BrewingIntegration {
         return GuiItem(item, GuiItem.Type.NO_ACTION)
     }
 
-    fun createItem(recipeDisplay: RecipeDisplay): ItemStack?
+    fun createItem(identifier: String): ItemStack?
     fun brewDisplayName(identifier: String): Component?
     fun brewIngredientColor(ingredientKey: String): Color?
     fun cookingMinuteTicks(): Long

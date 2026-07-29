@@ -16,6 +16,12 @@ class GuiRecipesSection : OkaeriConfig() {
         .item(ConfigItem.Builder().material(Material.PAPER).glint(true).build())
         .build()
 
+    @Comment("Set the item to be used for displaying missing recipes")
+    @CustomKey("missing-item")
+    var missingItem: ConfigItem = ConfigItem.Builder()
+        .material(Material.GLASS_BOTTLE)
+        .build()
+
     @Comment("Lore formatting settings")
     var lore: LoreConfig = LoreConfig()
 }

@@ -13,6 +13,7 @@ class DetailsConfig : OkaeriConfig() {
         "",
         "An example recipe with all the parameters:",
         "my-example-brew:",
+        "  visibility: VISIBLE",
         "  hint:",
         "  - \"Boil some wheat, let it age\"",
         "  - \"This classic is all the rage!\"",
@@ -23,6 +24,14 @@ class DetailsConfig : OkaeriConfig() {
     var recipes: MutableMap<String, RecipeDetailsEntry> = mutableMapOf()
 
     class Defaults : OkaeriConfig() {
+
+        @Comment(
+            "Whether this recipe is hidden from the recipe book",
+            "VISIBLE: Always shown",
+            "SECRET: Shown after learning the recipe",
+            "HIDDEN: Never shown"
+        )
+        var visibility: Visibility = Visibility.SECRET
 
         @Comment("Hint text displayed in the recipe book")
         var hint: MutableList<String> = mutableListOf()

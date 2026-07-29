@@ -2,11 +2,14 @@ package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.RecipeSortOrder
-import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.configuration.Visibility
+import dev.jsinco.recipes.recipe.MissingRecipe
+import dev.jsinco.recipes.recipe.RecipeDetails
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.entity.Player
+import kotlin.collections.sortedByDescending
 
 object GuiManager {
 
@@ -16,7 +19,7 @@ object GuiManager {
     }
 
     fun openWithMode(player: Player, mode: RecipeBookMode, admin: Boolean = false) {
-        val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
+        val recipeDisplays = if (admin) {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
                 RecipeBookMode.BREWED -> BreweryRecipes.brewingIntegration.allRecipes()
@@ -27,11 +30,28 @@ object GuiManager {
                     val recipeViews = BreweryRecipes.recipeViewManager.getViews(player.uniqueId)
                         .associateBy { it.recipeIdentifier }
                     BreweryRecipes.brewingIntegration.allRecipes()
-                        .map(BreweryRecipe::recipeKey)
-                        .mapNotNull { recipeViews[it] }
+                        .map { it.recipeKey() }
+                        .mapNotNull { identifier ->
+                            val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, identifier)
+                            when (details.visibility) {
+                                Visibility.VISIBLE -> recipeViews[identifier] ?: MissingRecipe(identifier)
+                                Visibility.SECRET -> recipeViews[identifier]
+                                Visibility.HIDDEN -> null
+                            }
+                        }
                 }
                 RecipeBookMode.BREWED -> {
-                    BreweryRecipes.completedRecipeManager.getCompletedRecipes(player.uniqueId).toList()
+                    val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(player.uniqueId)
+                        .associateBy { it.identifier }
+                    BreweryRecipes.brewingIntegration.allRecipes()
+                        .map { it.recipeKey() }
+                        .mapNotNull { identifier ->
+                            val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, identifier)
+                            when (details.visibility) {
+                                Visibility.VISIBLE, Visibility.SECRET -> completedRecipes[identifier]
+                                Visibility.HIDDEN -> null
+                            }
+                        }
                 }
             }
         }
@@ -61,18 +81,21 @@ object GuiManager {
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
         }
 
-        return when {
-            mode == RecipeBookMode.FRAGMENTS && BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
+        return when (mode) {
+            RecipeBookMode.FRAGMENTS if BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
                 baseSorted.sortedBy { fragmentationGroup(it) }
 
-            mode == RecipeBookMode.BREWED && BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
-                baseSorted.sortedByDescending { it.scoreEquivalent() }
+            RecipeBookMode.BREWED if BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
+                baseSorted.sortedByDescending { if (it is MissingRecipe) -1.0 else it.scoreEquivalent() }
 
             else -> baseSorted
         }
     }
 
     private fun fragmentationGroup(display: RecipeDisplay): Int {
+        if (display is MissingRecipe) {
+            return 5
+        }
         val fragmentation = (1.0 - display.scoreEquivalent()) * 100.0
         return when {
             fragmentation <= 0.0 -> 0
