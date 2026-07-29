@@ -146,6 +146,7 @@ class BreweryRecipes : JavaPlugin() {
             .add(KeyedSerializer(RegistryKey.BIOME, Biome::class.java))
             .add(KeyedSerializer(RegistryKey.ITEM, ItemType::class.java))
             .add(SpawnDefinitionSerializer)
+            .add(DetailsEntrySerializer)
     }
 
     private fun readSpawnConfig(): SpawnConfig {

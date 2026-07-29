@@ -21,7 +21,7 @@ class DetailsConfig : OkaeriConfig() {
         "  - \"Makes you drunk!\"",
         "  author: \"Brewery Team\""
     )
-    var recipes: MutableMap<String, RecipeDetailsEntry> = mutableMapOf()
+    var recipes: MutableMap<String, DetailsEntry> = mutableMapOf()
 
     class Defaults : OkaeriConfig() {
 
