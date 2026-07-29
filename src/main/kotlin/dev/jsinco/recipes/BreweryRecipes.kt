@@ -6,6 +6,7 @@ import dev.jsinco.recipes.configuration.DetailsConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
 import dev.jsinco.recipes.configuration.RecipesTranslator
 import dev.jsinco.recipes.configuration.SpawnConfig
+import dev.jsinco.recipes.configuration.migration.Migrations
 import dev.jsinco.recipes.configuration.serialize.*
 import dev.jsinco.recipes.data.DataManager
 import dev.jsinco.recipes.data.storage.StorageImpl
@@ -123,13 +124,15 @@ class BreweryRecipes : JavaPlugin() {
     }
 
     private fun readGuiConfig(): GuiConfig {
-        return ConfigManager.create(GuiConfig::class.java) {
+        val config = ConfigManager.create(GuiConfig::class.java) {
             it.withConfigurer(YamlBukkitConfigurer(), configSerializers().build())
             it.withBindFile(File(this.dataFolder, "gui.yml"))
             it.saveDefaults()
             it.load(true)
             it.save()
         }
+        config.migrate(*Migrations.guiMigrations())
+        return config
     }
 
     private fun configSerializers(): SerdesPackBuilder {
