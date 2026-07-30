@@ -6,19 +6,20 @@ import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
 object GuiManager {
 
-    fun openRecipeGui(player: Player) {
-        if (!CooldownManager.tryOpen(player)) return
-        openWithMode(player, BreweryRecipes.guiConfig.defaultMode)
+    fun openRecipeGui(viewer: Player, target: OfflinePlayer = viewer) {
+        if (!CooldownManager.tryOpen(viewer)) return
+        openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target)
     }
 
-    fun openWithMode(player: Player, mode: RecipeBookMode) {
+    fun openWithMode(mode: RecipeBookMode, viewer: Player, target: OfflinePlayer = viewer) {
         val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> player.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> player.hasPermission("breweryrecipes.override.view.notes")
+            RecipeBookMode.FRAGMENTS -> viewer.hasPermission("breweryrecipes.override.view.fragments")
+            RecipeBookMode.BREWED -> viewer.hasPermission("breweryrecipes.override.view.notes")
         }
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
@@ -28,24 +29,24 @@ object GuiManager {
         } else {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> {
-                    val recipeViews = BreweryRecipes.recipeViewManager.getViews(player.uniqueId)
+                    val recipeViews = BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
                         .associateBy { it.recipeIdentifier }
                     BreweryRecipes.brewingIntegration.allRecipes()
                         .map(BreweryRecipe::recipeKey)
                         .mapNotNull { recipeViews[it] }
                 }
                 RecipeBookMode.BREWED -> {
-                    BreweryRecipes.completedRecipeManager.getCompletedRecipes(player.uniqueId).toList()
+                    BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId).toList()
                 }
             }
         }
 
         val gui = RecipesGui(
-            player,
+            viewer,
             mode,
             sortDisplays(recipeDisplays, mode),
             { display ->
-                BreweryRecipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {
+                BreweryRecipes.recipeGuiItemCache.resolve(target.uniqueId, display.recipeKey(), admin, mode) {
                     BreweryRecipes.brewingIntegration.createGuiItem(display)
                 }
             }
