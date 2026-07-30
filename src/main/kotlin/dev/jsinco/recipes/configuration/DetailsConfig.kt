@@ -26,17 +26,23 @@ class DetailsConfig : OkaeriConfig() {
     class Defaults : OkaeriConfig() {
 
         @Comment(
-            "Whether this recipe is hidden from the recipe book",
-            "VISIBLE: Always shown",
+            "Controls when the recipe appears in the recipe book:",
+            "VISIBLE: Always shown in fragments mode (if the recipe hasn't been learned yet, will show up as an empty bottle by default)",
             "SECRET: Shown after learning the recipe",
-            "HIDDEN: Never shown"
+            "HIDDEN: Never shown, useful for admin-only recipes"
         )
         var visibility: Visibility = Visibility.SECRET
 
-        @Comment("Hint text displayed in the recipe book")
+        @Comment(
+            "Hint text displayed in the recipe book.",
+            "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
+        )
         var hint: MutableList<String> = mutableListOf()
 
-        @Comment("A comment describing the effect of this recipe")
+        @Comment(
+            "A comment describing the effect of this recipe.",
+            "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
+        )
         var effect: MutableList<String> = mutableListOf()
 
         @Comment("Who created this recipe")
