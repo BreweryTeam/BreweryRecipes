@@ -59,7 +59,7 @@ object RecipeGiveCommand {
                         applyToTargets(context, listOf(sender), false)
                     }
                     .then(
-                        Commands.argument("flaw-type", EnumArgument(RecipeViewCreator.Type::class.java))
+                        Commands.argument("flaw-type", EnumArgument.flawType())
                             .executes { context ->
                                 val sender = context.source.sender
                                 if (sender !is Player) {

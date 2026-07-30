@@ -23,8 +23,8 @@ object JoinedPlayerArgumentType : CustomArgumentType.Converted<OfflinePlayer, St
             .serialize(
                 TranslationUtil.render(
                     Component.translatable(
-                        "breweryrecipes.command.invalid.argument",
-                        Argument.string("argument", it.toString())
+                        "breweryrecipes.command.invalid.joined-player",
+                        Argument.string("value", it.toString())
                     )
                 )
             )

@@ -44,7 +44,7 @@ object RecipeAddCommand {
             .then(
                 Commands.argument("recipe-key", RecipeArgumentType)
                     .then(
-                        Commands.argument("flaw-type", EnumArgument(RecipeViewCreator.Type::class.java))
+                        Commands.argument("flaw-type", EnumArgument.flawType())
                             .then(
                                 Commands.argument("flaw-level", DoubleArgumentType.doubleArg(0.0, 100.0))
                                     .executes { context ->

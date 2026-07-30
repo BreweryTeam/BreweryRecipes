@@ -16,6 +16,11 @@ import org.bukkit.entity.Player
 
 object RecipeRemoveCommand {
 
+    val RemoveTargetArgument = EnumArgument(
+        RemoveTarget::class.java,
+        "breweryrecipes.command.invalid.remove-target"
+    )
+
     fun command(): LiteralArgumentBuilder<CommandSourceStack> {
 
         fun applyToTargets(
@@ -60,7 +65,7 @@ object RecipeRemoveCommand {
                         applyToTargets(context, listOf(sender), RemoveTarget.ALL)
                     }
                     .then(
-                        Commands.argument("remove-target", EnumArgument(RemoveTarget::class.java))
+                        Commands.argument("remove-target", RemoveTargetArgument)
                             .executes { context ->
                                 val sender = context.source.sender
                                 if (sender !is Player) {

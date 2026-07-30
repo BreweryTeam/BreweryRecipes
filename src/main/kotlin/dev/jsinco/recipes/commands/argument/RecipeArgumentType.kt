@@ -22,8 +22,8 @@ object RecipeArgumentType : CustomArgumentType.Converted<BreweryRecipe, String> 
             .serialize(
                 TranslationUtil.render(
                     Component.translatable(
-                        "breweryrecipes.command.invalid.argument",
-                        Argument.string("argument", it.toString())
+                        "breweryrecipes.command.invalid.recipe",
+                        Argument.string("value", it.toString())
                     )
                 )
             )
