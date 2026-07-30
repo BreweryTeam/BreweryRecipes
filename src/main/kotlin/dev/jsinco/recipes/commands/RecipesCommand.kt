@@ -64,9 +64,6 @@ object RecipesCommand {
                 RecipeOpenCommand.command()
                     .requires { it.sender.hasPermission("breweryrecipes.command.open") }
             ).then(
-                RecipeOpenAsCommand.command()
-                    .requires { it.sender.hasPermission("breweryrecipes.command.openas") }
-            ).then(
                 RecipeAddCommand.command()
                     .requires { it.sender.hasPermission("breweryrecipes.command.add") }
             ).then(

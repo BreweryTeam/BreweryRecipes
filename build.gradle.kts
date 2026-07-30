@@ -141,7 +141,7 @@ bukkit {
                 "breweryrecipes.command.give",
                 "breweryrecipes.command.givebook",
                 "breweryrecipes.command.open",
-                "breweryrecipes.command.openas",
+                "breweryrecipes.command.open.as",
                 "breweryrecipes.command.reload",
                 "breweryrecipes.command.others"
             )
