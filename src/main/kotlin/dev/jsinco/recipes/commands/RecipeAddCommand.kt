@@ -14,6 +14,7 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
 
 object RecipeAddCommand {
@@ -21,6 +22,11 @@ object RecipeAddCommand {
     fun command(): LiteralArgumentBuilder<CommandSourceStack> {
 
         fun applyToTargets(context: CommandContext<CommandSourceStack>, targets: List<Player>): Int {
+            if (targets.isEmpty()) {
+                context.source.sender.sendMessage(Component.translatable("argument.entity.notfound.player")
+                    .color(NamedTextColor.RED))
+                return 1
+            }
             val recipe = context.getArgument("recipe-key", BreweryRecipe::class.java)
             val flawLevel = context.getArgument("flaw-level", Double::class.java)
             val flawType = context.getArgument("flaw-type", RecipeViewCreator.Type::class.java)

@@ -8,6 +8,7 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
@@ -45,6 +46,10 @@ object RecipeOpenCommand {
                         val targets = context
                             .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
                             .resolve(context.source)
+                        if (targets.isEmpty()) {
+                            context.source.sender.sendMessage(Component.translatable("argument.entity.notfound.player")
+                                .color(NamedTextColor.RED))
+                        }
                         targets.forEach { target ->
                             GuiManager.openRecipeGui(target)
                         }
