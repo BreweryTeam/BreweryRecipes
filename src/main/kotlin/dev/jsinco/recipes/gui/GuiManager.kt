@@ -83,26 +83,12 @@ object GuiManager {
 
         return when (mode) {
             RecipeBookMode.FRAGMENTS if BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
-                baseSorted.sortedBy { fragmentationGroup(it) }
+                baseSorted.sortedBy { it.fragmentationGroup() }
 
             RecipeBookMode.BREWED if BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
                 baseSorted.sortedByDescending { if (it is MissingRecipe) -1.0 else it.scoreEquivalent() }
 
             else -> baseSorted
-        }
-    }
-
-    private fun fragmentationGroup(display: RecipeDisplay): Int {
-        if (display is MissingRecipe) {
-            return 5
-        }
-        val fragmentation = (1.0 - display.scoreEquivalent()) * 100.0
-        return when {
-            fragmentation <= 0.0 -> 0
-            fragmentation < 25.0 -> 1
-            fragmentation < 50.0 -> 2
-            fragmentation < 75.0 -> 3
-            else -> 4
         }
     }
 

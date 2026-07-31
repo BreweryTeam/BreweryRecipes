@@ -99,6 +99,10 @@ data class BreweryRecipe(
         return BreweryRecipes.brewingIntegration.score(this)
     }
 
+    override fun fragmentationGroup(): FragmentationGroup {
+        return FragmentationGroup.of((1.0 - scoreEquivalent()) * 100.0)
+    }
+
     override fun displaySteps(): List<Step> = steps
 
     override fun generateView(): RecipeView = generateCompletedView()

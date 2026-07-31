@@ -34,23 +34,14 @@ class RecipeView(
         return memoizedFragmentation
     }
 
+    override fun fragmentationGroup() = FragmentationGroup.of(fragmentation())
+
     override fun toLore(): List<Component>? {
         return RecipeViewLoreWriter.writeLore(this, BreweryRecipes.brewingIntegration)
     }
 
     override fun displayName(brewDisplayName: Component): Component {
-        val fragmentation = fragmentation()
-        val translationName = if (fragmentation == 0.0) {
-            "breweryrecipes.gui.recipes.name.complete"
-        } else if (fragmentation < 25.0) {
-            "breweryrecipes.gui.recipes.name.slightly-fragmented"
-        } else if (fragmentation < 50.0) {
-            "breweryrecipes.gui.recipes.name.moderately-fragmented"
-        } else if (fragmentation < 75.0) {
-            "breweryrecipes.gui.recipes.name.heavily-fragmented"
-        } else {
-            "breweryrecipes.gui.recipes.name.severely-fragmented"
-        }
+        val translationName = fragmentationGroup().translationKey
         return Component.translatable(translationName, Argument.component("name", brewDisplayName))
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }

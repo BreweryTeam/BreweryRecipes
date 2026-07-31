@@ -23,6 +23,8 @@ class MissingRecipe(val recipeIdentifier: String) : RecipeDisplay {
 
     override fun scoreEquivalent(): Double = 0.0
 
+    override fun fragmentationGroup() = FragmentationGroup.MISSING
+
     override fun displaySteps(): List<Step>? = null
 
     override fun generateView(): RecipeView? = null

@@ -68,9 +68,9 @@ object RecipeViewLoreWriter {
                 LoreType.AUTHOR -> if (!isBrewNote) AuthorSection(details.author) else null
                 LoreType.SPACER -> SpacerSection
             } ?: return@mapNotNull null
-            return@mapNotNull Pair(section, sectionEntry.indent)
+            return@mapNotNull section to sectionEntry.indent
         }.mapNotNull { (section, indent) ->
-            section.lore(indent)?.let { Pair(section.type(), it) }
+            section.lore(indent)?.let { section.type() to it }
         }.distinctByUntilChanged { (type, _) ->
             type
         }

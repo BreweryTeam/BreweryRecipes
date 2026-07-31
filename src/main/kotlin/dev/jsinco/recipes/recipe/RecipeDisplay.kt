@@ -13,6 +13,8 @@ interface RecipeDisplay {
 
     fun scoreEquivalent(): Double
 
+    fun fragmentationGroup(): FragmentationGroup
+
     fun displaySteps(): List<Step>?
 
     fun generateView(): RecipeView?
