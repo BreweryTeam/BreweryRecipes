@@ -111,12 +111,6 @@ object RecipesCommand {
                             }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
                     )
                     .requires { it.sender.hasPermission("breweryrecipes.command.clear") }
-            ).then(
-                RecipeAdminCommand.command()
-                    .requires { stack ->
-                        val sender = stack.sender
-                        return@requires sender is Player && RecipeBookMode.entries.any { it.hasOverridePermission(sender) }
-                    }
             ).build()
     }
 
