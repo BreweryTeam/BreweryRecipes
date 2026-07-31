@@ -71,7 +71,7 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
             completeRecipeFeedback(player, recipe.recipeName)
         }
-        if (existing != null && existing.score < 100.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage) {
+        if (existing != null && existing.score < 1.0 && scoreValue >= 1.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage) {
             perfectRecipeFeedback(player, recipe.recipeName)
         }
         if (BreweryRecipes.recipesConfig.incrementalLearning) {
