@@ -8,6 +8,14 @@ enum class FragmentationGroup(val translationKey: String) {
     SEVERELY_FRAGMENTED("breweryrecipes.gui.recipes.name.severely-fragmented"),
     UNDISCOVERED("breweryrecipes.gui.recipes.name.undiscovered");
 
+    fun completionState(): RecipeCompletionState {
+        return when (this) {
+            COMPLETE -> RecipeCompletionState.COMPLETED
+            SLIGHTLY_FRAGMENTED, MODERATELY_FRAGMENTED, HEAVILY_FRAGMENTED, SEVERELY_FRAGMENTED -> RecipeCompletionState.PARTIAL
+            UNDISCOVERED -> RecipeCompletionState.UNDISCOVERED
+        }
+    }
+
     companion object {
         fun of(fragmentation: Double): FragmentationGroup {
             return if (fragmentation <= 0.0) {

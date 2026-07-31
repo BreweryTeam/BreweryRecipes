@@ -43,32 +43,39 @@ object RecipeViewLoreWriter {
         val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, recipe.identifier)
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
 
-        val loreComponentsBySection = loreConfig.sections.distinctByExcept(
+        fun isSectionVisible(visibilityConfig: List<RecipeCompletionState>): Boolean {
+            return isBrewNote || visibilityConfig.contains(recipeDisplay.fragmentationGroup().completionState())
+        }
+
+        val sections = if (isBrewNote) loreConfig.brewNotesSections else loreConfig.fragmentsSections
+        val loreComponentsBySection = sections.distinctByExcept(
             { sectionEntry -> sectionEntry.type },
             { sectionEntry -> sectionEntry.type == LoreType.SPACER }
         ).mapNotNull { sectionEntry ->
-            val section = when (sectionEntry.type) {
+            when (sectionEntry.type) {
                 LoreType.STEPS -> recipeDisplay.generateView()?.let { view ->
                     val stepsToRender = recipeDisplay.displaySteps() ?: recipe.steps
                     StepsSection(stepsToRender, view, isBrewNote)
                 }
-                LoreType.SCORE -> if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
-                LoreType.DIFFICULTY -> {
-                    val showDifficulty = if (recipeDisplay is UndiscoveredRecipe) {
-                        loreConfig.showDifficultyInUndiscoveredRecipes
-                    } else if (isBrewNote) {
-                        loreConfig.showDifficultyInBrewNotes
-                    } else {
-                        loreConfig.showBrewDifficultyInFragments
-                    }
-                    if (showDifficulty) DifficultySection(recipe) else null
+                LoreType.SCORE -> {
+                    if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
                 }
-                LoreType.HINT -> if (!isBrewNote) HintSection(details.hint) else null
-                LoreType.EFFECT -> if (!isBrewNote) EffectSection(details.effect) else null
-                LoreType.AUTHOR -> if (!isBrewNote) AuthorSection(details.author) else null
-                LoreType.SPACER -> SpacerSection
-            } ?: return@mapNotNull null
-            return@mapNotNull section to sectionEntry.indent
+                LoreType.DIFFICULTY -> {
+                    if (isSectionVisible(loreConfig.difficultyVisibility)) DifficultySection(recipe) else null
+                }
+                LoreType.HINT -> {
+                    if (isSectionVisible(loreConfig.hintVisibility)) HintSection(details.hint) else null
+                }
+                LoreType.EFFECT -> {
+                    if (isSectionVisible(loreConfig.effectVisibility)) EffectSection(details.effect) else null
+                }
+                LoreType.AUTHOR -> {
+                    if (isSectionVisible(loreConfig.authorVisibility)) AuthorSection(details.author) else null
+                }
+                LoreType.SPACER -> {
+                    SpacerSection
+                }
+            }?.let { section -> section to sectionEntry.indent }
         }.mapNotNull { (section, indent) ->
             section.lore(indent)?.let { section.type() to it }
         }.distinctByUntilChanged { (type, _) ->

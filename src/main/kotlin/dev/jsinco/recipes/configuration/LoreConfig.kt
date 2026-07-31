@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.gui.SectionEntry
+import dev.jsinco.recipes.recipe.RecipeCompletionState
 import dev.jsinco.recipes.recipe.lore.LoreType
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
@@ -17,13 +18,14 @@ class LoreConfig : OkaeriConfig() {
         "STEPS: The steps needed to complete the recipe (fragments mode) or the steps the player performed (brewed mode)",
         "SCORE: The brew's score in 0-5 star format (brewed mode only)",
         "DIFFICULTY: The recipe's difficulty",
-        "HINT: Recipe hint defined in details.yml (fragments mode only)",
-        "EFFECT: Brew effect defined in details.yml (fragments mode only)",
-        "AUTHOR: Recipe author defined in details.yml (fragments mode only)",
+        "HINT: Recipe hint defined in details.yml",
+        "EFFECT: Brew effect defined in details.yml",
+        "AUTHOR: Recipe author defined in details.yml",
+        "",
+        "List of lore sections that appear in fragments mode:"
     )
-    @CustomKey("sections")
-    var sections: MutableList<SectionEntry> = mutableListOf(
-        SectionEntry(LoreType.SCORE),
+    @CustomKey("fragments-sections")
+    var fragmentsSections: MutableList<SectionEntry> = mutableListOf(
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.HINT, true),
         SectionEntry(LoreType.DIFFICULTY, true),
@@ -32,20 +34,62 @@ class LoreConfig : OkaeriConfig() {
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.EFFECT, true),
         SectionEntry(LoreType.SPACER),
-        SectionEntry(LoreType.AUTHOR, true)
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
     )
 
-    @Comment("Show the recipe's difficulty in recipe fragments mode?")
-    @CustomKey("show-brew-difficulty-in-fragments")
-    var showBrewDifficultyInFragments: Boolean = true
+    @Comment("List of lore sections that appear in brewed mode:")
+    @CustomKey("brew-notes-sections")
+    var brewNotesSections: MutableList<SectionEntry> = mutableListOf(
+        SectionEntry(LoreType.SCORE),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.DIFFICULTY, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.STEPS, true),
+        SectionEntry(LoreType.SPACER)
+    )
 
-    @Comment("Show the recipe's difficulty in brew notes mode?")
-    @CustomKey("show-difficulty-in-brew-notes")
-    var showDifficultyInBrewNotes: Boolean = false
+    @Comment(
+        "When should the recipe difficulty be visible in fragments mode",
+        "Any of [completed, partial, undiscovered]"
+    )
+    @CustomKey("difficulty-visibility")
+    var difficultyVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+        RecipeCompletionState.COMPLETED,
+        RecipeCompletionState.PARTIAL
+    )
 
-    @Comment("Show the recipe's difficulty if the recipe has not been discovered yet?")
-    @CustomKey("show-difficulty-in-undiscovered-recipes")
-    var showDifficultyInUndiscoveredRecipes: Boolean = false
+    @Comment(
+        "When should the recipe hints be visible in fragments mode",
+        "Any of [completed, partial, undiscovered]"
+    )
+    @CustomKey("hint-visibility")
+    var hintVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+        RecipeCompletionState.COMPLETED,
+        RecipeCompletionState.PARTIAL,
+        RecipeCompletionState.UNDISCOVERED
+    )
+
+    @Comment(
+        "When should the recipe effect be visible in fragments mode",
+        "Any of [completed, partial, undiscovered]"
+    )
+    @CustomKey("effect-visibility")
+    var effectVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+        RecipeCompletionState.COMPLETED,
+        RecipeCompletionState.PARTIAL
+    )
+
+    @Comment(
+        "When should the recipe author be visible in fragments mode",
+        "Any of [completed, partial, undiscovered]"
+    )
+    @CustomKey("author-visibility")
+    var authorVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+        RecipeCompletionState.COMPLETED,
+        RecipeCompletionState.PARTIAL,
+        RecipeCompletionState.UNDISCOVERED
+    )
 
     @Comment("Insert an empty line between each recipe step?")
     @CustomKey("empty-line-between-steps")
