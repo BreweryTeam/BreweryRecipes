@@ -3,7 +3,7 @@ package dev.jsinco.recipes.gui
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.RecipeSortOrder
 import dev.jsinco.recipes.configuration.Visibility
-import dev.jsinco.recipes.recipe.MissingRecipe
+import dev.jsinco.recipes.recipe.UndiscoveredRecipe
 import dev.jsinco.recipes.recipe.RecipeDetails
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -34,7 +34,7 @@ object GuiManager {
                         .mapNotNull { identifier ->
                             val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, identifier)
                             when (details.visibility) {
-                                Visibility.VISIBLE -> recipeViews[identifier] ?: MissingRecipe(identifier)
+                                Visibility.VISIBLE -> recipeViews[identifier] ?: UndiscoveredRecipe(identifier)
                                 Visibility.SECRET -> recipeViews[identifier]
                                 Visibility.HIDDEN -> null
                             }
@@ -86,7 +86,7 @@ object GuiManager {
                 baseSorted.sortedBy { it.fragmentationGroup() }
 
             RecipeBookMode.BREWED if BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
-                baseSorted.sortedByDescending { if (it is MissingRecipe) -1.0 else it.scoreEquivalent() }
+                baseSorted.sortedByDescending { if (it is UndiscoveredRecipe) -1.0 else it.scoreEquivalent() }
 
             else -> baseSorted
         }

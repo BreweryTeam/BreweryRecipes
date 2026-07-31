@@ -16,9 +16,9 @@ class GuiRecipesSection : OkaeriConfig() {
         .item(ConfigItem.Builder().material(Material.PAPER).glint(true).build())
         .build()
 
-    @Comment("Set the item to be used for displaying missing recipes")
-    @CustomKey("missing-item")
-    var missingItem: ConfigItem = ConfigItem.Builder()
+    @Comment("Set the item to be used for displaying undiscovered recipes")
+    @CustomKey("undiscovered-item")
+    var undiscoveredItem: ConfigItem = ConfigItem.Builder()
         .material(Material.GLASS_BOTTLE)
         .build()
 

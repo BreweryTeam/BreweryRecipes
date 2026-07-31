@@ -6,7 +6,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class MissingRecipe(val recipeIdentifier: String) : RecipeDisplay {
+class UndiscoveredRecipe(val recipeIdentifier: String) : RecipeDisplay {
 
     override fun recipeKey(): String = recipeIdentifier
 
@@ -16,14 +16,14 @@ class MissingRecipe(val recipeIdentifier: String) : RecipeDisplay {
 
     override fun displayName(brewDisplayName: Component): Component {
         return Component.translatable(
-            "breweryrecipes.gui.recipes.name.missing",
+            "breweryrecipes.gui.recipes.name.undiscovered",
             Argument.component("name", brewDisplayName)
         ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
 
     override fun scoreEquivalent(): Double = 0.0
 
-    override fun fragmentationGroup() = FragmentationGroup.MISSING
+    override fun fragmentationGroup() = FragmentationGroup.UNDISCOVERED
 
     override fun displaySteps(): List<Step>? = null
 

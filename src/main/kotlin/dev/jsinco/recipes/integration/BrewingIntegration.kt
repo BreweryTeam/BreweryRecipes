@@ -3,7 +3,7 @@ package dev.jsinco.recipes.integration
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.MissingRecipe
+import dev.jsinco.recipes.recipe.UndiscoveredRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
@@ -15,8 +15,8 @@ import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        val item = if (recipeDisplay is MissingRecipe) {
-            BreweryRecipes.guiConfig.recipes.missingItem.generateItem()
+        val item = if (recipeDisplay is UndiscoveredRecipe) {
+            BreweryRecipes.guiConfig.recipes.undiscoveredItem.generateItem()
         } else {
             val customItemConfig = BreweryRecipes.guiConfig.recipes.customItem
             if (customItemConfig.enabled) {

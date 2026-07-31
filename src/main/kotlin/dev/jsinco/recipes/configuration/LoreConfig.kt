@@ -43,9 +43,9 @@ class LoreConfig : OkaeriConfig() {
     @CustomKey("show-difficulty-in-brew-notes")
     var showDifficultyInBrewNotes: Boolean = false
 
-    @Comment("Show the recipe's difficulty if the recipe has not been seen yet?")
-    @CustomKey("show-difficulty-in-missing-recipes")
-    var showDifficultyInMissingRecipes: Boolean = false
+    @Comment("Show the recipe's difficulty if the recipe has not been discovered yet?")
+    @CustomKey("show-difficulty-in-undiscovered-recipes")
+    var showDifficultyInUndiscoveredRecipes: Boolean = false
 
     @Comment("Insert an empty line between each recipe step?")
     @CustomKey("empty-line-between-steps")

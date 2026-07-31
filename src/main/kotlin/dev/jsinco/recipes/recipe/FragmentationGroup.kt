@@ -6,7 +6,7 @@ enum class FragmentationGroup(val translationKey: String) {
     MODERATELY_FRAGMENTED("breweryrecipes.gui.recipes.name.moderately-fragmented"),
     HEAVILY_FRAGMENTED("breweryrecipes.gui.recipes.name.heavily-fragmented"),
     SEVERELY_FRAGMENTED("breweryrecipes.gui.recipes.name.severely-fragmented"),
-    MISSING("breweryrecipes.gui.recipes.name.missing");
+    UNDISCOVERED("breweryrecipes.gui.recipes.name.undiscovered");
 
     companion object {
         fun of(fragmentation: Double): FragmentationGroup {

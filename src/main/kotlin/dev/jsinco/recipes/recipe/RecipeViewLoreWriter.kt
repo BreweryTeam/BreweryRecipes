@@ -54,8 +54,8 @@ object RecipeViewLoreWriter {
                 }
                 LoreType.SCORE -> if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
                 LoreType.DIFFICULTY -> {
-                    val showDifficulty = if (recipeDisplay is MissingRecipe) {
-                        loreConfig.showDifficultyInMissingRecipes
+                    val showDifficulty = if (recipeDisplay is UndiscoveredRecipe) {
+                        loreConfig.showDifficultyInUndiscoveredRecipes
                     } else if (isBrewNote) {
                         loreConfig.showDifficultyInBrewNotes
                     } else {
