@@ -7,7 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class HintSection(val hint: List<String>) : LoreSection {
+class HintSection(val hint: List<Component>) : LoreSection {
     override fun type() = LoreType.HINT
 
     override fun lore(indent: Boolean): List<Component>? {
@@ -16,7 +16,7 @@ class HintSection(val hint: List<String>) : LoreSection {
             val line = TranslationUtil.render(
                 Component.translatable(
                     "breweryrecipes.gui.recipes.lore.hint",
-                    Argument.string("hint", hintLine)
+                    Argument.component("hint", hintLine)
                 ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                     .colorIfAbsent(NamedTextColor.GRAY)
             )

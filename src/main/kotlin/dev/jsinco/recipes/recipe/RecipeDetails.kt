@@ -2,12 +2,13 @@ package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.configuration.DetailsConfig
 import dev.jsinco.recipes.configuration.Visibility
+import net.kyori.adventure.text.Component
 
 data class RecipeDetails(
     val visibility: Visibility,
-    val hint: List<String>,
-    val effect: List<String>,
-    val author: String?
+    val hint: List<Component>,
+    val effect: List<Component>,
+    val author: Component?
 ) {
     companion object {
         fun fromConfig(config: DetailsConfig, recipeKey: String): RecipeDetails {

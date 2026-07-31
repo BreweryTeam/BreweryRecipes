@@ -7,7 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
 
-class EffectSection(val effect: List<String>) : LoreSection {
+class EffectSection(val effect: List<Component>) : LoreSection {
     override fun type() = LoreType.EFFECT
 
     override fun lore(indent: Boolean): List<Component>? {
@@ -16,7 +16,7 @@ class EffectSection(val effect: List<String>) : LoreSection {
             val line = TranslationUtil.render(
                 Component.translatable(
                     "breweryrecipes.gui.recipes.lore.effect",
-                    Argument.string("effect", effectLine)
+                    Argument.component("effect", effectLine)
                 ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
                     .colorIfAbsent(NamedTextColor.GRAY)
             )

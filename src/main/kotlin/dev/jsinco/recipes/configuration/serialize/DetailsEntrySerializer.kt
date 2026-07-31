@@ -6,6 +6,7 @@ import eu.okaeri.configs.schema.GenericsDeclaration
 import eu.okaeri.configs.serdes.DeserializationData
 import eu.okaeri.configs.serdes.ObjectSerializer
 import eu.okaeri.configs.serdes.SerializationData
+import net.kyori.adventure.text.Component
 
 object DetailsEntrySerializer : ObjectSerializer<DetailsEntry> {
 
@@ -30,9 +31,9 @@ object DetailsEntrySerializer : ObjectSerializer<DetailsEntry> {
     ): DetailsEntry {
         return DetailsEntry(
             data.get("visibility", Visibility::class.java),
-            data.getAsList("hint", String::class.java),
-            data.getAsList("effect", String::class.java),
-            data.get("author", String::class.java)
+            data.getAsList("hint", Component::class.java),
+            data.getAsList("effect", Component::class.java),
+            data.get("author", Component::class.java)
         )
     }
 

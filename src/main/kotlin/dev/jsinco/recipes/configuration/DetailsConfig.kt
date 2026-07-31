@@ -2,6 +2,7 @@ package dev.jsinco.recipes.configuration
 
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
+import net.kyori.adventure.text.Component
 
 class DetailsConfig : OkaeriConfig() {
 
@@ -37,16 +38,16 @@ class DetailsConfig : OkaeriConfig() {
             "Hint text displayed in the recipe book.",
             "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
         )
-        var hint: MutableList<String> = mutableListOf()
+        var hint: MutableList<Component> = mutableListOf()
 
         @Comment(
             "A comment describing the effect of this recipe.",
             "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
         )
-        var effect: MutableList<String> = mutableListOf()
+        var effect: MutableList<Component> = mutableListOf()
 
         @Comment("Who created this recipe")
-        var author: String? = null
+        var author: Component? = null
 
     }
 

@@ -1,8 +1,10 @@
 package dev.jsinco.recipes.configuration
 
+import net.kyori.adventure.text.Component
+
 class DetailsEntry(
     var visibility: Visibility?,
-    var hint: MutableList<String>?,
-    var effect: MutableList<String>?,
-    var author: String?
+    var hint: MutableList<Component>?,
+    var effect: MutableList<Component>?,
+    var author: Component?
 )
