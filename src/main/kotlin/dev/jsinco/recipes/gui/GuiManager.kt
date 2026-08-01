@@ -43,6 +43,7 @@ object GuiManager {
 
         val gui = RecipesGui(
             viewer,
+            target,
             mode,
             sortDisplays(recipeDisplays, mode),
             { display ->
