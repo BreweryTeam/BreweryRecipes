@@ -56,11 +56,6 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
         BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
-    override fun clearAll(playerUuid: UUID) {
-        backing.remove(playerUuid)
-        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
-    }
-
     override fun initiateCacheFor(playerUuid: UUID) {
         storageImpl.completedRecipeSession()
             .selectRecipeCompletions(playerUuid)
