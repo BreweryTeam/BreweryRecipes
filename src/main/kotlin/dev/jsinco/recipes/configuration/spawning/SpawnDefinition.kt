@@ -7,6 +7,7 @@ import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ItemType
+import kotlin.random.Random
 
 data class SpawnDefinition(
     val enabled: Boolean? = null,
@@ -47,22 +48,24 @@ data class SpawnDefinition(
             .filter { recipeBlacklist.isNullOrEmpty() || !recipeBlacklist.contains(it.identifier) }
     }
 
-    private fun lootItem(breweryRecipe: BreweryRecipe): ItemStack {
+    private fun lootItem(breweryRecipe: BreweryRecipe, random: Random = Random.Default): ItemStack {
         val itemBase = itemOverride?.generateItem() ?: ItemType.PAPER.createItemStack()
         if (flawless) {
             return breweryRecipe.lootItem(itemBase)
         }
         if (flaws.isNullOrEmpty()) {
-            return breweryRecipe.lootItem(itemBase, RecipeViewCreator.Type.entries.toTypedArray().random())
+            return breweryRecipe.lootItem(itemBase, RecipeViewCreator.Type.entries.random(random))
         }
-        return breweryRecipe.lootItem(itemBase, flaws.random())
+        return breweryRecipe.lootItem(itemBase, flaws.random(random))
     }
 
     fun registerRecipe(index: Int) {
         val applicableRecipes = applicableRecipes()
         if (applicableRecipes.isEmpty()) return
+        val recipe = applicableRecipes.first()
+        val random = Random(recipe.recipeKey().hashCode().toLong()) // ensure crafting recipes are deterministic across reloads
         triggers?.craftingTrigger?.craftingDefinition?.register(
-            lootItem(applicableRecipes.random()),
+            lootItem(recipe, random),
             "spawning/index_$index"
         )
     }
