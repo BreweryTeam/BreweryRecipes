@@ -28,8 +28,10 @@ class CraftingDefinition : OkaeriConfig() {
     @CustomKey("ingredient-map")
     var ingredientMap: Map<String, Material> = mapOf("A" to Material.PAPER, "B" to Material.BOOK)
 
-    fun register(item: ItemStack, keyValue: String) {
+    fun register(keyValue: String, item: ItemStack, oldRecipe: CraftingDefinition? = null) {
         val recipeKey = key(keyValue)
+        // Can't compare Bukkit recipes directly as they don't implement equals()
+        if (this == oldRecipe && item == Bukkit.getRecipe(recipeKey)?.result) return
         Bukkit.removeRecipe(recipeKey)
         if (!this.enabled) return
         if (this.shaped) {
@@ -54,4 +56,27 @@ class CraftingDefinition : OkaeriConfig() {
             Logger.log("Added a shapeless recipe with key $keyValue")
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CraftingDefinition) return false
+
+        if (enabled != other.enabled) return false
+        if (shaped != other.shaped) return false
+        if (ingredients != other.ingredients) return false
+        if (shape != other.shape) return false
+        if (ingredientMap != other.ingredientMap) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = enabled.hashCode()
+        result = 31 * result + shaped.hashCode()
+        result = 31 * result + ingredients.hashCode()
+        result = 31 * result + shape.hashCode()
+        result = 31 * result + ingredientMap.hashCode()
+        return result
+    }
+
 }

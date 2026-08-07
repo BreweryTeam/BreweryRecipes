@@ -59,14 +59,15 @@ data class SpawnDefinition(
         return breweryRecipe.lootItem(itemBase, flaws.random(random))
     }
 
-    fun registerRecipe(index: Int) {
+    fun registerRecipe(index: Int, old: SpawnDefinition? = null) {
         val applicableRecipes = applicableRecipes()
         if (applicableRecipes.isEmpty()) return
         val recipe = applicableRecipes.first()
         val random = Random(recipe.recipeKey().hashCode().toLong()) // ensure crafting recipes are deterministic across reloads
         triggers?.craftingTrigger?.craftingDefinition?.register(
+            "spawning/index_$index",
             lootItem(recipe, random),
-            "spawning/index_$index"
+            old?.triggers?.craftingTrigger?.craftingDefinition
         )
     }
 }
