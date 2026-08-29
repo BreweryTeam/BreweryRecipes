@@ -25,7 +25,7 @@ class LoreConfig : OkaeriConfig() {
         "List of lore sections that appear in fragments mode:"
     )
     @CustomKey("fragments-sections")
-    var fragmentsSections: MutableList<SectionEntry> = mutableListOf(
+    var fragmentsSections: List<SectionEntry> = listOf(
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.HINT, true),
         SectionEntry(LoreType.DIFFICULTY, true),
@@ -40,7 +40,7 @@ class LoreConfig : OkaeriConfig() {
 
     @Comment("List of lore sections that appear in brewed mode:")
     @CustomKey("brew-notes-sections")
-    var brewNotesSections: MutableList<SectionEntry> = mutableListOf(
+    var brewNotesSections: List<SectionEntry> = listOf(
         SectionEntry(LoreType.SCORE),
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.DIFFICULTY, true),
@@ -54,7 +54,7 @@ class LoreConfig : OkaeriConfig() {
         "Any of [completed, partial, undiscovered]"
     )
     @CustomKey("difficulty-visibility")
-    var difficultyVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+    var difficultyVisibility: List<RecipeCompletionState> = listOf(
         RecipeCompletionState.COMPLETED,
         RecipeCompletionState.PARTIAL
     )
@@ -64,7 +64,7 @@ class LoreConfig : OkaeriConfig() {
         "Any of [completed, partial, undiscovered]"
     )
     @CustomKey("hint-visibility")
-    var hintVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+    var hintVisibility: List<RecipeCompletionState> = listOf(
         RecipeCompletionState.COMPLETED,
         RecipeCompletionState.PARTIAL,
         RecipeCompletionState.UNDISCOVERED
@@ -75,7 +75,7 @@ class LoreConfig : OkaeriConfig() {
         "Any of [completed, partial, undiscovered]"
     )
     @CustomKey("effect-visibility")
-    var effectVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+    var effectVisibility: List<RecipeCompletionState> = listOf(
         RecipeCompletionState.COMPLETED,
         RecipeCompletionState.PARTIAL
     )
@@ -85,7 +85,7 @@ class LoreConfig : OkaeriConfig() {
         "Any of [completed, partial, undiscovered]"
     )
     @CustomKey("author-visibility")
-    var authorVisibility: MutableList<RecipeCompletionState> = mutableListOf(
+    var authorVisibility: List<RecipeCompletionState> = listOf(
         RecipeCompletionState.COMPLETED,
         RecipeCompletionState.PARTIAL,
         RecipeCompletionState.UNDISCOVERED

@@ -22,7 +22,7 @@ class DetailsConfig : OkaeriConfig() {
         "  - \"Makes you drunk!\"",
         "  author: \"Brewery Team\""
     )
-    var recipes: MutableMap<String, DetailsEntry> = mutableMapOf()
+    var recipes: Map<String, DetailsEntry> = mapOf()
 
     class Defaults : OkaeriConfig() {
 
@@ -38,13 +38,13 @@ class DetailsConfig : OkaeriConfig() {
             "Hint text displayed in the recipe book.",
             "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
         )
-        var hint: MutableList<Component> = mutableListOf()
+        var hint: List<Component> = listOf()
 
         @Comment(
             "A comment describing the effect of this recipe.",
             "If the recipe is VISIBLE, this will be shown for unlearned recipes as well."
         )
-        var effect: MutableList<Component> = mutableListOf()
+        var effect: List<Component> = listOf()
 
         @Comment("Who created this recipe")
         var author: Component? = null
