@@ -17,8 +17,7 @@ import dev.jsinco.recipes.recipe.lore.SpacerSection
 import dev.jsinco.recipes.recipe.lore.StepsSection
 import dev.jsinco.recipes.recipe.process.Step
 import dev.jsinco.recipes.util.TranslationUtil
-import dev.jsinco.recipes.util.ext.distinctByExcept
-import dev.jsinco.recipes.util.ext.distinctByUntilChanged
+import dev.jsinco.recipes.util.ext.removeAdjacentWhere
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -43,43 +42,30 @@ object RecipeViewLoreWriter {
         val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, recipe.identifier)
         val loreConfig = BreweryRecipes.guiConfig.recipes.lore
 
-        fun isSectionVisible(visibilityConfig: List<RecipeCompletionState>): Boolean {
-            return isBrewNote || visibilityConfig.contains(recipeDisplay.fragmentationGroup().completionState())
+        val sections = if (isBrewNote) {
+            loreConfig.brewNotesSections
+        } else when (recipeDisplay.fragmentationGroup().completionState()) {
+            RecipeCompletionState.COMPLETED -> loreConfig.completedSections
+            RecipeCompletionState.PARTIAL -> loreConfig.partialSections
+            RecipeCompletionState.UNDISCOVERED -> loreConfig.undiscoveredSections
         }
-
-        val sections = if (isBrewNote) loreConfig.brewNotesSections else loreConfig.fragmentsSections
-        val loreComponentsBySection = sections.distinctByExcept(
-            { sectionEntry -> sectionEntry.type },
-            { sectionEntry -> sectionEntry.type == LoreType.SPACER }
-        ).mapNotNull { sectionEntry ->
+        val loreComponentsBySection = sections.mapNotNull { sectionEntry ->
             when (sectionEntry.type) {
                 LoreType.STEPS -> recipeDisplay.generateView()?.let { view ->
                     val stepsToRender = recipeDisplay.displaySteps() ?: recipe.steps
                     StepsSection(stepsToRender, view, isBrewNote)
                 }
-                LoreType.SCORE -> {
-                    if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
-                }
-                LoreType.DIFFICULTY -> {
-                    if (isSectionVisible(loreConfig.difficultyVisibility)) DifficultySection(recipe) else null
-                }
-                LoreType.HINT -> {
-                    if (isSectionVisible(loreConfig.hintVisibility)) HintSection(details.hint) else null
-                }
-                LoreType.EFFECT -> {
-                    if (isSectionVisible(loreConfig.effectVisibility)) EffectSection(details.effect) else null
-                }
-                LoreType.AUTHOR -> {
-                    if (isSectionVisible(loreConfig.authorVisibility)) AuthorSection(details.author) else null
-                }
-                LoreType.SPACER -> {
-                    SpacerSection
-                }
+                LoreType.SCORE -> if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
+                LoreType.DIFFICULTY -> DifficultySection(recipe)
+                LoreType.HINT -> HintSection(details.hint)
+                LoreType.EFFECT -> EffectSection(details.effect)
+                LoreType.AUTHOR -> AuthorSection(details.author)
+                LoreType.SPACER -> SpacerSection
             }?.let { section -> section to sectionEntry.indent }
         }.mapNotNull { (section, indent) ->
             section.lore(indent)?.let { section.type() to it }
-        }.distinctByUntilChanged { (type, _) ->
-            type
+        }.removeAdjacentWhere { (type, _) ->
+            type == LoreType.SPACER
         }
         if (loreComponentsBySection.all { (type, _) -> type == LoreType.SPACER }) {
             return emptyList()

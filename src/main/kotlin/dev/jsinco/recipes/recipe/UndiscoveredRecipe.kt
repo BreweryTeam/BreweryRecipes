@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.recipe.flaws.creation.EncryptedRecipeViewCreator
 import dev.jsinco.recipes.recipe.process.Step
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
@@ -27,6 +28,8 @@ class UndiscoveredRecipe(val recipeIdentifier: String) : RecipeDisplay {
 
     override fun displaySteps(): List<Step>? = null
 
-    override fun generateView(): RecipeView? = null
+    override fun generateView(): RecipeView? = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier)?.let {
+        EncryptedRecipeViewCreator.createFullyFlawed(it)
+    }
 
 }

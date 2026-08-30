@@ -1,34 +1,21 @@
 package dev.jsinco.recipes.util.ext
 
 /**
- * Like [distinctBy], but any duplicate items that satisfy the [predicate] are not removed.
+ * Removes adjacent elements when their [predicate] values are both true.
  */
-inline fun <T, K> Iterable<T>.distinctByExcept(selector: (T) -> K, predicate: (T) -> Boolean): List<T> {
-    return this.distinctBy {
-        if (predicate(it)) {
-            Any() // Any() instances are never equal to each other
-        } else {
-            selector(it)
-        }
-    }
-}
-
-/**
- * Removes adjacent items for which their [selector] values are equal.
- */
-inline fun <T, K> Iterable<T>.distinctByUntilChanged(selector: (T) -> K): List<T> {
+inline fun <T> Iterable<T>.removeAdjacentWhere(predicate: (T) -> Boolean): List<T> {
     val iterator = this.iterator()
     if (!iterator.hasNext()) return emptyList()
     val initial = iterator.next()
-    var accumulator = selector(initial)
+    var prevPredicate = predicate(initial)
     val result = ArrayList<T>().apply { add(initial) }
     while (iterator.hasNext()) {
         val next = iterator.next()
-        val toCompare = selector(next)
-        if (toCompare != accumulator) {
+        val currentPredicate = predicate(next)
+        if (!prevPredicate || !currentPredicate) {
             result.add(next)
-            accumulator = toCompare
         }
+        prevPredicate = currentPredicate
     }
     return result
 }

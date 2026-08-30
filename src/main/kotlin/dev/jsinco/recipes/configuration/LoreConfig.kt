@@ -1,7 +1,6 @@
 package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.gui.SectionEntry
-import dev.jsinco.recipes.recipe.RecipeCompletionState
 import dev.jsinco.recipes.recipe.lore.LoreType
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
@@ -13,7 +12,6 @@ class LoreConfig : OkaeriConfig() {
         "The list of lore sections in the order they appear in the recipe book.",
         "Use blank lines to separate sections. Adjacent blank lines will be combined into one blank line.",
         "Prefix with a '+' to indent that line.",
-        "Duplicates will be ignored.",
         "",
         "STEPS: The steps needed to complete the recipe (fragments mode) or the steps the player performed (brewed mode)",
         "SCORE: The brew's score in 0-5 star format (brewed mode only)",
@@ -22,10 +20,10 @@ class LoreConfig : OkaeriConfig() {
         "EFFECT: Brew effect defined in details.yml",
         "AUTHOR: Recipe author defined in details.yml",
         "",
-        "List of lore sections that appear in fragments mode:"
+        "List of lore sections that appear for completed recipes in fragments mode:"
     )
-    @CustomKey("fragments-sections")
-    var fragmentsSections: List<SectionEntry> = listOf(
+    @CustomKey("completed-sections")
+    var completedSections: List<SectionEntry> = listOf(
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.HINT, true),
         SectionEntry(LoreType.DIFFICULTY, true),
@@ -33,6 +31,31 @@ class LoreConfig : OkaeriConfig() {
         SectionEntry(LoreType.STEPS, true),
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.EFFECT, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
+    )
+
+    @Comment("List of lore sections that appear for partial recipes in fragments mode:")
+    @CustomKey("partial-sections")
+    var partialSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.HINT, true),
+        SectionEntry(LoreType.DIFFICULTY, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.STEPS, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.EFFECT, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
+    )
+
+    @Comment("List of lore sections that appear for undiscovered recipes in fragments mode:")
+    @CustomKey("undiscovered-sections")
+    var undiscoveredSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.HINT, true),
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.AUTHOR, true),
         SectionEntry(LoreType.SPACER)
@@ -47,48 +70,6 @@ class LoreConfig : OkaeriConfig() {
         SectionEntry(LoreType.SPACER),
         SectionEntry(LoreType.STEPS, true),
         SectionEntry(LoreType.SPACER)
-    )
-
-    @Comment(
-        "When should the recipe difficulty be visible in fragments mode",
-        "Any of [completed, partial, undiscovered]"
-    )
-    @CustomKey("difficulty-visibility")
-    var difficultyVisibility: List<RecipeCompletionState> = listOf(
-        RecipeCompletionState.COMPLETED,
-        RecipeCompletionState.PARTIAL
-    )
-
-    @Comment(
-        "When should the recipe hints be visible in fragments mode",
-        "Any of [completed, partial, undiscovered]"
-    )
-    @CustomKey("hint-visibility")
-    var hintVisibility: List<RecipeCompletionState> = listOf(
-        RecipeCompletionState.COMPLETED,
-        RecipeCompletionState.PARTIAL,
-        RecipeCompletionState.UNDISCOVERED
-    )
-
-    @Comment(
-        "When should the recipe effect be visible in fragments mode",
-        "Any of [completed, partial, undiscovered]"
-    )
-    @CustomKey("effect-visibility")
-    var effectVisibility: List<RecipeCompletionState> = listOf(
-        RecipeCompletionState.COMPLETED,
-        RecipeCompletionState.PARTIAL
-    )
-
-    @Comment(
-        "When should the recipe author be visible in fragments mode",
-        "Any of [completed, partial, undiscovered]"
-    )
-    @CustomKey("author-visibility")
-    var authorVisibility: List<RecipeCompletionState> = listOf(
-        RecipeCompletionState.COMPLETED,
-        RecipeCompletionState.PARTIAL,
-        RecipeCompletionState.UNDISCOVERED
     )
 
     @Comment("Insert an empty line between each recipe step?")

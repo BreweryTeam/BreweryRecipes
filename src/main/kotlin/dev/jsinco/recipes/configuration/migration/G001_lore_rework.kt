@@ -61,7 +61,29 @@ object G001_lore_rework : NamedMigration(
             if (userProbablyWantsEmptyLineAtBottom) {
                 fragmentsEntries.add(SectionEntry(LoreType.SPACER))
             }
-            view.setCollection("recipes.lore.fragments-sections", fragmentsEntries, SectionEntry::class.java)
+            view.setCollection("recipes.lore.completed-sections", fragmentsEntries, SectionEntry::class.java)
+            view.setCollection("recipes.lore.partial-sections", fragmentsEntries, SectionEntry::class.java)
+
+            val undiscoveredEntries = mutableListOf<SectionEntry>()
+            if (showDifficultyInFragments) {
+                if (emptyAboveDifficulty) {
+                    undiscoveredEntries.add(SectionEntry(LoreType.SPACER))
+                }
+                undiscoveredEntries.add(SectionEntry(LoreType.HINT, userProbablyWantsIndents))
+            } else {
+                if (emptyAboveDifficulty) {
+                    undiscoveredEntries.add(SectionEntry(LoreType.SPACER))
+                }
+                undiscoveredEntries.add(SectionEntry(LoreType.HINT, userProbablyWantsIndents))
+            }
+            if (emptyAboveSteps || emptyBelowSteps) {
+                undiscoveredEntries.add(SectionEntry(LoreType.SPACER))
+            }
+            undiscoveredEntries.add(SectionEntry(LoreType.AUTHOR, userProbablyWantsIndents))
+            if (userProbablyWantsEmptyLineAtBottom) {
+                undiscoveredEntries.add(SectionEntry(LoreType.SPACER))
+            }
+            view.setCollection("recipes.lore.undiscovered-sections", undiscoveredEntries, SectionEntry::class.java)
 
             val brewedEntries = mutableListOf<SectionEntry>()
             if (showScore) {
