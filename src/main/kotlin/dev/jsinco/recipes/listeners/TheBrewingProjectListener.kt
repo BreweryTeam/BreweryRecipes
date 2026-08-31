@@ -24,6 +24,9 @@ import org.bukkit.event.Listener
 import org.bukkit.inventory.ItemStack
 import kotlin.math.pow
 
+private const val NEW_RECIPE_FEEDBACK = "breweryrecipes.learn.new"
+private const val PERFECT_RECIPE_FEEDBACK = "breweryrecipes.learn.perfect"
+
 data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
 
     companion object {
@@ -69,10 +72,10 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         )
 
         if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
-            completeRecipeFeedback(player, recipe.recipeName)
+            recipeFeedback(player, recipe.recipeName, NEW_RECIPE_FEEDBACK)
         }
         if (existing != null && existing.score < 1.0 && scoreValue >= 1.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage) {
-            perfectRecipeFeedback(player, recipe.recipeName)
+            recipeFeedback(player, recipe.recipeName, PERFECT_RECIPE_FEEDBACK)
         }
         if (BreweryRecipes.recipesConfig.incrementalLearning) {
             learn(player, brew, recipe)
@@ -96,14 +99,6 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         }
         return recipeKey != brew.meta(COMPLETED_RECIPE_KEY, MetaDataType.STRING) ||
                 (brew.meta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE) ?: Double.MIN_VALUE) < score
-    }
-
-    private fun completeRecipeFeedback(player: Player, recipeIdentifier: String) {
-        recipeFeedback(player, recipeIdentifier, "breweryrecipes.learn.new")
-    }
-
-    private fun perfectRecipeFeedback(player: Player, recipeIdentifier: String) {
-        recipeFeedback(player, recipeIdentifier, "breweryrecipes.learn.perfect")
     }
 
     private fun recipeFeedback(player: Player, recipeIdentifier: String, translationKey: String) {
