@@ -29,4 +29,10 @@ object EncryptedRecipeViewCreator : RecipeViewCreator {
         }
         return RecipeViewLoreWriter.clearRedundantFlaws(RecipeView.of(breweryRecipe.identifier, flaws))
     }
+
+    fun createFullyFlawed(breweryRecipe: BreweryRecipe): RecipeView {
+        return RecipeView.of(breweryRecipe.identifier, listOf(
+            Flaw(ObfuscationFlawType, FlawConfig(FlawExtent.Everywhere, Random.nextInt(), 100.0))
+        ))
+    }
 }

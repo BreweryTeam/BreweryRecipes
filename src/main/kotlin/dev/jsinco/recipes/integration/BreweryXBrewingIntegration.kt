@@ -18,8 +18,8 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     private lateinit var recipeMap: Map<String, BreweryRecipe>
 
-    override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
-        val recipe = BRecipe.getRecipes().first { it.id.equals(recipeDisplay.recipeKey(), true) } ?: return null
+    override fun createItem(identifier: String): ItemStack? {
+        val recipe = BRecipe.getRecipes().first { it.id.equals(identifier, true) } ?: return null
         return recipe.createBrew(10).createItem()
     }
 

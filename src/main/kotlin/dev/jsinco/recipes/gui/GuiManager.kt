@@ -2,25 +2,24 @@ package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.RecipeSortOrder
-import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.configuration.Visibility
+import dev.jsinco.recipes.recipe.UndiscoveredRecipe
+import dev.jsinco.recipes.recipe.RecipeDetails
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import kotlin.collections.sortedByDescending
 
 object GuiManager {
 
-    fun openRecipeGui(viewer: Player, target: OfflinePlayer = viewer) {
+    fun openRecipeGui(viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
         if (!CooldownManager.tryOpen(viewer)) return
-        openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target)
+        openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
     }
 
-    fun openWithMode(mode: RecipeBookMode, viewer: Player, target: OfflinePlayer = viewer) {
-        val admin = when (mode) {
-            RecipeBookMode.FRAGMENTS -> viewer.hasPermission("breweryrecipes.override.view.fragments")
-            RecipeBookMode.BREWED -> viewer.hasPermission("breweryrecipes.override.view.notes")
-        }
+    fun openWithMode(mode: RecipeBookMode, viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
@@ -32,11 +31,28 @@ object GuiManager {
                     val recipeViews = BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
                         .associateBy { it.recipeIdentifier }
                     BreweryRecipes.brewingIntegration.allRecipes()
-                        .map(BreweryRecipe::recipeKey)
-                        .mapNotNull { recipeViews[it] }
+                        .map { it.recipeKey() }
+                        .mapNotNull { identifier ->
+                            val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, identifier)
+                            when (details.visibility) {
+                                Visibility.VISIBLE -> recipeViews[identifier] ?: UndiscoveredRecipe(identifier)
+                                Visibility.SECRET -> recipeViews[identifier]
+                                Visibility.HIDDEN -> null
+                            }
+                        }
                 }
                 RecipeBookMode.BREWED -> {
-                    BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId).toList()
+                    val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId)
+                        .associateBy { it.identifier }
+                    BreweryRecipes.brewingIntegration.allRecipes()
+                        .map { it.recipeKey() }
+                        .mapNotNull { identifier ->
+                            val details = RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, identifier)
+                            when (details.visibility) {
+                                Visibility.VISIBLE, Visibility.SECRET -> completedRecipes[identifier]
+                                Visibility.HIDDEN -> null
+                            }
+                        }
                 }
             }
         }
@@ -45,6 +61,7 @@ object GuiManager {
             viewer,
             target,
             mode,
+            admin,
             sortDisplays(recipeDisplays, mode),
             { display ->
                 BreweryRecipes.recipeGuiItemCache.resolve(target.uniqueId, display.recipeKey(), admin, mode) {
@@ -66,25 +83,14 @@ object GuiManager {
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
         }
 
-        return when {
-            mode == RecipeBookMode.FRAGMENTS && BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
-                baseSorted.sortedBy { fragmentationGroup(it) }
+        return when (mode) {
+            RecipeBookMode.FRAGMENTS if BreweryRecipes.recipesConfig.groupFragmentsByCompleteness ->
+                baseSorted.sortedBy { it.fragmentationGroup() }
 
-            mode == RecipeBookMode.BREWED && BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
-                baseSorted.sortedByDescending { it.scoreEquivalent() }
+            RecipeBookMode.BREWED if BreweryRecipes.recipesConfig.groupBrewNotesByScore ->
+                baseSorted.sortedByDescending { if (it is UndiscoveredRecipe) -1.0 else it.scoreEquivalent() }
 
             else -> baseSorted
-        }
-    }
-
-    private fun fragmentationGroup(display: RecipeDisplay): Int {
-        val fragmentation = (1.0 - display.scoreEquivalent()) * 100.0
-        return when {
-            fragmentation <= 0.0 -> 0
-            fragmentation < 25.0 -> 1
-            fragmentation < 50.0 -> 2
-            fragmentation < 75.0 -> 3
-            else -> 4
         }
     }
 

@@ -85,9 +85,8 @@ data class BreweryRecipe(
 
     override fun toLore(): List<Component> {
         return RecipeViewLoreWriter.writeLore(
-            generateCompletedView(),
+            this,
             BreweryRecipes.brewingIntegration,
-            steps,
             isBrewNote = true
         ) ?: emptyList()
     }
@@ -99,6 +98,14 @@ data class BreweryRecipe(
     override fun scoreEquivalent(): Double {
         return BreweryRecipes.brewingIntegration.score(this)
     }
+
+    override fun fragmentationGroup(): FragmentationGroup {
+        return FragmentationGroup.of((1.0 - scoreEquivalent()) * 100.0)
+    }
+
+    override fun displaySteps(): List<Step> = steps
+
+    override fun generateView(): RecipeView = generateCompletedView()
 
     class Builder(private val identifier: String) {
         private val stepsBuilder = ImmutableList.Builder<Step>()

@@ -1,56 +1,86 @@
 package dev.jsinco.recipes.configuration
 
+import dev.jsinco.recipes.configuration.gui.SectionEntry
+import dev.jsinco.recipes.recipe.lore.LoreType
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import eu.okaeri.configs.annotation.CustomKey
 
 class LoreConfig : OkaeriConfig() {
 
-    @Comment("Show the brew's quality below its name in brew notes mode?")
-    @CustomKey("show-brew-score")
-    var showBrewScore: Boolean = true
+    @Comment(
+        "The list of lore sections in the order they appear in the recipe book.",
+        "Use blank lines to separate sections. Adjacent blank lines will be combined into one blank line.",
+        "Prefix with a '+' to indent that line.",
+        "",
+        "STEPS: The steps needed to complete the recipe (fragments mode) or the steps the player performed (brewed mode)",
+        "SCORE: The brew's score in 0-5 star format (brewed mode only)",
+        "DIFFICULTY: The recipe's difficulty",
+        "HINT: Recipe hint defined in details.yml",
+        "EFFECT: Brew effect defined in details.yml",
+        "AUTHOR: Recipe author defined in details.yml",
+        "",
+        "List of lore sections that appear for completed recipes in fragments mode:"
+    )
+    @CustomKey("completed-sections")
+    var completedSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.HINT, true),
+        SectionEntry(LoreType.DIFFICULTY, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.STEPS, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.EFFECT, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
+    )
 
-    @Comment("Insert an empty line before the brew quality line?")
-    @CustomKey("empty-line-above-brew-score")
-    var emptyLineAboveBrewScore: Boolean = false
+    @Comment("List of lore sections that appear for partial recipes in fragments mode:")
+    @CustomKey("partial-sections")
+    var partialSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.HINT, true),
+        SectionEntry(LoreType.DIFFICULTY, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.STEPS, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.EFFECT, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
+    )
 
-    @Comment("Apply indentation and trailing spaces to the brew quality line?")
-    @CustomKey("apply-indentation-to-brew-score")
-    var applyIndentationToBrewScore: Boolean = false
+    @Comment("List of lore sections that appear for undiscovered recipes in fragments mode:")
+    @CustomKey("undiscovered-sections")
+    var undiscoveredSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.HINT, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.AUTHOR, true),
+        SectionEntry(LoreType.SPACER)
+    )
 
-    @Comment("Show the recipe's difficulty in recipe fragments mode?")
-    @CustomKey("show-brew-difficulty")
-    var showBrewDifficulty: Boolean = true
-
-    @Comment("Show the recipe's difficulty in brew notes mode?")
-    @CustomKey("show-difficulty-in-brew-notes")
-    var showDifficultyInBrewNotes: Boolean = false
-
-    @Comment("Insert an empty line between name and difficulty?")
-    @CustomKey("empty-line-between-name-and-difficulty")
-    var emptyLineAboveBrewDifficulty: Boolean = true
-
-    @Comment("Apply indentation and trailing spaces to the difficulty line?")
-    @CustomKey("apply-indentation-to-brew-difficulty")
-    var applyIndentationToBrewDifficulty: Boolean = true
-
-    @Comment("Insert an empty line before the first step?")
-    @CustomKey("empty-line-above-steps")
-    var emptyLineAboveSteps: Boolean = true
+    @Comment("List of lore sections that appear in brewed mode:")
+    @CustomKey("brew-notes-sections")
+    var brewNotesSections: List<SectionEntry> = listOf(
+        SectionEntry(LoreType.SCORE),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.DIFFICULTY, true),
+        SectionEntry(LoreType.SPACER),
+        SectionEntry(LoreType.STEPS, true),
+        SectionEntry(LoreType.SPACER)
+    )
 
     @Comment("Insert an empty line between each recipe step?")
     @CustomKey("empty-line-between-steps")
     var emptyLineBetweenSteps: Boolean = true
 
-    @Comment("Insert an empty line after the last step?")
-    @CustomKey("empty-line-below-steps")
-    var emptyLineBelowSteps: Boolean = true
-
-    @Comment("Number of spaces prepended to every lore line")
+    @Comment("Number of spaces prepended to every indented lore line")
     @CustomKey("indentation")
     var indentation: Int = 2
 
-    @Comment("Number of spaces appended to every lore line")
+    @Comment("Number of spaces appended to every indented lore line")
     @CustomKey("trailing-spaces")
     var trailingSpaces: Int = 2
 }

@@ -26,8 +26,8 @@ object TbpBrewingIntegration : BrewingIntegration {
         return tbpApi
     }
 
-    override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
-        val recipe = getApi().recipeRegistry.getRecipe(recipeDisplay.recipeKey()).getOrNull() ?: return null
+    override fun createItem(identifier: String): ItemStack? {
+        val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
         return recipe.getRecipeResult(BrewQuality.EXCELLENT).newLorelessItem()
     }
 
