@@ -9,8 +9,8 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 
 class RecipeView(
     val recipeIdentifier: String,
-    flaws: List<Flaw>,
-    val invertedReveals: List<Set<Int>>
+    flaws: List<Flaw> = emptyList(),
+    val invertedReveals: List<Set<Int>> = emptyList()
 ) : RecipeDisplay {
 
     val flaws = flaws.subList(0, flaws.size.coerceAtMost(10))
@@ -18,12 +18,6 @@ class RecipeView(
     private var memoizedFragmentationVersion: Int = Int.MIN_VALUE
 
     override fun recipeKey(): String = recipeIdentifier
-
-    companion object {
-        fun of(identifier: String, flaws: List<Flaw>): RecipeView {
-            return RecipeView(identifier, flaws, listOf())
-        }
-    }
 
     fun fragmentation(): Double {
         val current = RecipeViewLoreWriter.version
@@ -53,5 +47,27 @@ class RecipeView(
     override fun displaySteps(): List<Step>? = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier)?.steps
 
     override fun generateView(): RecipeView = this
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is RecipeView) return false
+
+        if (recipeIdentifier != other.recipeIdentifier) return false
+        if (flaws != other.flaws) return false
+        if (invertedReveals != other.invertedReveals) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = recipeIdentifier.hashCode()
+        result = 31 * result + flaws.hashCode()
+        result = 31 * result + invertedReveals.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "RecipeView(recipeIdentifier='$recipeIdentifier', invertedReveals=$invertedReveals, flaws=$flaws)"
+    }
 
 }

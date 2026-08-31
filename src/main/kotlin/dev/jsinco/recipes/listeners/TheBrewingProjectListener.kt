@@ -2,6 +2,7 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.brewery.api.brew.Brew
 import dev.jsinco.brewery.api.meta.MetaDataType
+import dev.jsinco.brewery.api.recipe.Recipe
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.brewery.bukkit.api.event.transaction.BarrelExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.CauldronExtractEvent
@@ -9,12 +10,22 @@ import dev.jsinco.brewery.bukkit.api.event.transaction.DistilleryExtractEvent
 import dev.jsinco.brewery.bukkit.api.event.transaction.ItemTransactionEvent
 import dev.jsinco.brewery.bukkit.api.transaction.ItemSource
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.recipe.RecipeViewLoreWriter
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import dev.jsinco.recipes.util.metadata.UuidMetaDataType
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.inventory.ItemStack
+import kotlin.math.pow
+
+private const val NEW_RECIPE_FEEDBACK = "breweryrecipes.learn.new"
+private const val PERFECT_RECIPE_FEEDBACK = "breweryrecipes.learn.perfect"
 
 data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
 
@@ -55,10 +66,21 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         val brewModified = brew.withMeta(COMPLETED_RECIPE_KEY, MetaDataType.STRING, recipeKey)
             .withMeta(COMPLETED_BY_KEY, UuidMetaDataType, player.uniqueId)
             .withMeta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE, scoreValue)
-        BreweryRecipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
+        val existing = BreweryRecipes.completedRecipeManager.insertOrUpdateRecipeCompletion(
             player.uniqueId,
             TBPRecipeConverter.convert(recipe.recipeName, brew.completedSteps, score = scoreValue)
         )
+
+        if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
+            recipeFeedback(player, recipe.recipeName, NEW_RECIPE_FEEDBACK)
+        }
+        if (existing != null && existing.score < 1.0 && scoreValue >= 1.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage) {
+            recipeFeedback(player, recipe.recipeName, PERFECT_RECIPE_FEEDBACK)
+        }
+        if (BreweryRecipes.recipesConfig.incrementalLearning) {
+            learn(player, brew, recipe)
+        }
+
         return brewModified
     }
 
@@ -78,4 +100,36 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         return recipeKey != brew.meta(COMPLETED_RECIPE_KEY, MetaDataType.STRING) ||
                 (brew.meta(COMPLETED_SCORE_KEY, MetaDataType.DOUBLE) ?: Double.MIN_VALUE) < score
     }
+
+    private fun recipeFeedback(player: Player, recipeIdentifier: String, translationKey: String) {
+        val displayName = BreweryRecipes.brewingIntegration.brewDisplayName(recipeIdentifier) ?: return
+        player.sendMessage(
+            Component.translatable(
+                translationKey,
+                Argument.component("name", displayName)
+            )
+        )
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 1.0f, 1.0f)
+    }
+
+    private fun learn(player: Player, brew: Brew, recipe: Recipe<ItemStack>) {
+        val breweryRecipe = BreweryRecipes.brewingIntegration.getRecipe(recipe.recipeName) ?: return
+        val currentView = BreweryRecipes.recipeViewManager.getView(player.uniqueId, recipe.recipeName)
+            ?: breweryRecipe.generateFullyFlawedView()
+
+        val score = brew.score(recipe)
+        if (!score.completed()) return
+        val targetFragmentation = computeTargetFragmentation(score.score())
+
+        val updatedView = RecipeViewLoreWriter.defragmentUntil(currentView, targetFragmentation)
+        BreweryRecipes.recipeViewManager.insertOrUpdateView(player.uniqueId, updatedView)
+    }
+
+    private fun computeTargetFragmentation(score: Double): Double {
+        val numHalfStars = (score * 10.0).toInt().toDouble()
+        val learningCurve = BreweryRecipes.recipesConfig.learningCurve.coerceAtLeast(0.0)
+        val startingFragmentation = BreweryRecipes.recipesConfig.startingFragmentation.coerceIn(0.0, 100.0)
+        return startingFragmentation * (1.0 - (numHalfStars / 10.0).pow(learningCurve))
+    }
+
 }

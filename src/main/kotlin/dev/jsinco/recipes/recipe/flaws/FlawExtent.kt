@@ -38,17 +38,17 @@ interface FlawExtent {
     }
 
     companion object {
-        fun compileWholeStep(steps: Int): WholeStep {
-            return WholeStep(Random.nextInt(steps))
+        fun compileWholeStep(steps: Int, random: Random = Random.Default): WholeStep {
+            return WholeStep(random.nextInt(steps))
         }
 
-        fun compileStepRange(steps: Int): StepRange {
-            val from = Random.nextInt(10)
-            return StepRange(Random.nextInt(steps), from, from + Random.nextInt(10) + 10)
+        fun compileStepRange(steps: Int, random: Random = Random.Default): StepRange {
+            val from = random.nextInt(10)
+            return StepRange(random.nextInt(steps), from, from + random.nextInt(10) + 10)
         }
 
-        fun compileAfterPoint(steps: Int): AfterPoint {
-            return AfterPoint(Random.nextInt(steps), Random.nextInt(10))
+        fun compileAfterPoint(steps: Int, random: Random = Random.Default): AfterPoint {
+            return AfterPoint(random.nextInt(steps), random.nextInt(10))
         }
     }
 }
