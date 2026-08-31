@@ -5,11 +5,13 @@ import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.GUIUtil
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.InventoryHolder
 
 class RecipesGui(
     private val player: Player,
+    val target: OfflinePlayer,
     val mode: RecipeBookMode,
     val admin: Boolean,
     private val recipeDisplays: List<RecipeDisplay>,

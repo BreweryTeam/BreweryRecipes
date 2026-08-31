@@ -8,18 +8,19 @@ import dev.jsinco.recipes.recipe.RecipeDetails
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import kotlin.collections.sortedByDescending
 
 object GuiManager {
 
-    fun openRecipeGui(player: Player, admin: Boolean = false) {
-        if (!CooldownManager.tryOpen(player)) return
-        openWithMode(player, BreweryRecipes.guiConfig.defaultMode, admin)
+    fun openRecipeGui(viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
+        if (!CooldownManager.tryOpen(viewer)) return
+        openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
     }
 
-    fun openWithMode(player: Player, mode: RecipeBookMode, admin: Boolean = false) {
-        val recipeDisplays = if (admin) {
+    fun openWithMode(mode: RecipeBookMode, viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
+        val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
                 RecipeBookMode.BREWED -> BreweryRecipes.brewingIntegration.allRecipes()
@@ -27,7 +28,7 @@ object GuiManager {
         } else {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> {
-                    val recipeViews = BreweryRecipes.recipeViewManager.getViews(player.uniqueId)
+                    val recipeViews = BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
                         .associateBy { it.recipeIdentifier }
                     BreweryRecipes.brewingIntegration.allRecipes()
                         .map { it.recipeKey() }
@@ -41,7 +42,7 @@ object GuiManager {
                         }
                 }
                 RecipeBookMode.BREWED -> {
-                    val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(player.uniqueId)
+                    val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId)
                         .associateBy { it.identifier }
                     BreweryRecipes.brewingIntegration.allRecipes()
                         .map { it.recipeKey() }
@@ -57,12 +58,13 @@ object GuiManager {
         }
 
         val gui = RecipesGui(
-            player,
+            viewer,
+            target,
             mode,
             admin,
             sortDisplays(recipeDisplays, mode),
             { display ->
-                BreweryRecipes.recipeGuiItemCache.resolve(player.uniqueId, display.recipeKey(), admin, mode) {
+                BreweryRecipes.recipeGuiItemCache.resolve(target.uniqueId, display.recipeKey(), admin, mode) {
                     BreweryRecipes.brewingIntegration.createGuiItem(display)
                 }
             }

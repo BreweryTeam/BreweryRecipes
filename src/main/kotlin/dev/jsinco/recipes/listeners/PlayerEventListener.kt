@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.listeners
 
 import com.destroystokyo.paper.profile.PlayerProfile
+import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.data.PersistencyLinkedCache
 import dev.jsinco.recipes.recipe.RecipeViewManager.Companion.CACHE_LIFETIME
 import io.papermc.paper.connection.PlayerConfigurationConnection
@@ -32,6 +33,7 @@ class PlayerEventListener(
                 else -> null
             }
         profile?.id?.let { playerUuid ->
+            forRemoval.remove(playerUuid)
             persistencyLinkedCaches.forEach { it.initiateCacheFor(playerUuid) }
         }
     }
@@ -47,9 +49,6 @@ class PlayerEventListener(
                 .map { it.key }
         }
         toRemove.forEach(forRemoval::remove)
-        persistencyLinkedCaches.forEach()
-        {
-            toRemove.forEach(it::clearAll)
-        }
+        toRemove.forEach(BreweryRecipes.recipeGuiItemCache::clearAll)
     }
 }

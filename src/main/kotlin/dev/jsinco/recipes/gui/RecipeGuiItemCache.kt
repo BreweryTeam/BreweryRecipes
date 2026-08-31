@@ -41,7 +41,7 @@ class RecipeGuiItemCache : PersistencyLinkedCache {
         adminCache.clear()
     }
 
-    override fun clearAll(playerUuid: UUID) {
+    fun clearAll(playerUuid: UUID) {
         playerCache.remove(playerUuid)
     }
 

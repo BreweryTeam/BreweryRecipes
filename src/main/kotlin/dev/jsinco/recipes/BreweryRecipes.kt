@@ -86,7 +86,7 @@ class BreweryRecipes : JavaPlugin() {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(RecipesCommand.command())
         }
-        recipesConfig.book.craftingRecipe.register(BookUtil.createBook(), "recipes_book")
+        recipesConfig.book.craftingRecipe.register("recipes_book", BookUtil.createBook())
         spawnConfig.recipeSpawning
             .forEachIndexed { index, definition -> definition.registerRecipe(index) }
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(
@@ -180,6 +180,8 @@ class BreweryRecipes : JavaPlugin() {
     }
 
     fun reload() {
+        val oldBookRecipe = recipesConfig.book.craftingRecipe
+        val oldSpawnDefinitions = spawnConfig.recipeSpawning
         brewingIntegration.reload()
         recipesConfig = readConfig()
         guiConfig = readGuiConfig()
@@ -192,8 +194,12 @@ class BreweryRecipes : JavaPlugin() {
         }
         recipeGuiItemCache.clearGlobal()
         RecipeViewLoreWriter.bumpVersion()
-        recipesConfig.book.craftingRecipe.register(recipesConfig.book.item.generateItem(), "breweryrecipes_book")
+        recipesConfig.book.craftingRecipe.register("recipes_book", BookUtil.createBook(), oldBookRecipe)
         spawnConfig.recipeSpawning
-            .forEachIndexed { index, definition -> definition.registerRecipe(index) }
+            .forEachIndexed { index, definition ->
+                definition.registerRecipe(index, oldSpawnDefinitions.firstOrNull { oldDefinition ->
+                    definition.recipeWhitelist == oldDefinition.recipeWhitelist && definition.recipeBlacklist == oldDefinition.recipeBlacklist
+                })
+            }
     }
 }
