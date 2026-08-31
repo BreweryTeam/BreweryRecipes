@@ -1,12 +1,17 @@
 package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.commands.argument.JoinedPlayerArgumentType
 import dev.jsinco.recipes.gui.GuiManager
+import dev.jsinco.recipes.gui.RecipeBookMode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
 object RecipeOpenCommand {
@@ -23,11 +28,52 @@ object RecipeOpenCommand {
                 return@executes 1
             }
             .then(
+                Commands.literal("admin")
+                    .executes { context ->
+                        val sender = context.source.sender
+                        if (sender !is Player) {
+                            context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
+                            return@executes 1
+                        }
+                        val defaultMode = BreweryRecipes.guiConfig.defaultMode
+                        val mode = if (defaultMode.hasOverridePermission(sender)) {
+                            defaultMode
+                        } else {
+                            // player must have permission for other mode since requires() checked if player has either permission
+                            defaultMode.next()
+                        }
+                        GuiManager.openWithMode(mode, sender, admin = true)
+                        return@executes 1
+                    }.requires { stack ->
+                        val sender = stack.sender
+                        return@requires sender is Player && RecipeBookMode.entries.any { it.hasOverridePermission(sender) }
+                    }
+            )
+            .then(
+                Commands.literal("as").then(
+                    Commands.argument("target", JoinedPlayerArgumentType)
+                        .executes { context ->
+                            val sender = context.source.sender
+                            if (sender !is Player) {
+                                context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
+                                return@executes 1
+                            }
+                            val target = context.getArgument("target", OfflinePlayer::class.java)
+                            GuiManager.openRecipeGui(sender, target)
+                            return@executes 1
+                        }
+                ).requires { it.sender.hasPermission("breweryrecipes.command.open.as") }
+            )
+            .then(
                 Commands.argument("targets", ArgumentTypes.players())
                     .executes { context ->
                         val targets = context
                             .getArgument("targets", PlayerSelectorArgumentResolver::class.java)
                             .resolve(context.source)
+                        if (targets.isEmpty()) {
+                            context.source.sender.sendMessage(Component.translatable("argument.entity.notfound.player")
+                                .color(NamedTextColor.RED))
+                        }
                         targets.forEach { target ->
                             GuiManager.openRecipeGui(target)
                         }

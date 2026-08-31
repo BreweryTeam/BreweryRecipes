@@ -2,6 +2,7 @@ package dev.jsinco.recipes.commands
 
 import com.mojang.brigadier.tree.LiteralCommandNode
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.gui.RecipeBookMode
 import dev.jsinco.recipes.util.BookUtil
 import dev.jsinco.recipes.util.TranslationArgumentUtil
 import io.papermc.paper.command.brigadier.CommandSourceStack

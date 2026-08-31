@@ -3,63 +3,57 @@ package dev.jsinco.recipes.commands.argument
 import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.util.TranslationUtil
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
+import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-class EnumArgument<E : Enum<E>>(
-    val eClass: Class<E>,
-    val errorTranslationKey: String,
-) : CustomArgumentType.Converted<E, String> {
+object JoinedPlayerArgumentType : CustomArgumentType.Converted<OfflinePlayer, String> {
 
-    companion object {
-        fun flawType() = EnumArgument(
-            RecipeViewCreator.Type::class.java,
-            "breweryrecipes.command.invalid.flaw-type"
-        )
-    }
-
-    val UNKNOWN_VALUE = DynamicCommandExceptionType {
+    val UNKNOWN_PLAYER = DynamicCommandExceptionType {
         return@DynamicCommandExceptionType MessageComponentSerializer.message()
             .serialize(
                 TranslationUtil.render(
                     Component.translatable(
-                        errorTranslationKey,
+                        "breweryrecipes.command.invalid.joined-player",
                         Argument.string("value", it.toString())
                     )
                 )
             )
     }
 
-    @Throws(CommandSyntaxException::class)
-    override fun convert(nativeType: String): E {
-        return eClass.enumConstants.first { nativeType.equals(it.name, true) }
-            ?: throw UNKNOWN_VALUE.create(nativeType)
+    override fun convert(nativeType: String): OfflinePlayer {
+        val offlinePlayer = try {
+            Bukkit.getOfflinePlayer(UUID.fromString(nativeType))
+        } catch (_: IllegalArgumentException) {
+            Bukkit.getOfflinePlayerIfCached(nativeType)
+        }
+        if (offlinePlayer?.hasPlayedBefore() == true) {
+            return offlinePlayer
+        }
+        throw UNKNOWN_PLAYER.create(nativeType)
     }
-
 
     override fun <S : Any> listSuggestions(
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        eClass.enumConstants
+        Bukkit.getOnlinePlayers()
             .map { it.name }
-            .map { it.lowercase(Locale.ROOT) }
-            .filter { it.startsWith(builder.remainingLowerCase) }
-            .forEach(builder::suggest)
+            .forEach { builder.suggest(it) }
         return builder.buildFuture()
     }
 
     override fun getNativeType(): ArgumentType<String> {
-        return StringArgumentType.word();
+        return StringArgumentType.word()
     }
+
 }

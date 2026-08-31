@@ -83,7 +83,4 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
     }
 
-    override fun clearAll(playerUuid: UUID) {
-        BreweryRecipes.recipeGuiItemCache.clearAll(playerUuid)
-    }
 }

@@ -2,6 +2,7 @@ package dev.jsinco.recipes.recipe
 
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.Flaw
+import dev.jsinco.recipes.recipe.process.Step
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.translation.Argument
@@ -27,23 +28,14 @@ class RecipeView(
         return memoizedFragmentation
     }
 
+    override fun fragmentationGroup() = FragmentationGroup.of(fragmentation())
+
     override fun toLore(): List<Component>? {
         return RecipeViewLoreWriter.writeLore(this, BreweryRecipes.brewingIntegration)
     }
 
     override fun displayName(brewDisplayName: Component): Component {
-        val fragmentation = fragmentation()
-        val translationName = if (fragmentation == 0.0) {
-            "breweryrecipes.gui.recipes.name.complete"
-        } else if (fragmentation < 25.0) {
-            "breweryrecipes.gui.recipes.name.slightly-fragmented"
-        } else if (fragmentation < 50.0) {
-            "breweryrecipes.gui.recipes.name.moderately-fragmented"
-        } else if (fragmentation < 75.0) {
-            "breweryrecipes.gui.recipes.name.heavily-fragmented"
-        } else {
-            "breweryrecipes.gui.recipes.name.severely-fragmented"
-        }
+        val translationName = fragmentationGroup().translationKey
         return Component.translatable(translationName, Argument.component("name", brewDisplayName))
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
     }
@@ -51,6 +43,10 @@ class RecipeView(
     override fun scoreEquivalent(): Double {
         return 1 - fragmentation() / 100
     }
+
+    override fun displaySteps(): List<Step>? = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier)?.steps
+
+    override fun generateView(): RecipeView = this
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -73,6 +69,5 @@ class RecipeView(
     override fun toString(): String {
         return "RecipeView(recipeIdentifier='$recipeIdentifier', invertedReveals=$invertedReveals, flaws=$flaws)"
     }
-
 
 }
