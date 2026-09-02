@@ -1,0 +1,205 @@
+[
+  {
+    "from": "",
+    "to": "，呃，",
+    "alcohol": 30,
+    "percentage": 90
+  },
+  {
+    "from": "",
+    "to": "，呃啊，",
+    "alcohol": 10,
+    "percentage": 70
+  },
+  {
+    "from": "",
+    "to": "，嗝，",
+    "alcohol": 20,
+    "percentage": 60
+  },
+  {
+    "from": "",
+    "to": "，咕，",
+    "alcohol": 30,
+    "percentage": 40
+  },
+  {
+    "from": "",
+    "to": "，咕咕嘎嘎！",
+    "alcohol": 100,
+    "percentage": 10
+  },
+  {
+    "from": "你",
+    "to": "恁",
+    "percentage": 20
+  },
+  {
+    "from": "酒",
+    "to": "⑨",
+    "alcohol": 15,
+    "percentage": 60
+  },
+  {
+    "from": "啊",
+    "to": "呃啊",
+    "alcohol": 15,
+    "percentage": 40
+  },
+  {
+    "from": "我",
+    "to": "俺",
+    "percentage": 40
+  },
+  {
+    "from": "什么",
+    "to": "甚么",
+    "percentage": 60
+  },
+  {
+    "from": "人",
+    "to": "鸟人",
+    "alcohol": 40,
+    "percentage": 20
+  },
+  {
+    "from": "你",
+    "to": "妈妈",
+    "percentage": 30
+  },
+  {
+    "from": "你",
+    "to": "爸爸",
+    "alcohol": 60,
+    "percentage": 70
+  },
+  {
+    "from": "的",
+    "to": "他奶奶的",
+    "alcohol": 25,
+    "percentage": 80
+  },
+  {
+    "from": "哦",
+    "to": "O",
+    "percentage": 20
+  },
+  {
+    "from": "我",
+    "to": "本小姐",
+    "alcohol": 15,
+    "percentage": 30
+  },
+  {
+    "from": "呗",
+    "to": "呗baby",
+    "alcohol": 40,
+    "percentage": 80
+  },
+  {
+    "from": "你",
+    "to": "父亲",
+    "alcohol": 70,
+    "percentage": 20
+  },
+  {
+    "from": "1",
+    "to": "1！5！",
+    "percentage": 90
+  },
+  {
+    "from": "我",
+    "to": "咱",
+    "alcohol": 65,
+    "percentage": 70
+  },
+  {
+    "from": "我",
+    "to": "洒家",
+    "alcohol": 30,
+    "percentage": 80
+  },
+  {
+    "from": "一",
+    "to": "一？五！",
+    "alcohol": 40,
+    "percentage": 20
+  },
+  {
+    "from": "顺",
+    "to": "不要说辣个，辣个是骂人的，也不要去搜",
+    "alcohol": 10,
+    "percentage": 80
+  },
+  {
+    "from": "嗯",
+    "to": "嗯嗯",
+    "alcohol": 30,
+    "percentage": 30
+  },
+  {
+    "from": "，",
+    "to": "，呃呃，",
+    "alcohol": 50,
+    "percentage": 80
+  },
+  {
+    "from": "",
+    "to": "喵",
+    "alcohol": 70,
+    "percentage": 80
+  },
+  {
+    "from": "\\?\\?",
+    "to": "\\?\\?\\?\\?\\?",
+    "alcohol": 40,
+    "percentage": 80
+  },
+  {
+    "from": " ",
+    "to": "",
+    "alcohol": 35,
+    "percentage": 30
+  },
+  {
+    "from": " ",
+    "to": "",
+    "percentage": 10
+  },
+  {
+    "from": "，",
+    "to": "，呜呃，",
+    "alcohol": 50,
+    "percentage": 15
+  },
+  {
+    "from": "，",
+    "to": "，哼哼，",
+    "alcohol": 50,
+    "percentage": 10
+  },
+  {
+    "from": " ",
+    "to": "  ",
+    "alcohol": 70,
+    "percentage": 100
+  },
+  {
+    "from": " ",
+    "to": "…yue……",
+    "alcohol": 40,
+    "percentage": 60
+  },
+  {
+    "from": " ",
+    "to": "  ",
+    "alcohol": 30,
+    "percentage": 50
+  },
+  {
+    "from": "你",
+    "to": "你这厮",
+    "alcohol": 30,
+    "percentage": 40
+  }
+]
