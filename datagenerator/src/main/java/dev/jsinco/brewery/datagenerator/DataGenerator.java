@@ -59,7 +59,7 @@ public class DataGenerator {
     public static void main(String[] args) throws URISyntaxException, IOException {
         if (args.length != 1) {
             System.out.print("Usage: <target folder>");
-            return;
+            System.exit(1);
         }
         File outputFolder = new File(args[0]);
         URL url1 = ClassLoader.getSystemResource("assets/minecraft/textures/item/apple.png");
