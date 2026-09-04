@@ -239,11 +239,12 @@ object RecipeViewLoreWriter {
             is TranslatableComponent -> {
                 val rendered = TranslationUtil.render(withChildren)
                 if (rendered !is TranslatableComponent) {
-                    resolveTranslatablesForMutation(rendered).style(withChildren.style())
+                    resolveTranslatablesForMutation(rendered)
                 } else {
                     Component.text(
                         BreweryRecipes.instance.translator?.findClientSideTranslation(rendered.key()) ?: rendered.key()
-                    )
+                    ).children(rendered.children())
+                        .style(rendered.style())
                 }
             }
 
