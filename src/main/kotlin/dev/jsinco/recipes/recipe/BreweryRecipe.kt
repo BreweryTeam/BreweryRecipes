@@ -83,11 +83,7 @@ data class BreweryRecipe(
     }
 
     fun generateFullyFlawedView(random: Random = Random.Default): RecipeView {
-        val collection = RecipeViewCreator.Type.entries.random(random)
-        return generateFullyFlawedView(collection, random)
-    }
-
-    fun generateFullyFlawedView(flawViewType: RecipeViewCreator.Type, random: Random = Random.Default): RecipeView {
+        val flawViewType = RecipeViewCreator.Type.entries.random(random)
         return flawViewType.recipeViewCreator.createFullyFlawed(this, random)
     }
 
