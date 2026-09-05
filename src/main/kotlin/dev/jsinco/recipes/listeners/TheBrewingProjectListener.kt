@@ -76,11 +76,11 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         val showPerfectMessage = existing != null && existing.score < 1.0 && scoreValue >= 1.0 && BreweryRecipes.recipesConfig.showRecipePerfectMessage
         if (showPerfectMessage) {
             recipeFeedback(player, recipe.recipeName, PERFECT_RECIPE_FEEDBACK)
-        } else if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
-            recipeFeedback(player, recipe.recipeName, NEW_RECIPE_FEEDBACK)
         }
         if (BreweryRecipes.recipesConfig.incrementalLearning) {
             learn(player, brew, recipe, showPerfectMessage)
+        } else if (existing == null && BreweryRecipes.recipesConfig.showRecipeCompleteMessage) {
+            recipeFeedback(player, recipe.recipeName, NEW_RECIPE_FEEDBACK)
         }
 
         return brewModified
