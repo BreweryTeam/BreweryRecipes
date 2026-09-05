@@ -73,8 +73,7 @@ class BreweryRecipes : JavaPlugin() {
         recipeGuiItemCache = RecipeGuiItemCache()
         brewingIntegration = loadGuiIntegration()
         brewingIntegration.enable(this)
-        translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language).also {
-            it.reload()
+        translator = RecipesTranslator(File(dataFolder, "locale")).also {
             GlobalTranslator.translator().addSource(it)
         }
         val playerEventListener = PlayerEventListener(recipeViewManager, completedRecipeManager, recipeGuiItemCache)
@@ -187,11 +186,7 @@ class BreweryRecipes : JavaPlugin() {
         guiConfig = readGuiConfig()
         spawnConfig = readSpawnConfig()
         detailsConfig = readDetailsConfig()
-        translator?.let { GlobalTranslator.translator().removeSource(it) }
-        translator = RecipesTranslator(File(dataFolder, "locale"), recipesConfig.language).also {
-            it.reload()
-            GlobalTranslator.translator().addSource(it)
-        }
+        translator?.reload()
         recipeGuiItemCache.clearGlobal()
         RecipeViewLoreWriter.bumpVersion()
         recipesConfig.book.craftingRecipe.register("recipes_book", BookUtil.createBook(), oldBookRecipe)

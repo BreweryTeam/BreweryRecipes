@@ -5,8 +5,11 @@ import com.google.common.collect.ImmutableMap
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
+import dev.jsinco.recipes.BreweryRecipes
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslator
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import java.io.*
 import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
@@ -16,18 +19,21 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
-class RecipesTranslator(private val localeDirectory: File, private var lang: Locale) : MiniMessageTranslator() {
+class RecipesTranslator(private val localeDirectory: File) : MiniMessageTranslator() {
 
     private var translations: Map<Locale, Properties>
     private var clientSideTranslations: Properties
+    private var lang: Locale
 
     init {
+        lang = BreweryRecipes.recipesConfig.language
         syncLangFiles()
         translations = loadLangFiles()
         clientSideTranslations = readClientTranslations();
     }
 
     fun reload() {
+        lang = BreweryRecipes.recipesConfig.language
         syncLangFiles()
         translations = loadLangFiles()
         clientSideTranslations = readClientTranslations();
@@ -180,6 +186,9 @@ class RecipesTranslator(private val localeDirectory: File, private var lang: Loc
     }
 
     fun findClientSideTranslation(key: String): String? {
+        if (lang == Locale.US) {
+            return PlainTextComponentSerializer.plainText().serialize(Component.translatable(key))
+        }
         return clientSideTranslations.getProperty(key)
     }
 }
