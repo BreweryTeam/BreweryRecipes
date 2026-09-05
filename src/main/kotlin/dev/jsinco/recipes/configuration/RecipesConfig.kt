@@ -95,6 +95,13 @@ class RecipesConfig : OkaeriConfig() {
     @CustomKey("min-learning-fragmentation")
     var minLearningFragmentation: Double = 0.0
 
+    @Comment(
+        "If incremental-learning is true, whether players receive an action bar message",
+        "when they learn more of the true recipe."
+    )
+    @CustomKey("show-learn-message")
+    var showLearnMessage: Boolean = true
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 

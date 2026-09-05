@@ -27,6 +27,7 @@ import org.bukkit.inventory.ItemStack
 import kotlin.math.pow
 
 private const val NEW_RECIPE_FEEDBACK = "breweryrecipes.learn.generic"
+private const val IMPROVE_RECIPE_FEEDBACK = "breweryrecipes.learn.improve"
 private const val PERFECT_RECIPE_FEEDBACK = "breweryrecipes.learn.perfect"
 
 data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
@@ -114,6 +115,10 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
         if (currentView != null) {
             if (currentView.fragmentation() <= targetFragmentation) return
             learn(player, currentView, targetFragmentation)
+
+            if (!showedPerfectMessage && BreweryRecipes.recipesConfig.showLearnMessage) {
+                player.sendActionBar(Component.translatable(IMPROVE_RECIPE_FEEDBACK))
+            }
         } else {
             val playerIsDrunk = BreweryRecipes.brewingIntegration.drunkenness(player) >= 1.0
             val viewType = RecipeViewCreator.Type.entries
