@@ -40,7 +40,8 @@ class RecipeListener : Listener {
                     "breweryrecipes.spawning.item.redeemed",
                     Argument.component(
                         "recipe_name",
-                        BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                        BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier)
+                            ?: Component.text("Unknown")
                     )
                 )
             )
@@ -56,6 +57,14 @@ class RecipeListener : Listener {
         } else null
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(recipeIdentifier) ?: run {
             event.player.sendMessage(Component.translatable("breweryrecipes.spawning.item.expired"))
+            return
+        }
+        if (BreweryRecipes.recipeViewManager.getViews(event.player.uniqueId)
+                .filter {
+                    it.recipeIdentifier == recipeIdentifier
+                }.any { it.fragmentation() == 0.0 }
+        ) {
+            event.player.sendMessage(Component.translatable("breweryrecipes.spawning.item.already-complete"))
             return
         }
         val recipeView = flaw?.let {
