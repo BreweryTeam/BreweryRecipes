@@ -10,10 +10,22 @@ interface RecipeViewCreator {
 
     fun createFullyFlawed(breweryRecipe: BreweryRecipe, random: Random = Random.Default): RecipeView
 
-    enum class Type(val recipeViewCreator: RecipeViewCreator, val lootTranslationKey: String) {
-
-        ENCRYPTED(EncryptedRecipeViewCreator, "breweryrecipes.spawning.item.name.encrypted"),
-        UNCERTAIN(UncertainRecipeViewCreator, "breweryrecipes.spawning.item.name.forgetful"),
-        DRUNK(DrunkRecipeViewCreator, "breweryrecipes.spawning.item.name.drunken");
+    enum class Type(
+        val recipeViewCreator: RecipeViewCreator,
+        val lootTranslationKey: String,
+        val learnTranslationKey: String
+    ) {
+        ENCRYPTED(EncryptedRecipeViewCreator,
+            "breweryrecipes.spawning.item.name.encrypted",
+            "breweryrecipes.learn.encrypted"
+        ),
+        UNCERTAIN(UncertainRecipeViewCreator,
+            "breweryrecipes.spawning.item.name.forgetful",
+            "breweryrecipes.learn.forgetful"
+        ),
+        DRUNK(DrunkRecipeViewCreator,
+            "breweryrecipes.spawning.item.name.drunken",
+            "breweryrecipes.learn.drunken"
+        );
     }
 }

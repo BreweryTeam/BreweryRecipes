@@ -5,12 +5,12 @@ import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Color
+import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.ItemStack
 import kotlin.jvm.optionals.getOrNull
 
@@ -109,4 +109,17 @@ object TbpBrewingIntegration : BrewingIntegration {
         val tbpRecipe = getApi().recipeRegistry.getRecipe(recipe.identifier).orElse(null) ?: return null
         return brew.score(tbpRecipe).displayName()
     }
+
+    override fun drunkenness(player: OfflinePlayer): Double {
+        val drunkState = getApi().drunksManager.getDrunkState(player.uniqueId) ?: return 0.0
+        for ((modifier, value) in drunkState.modifiers()) {
+            if (modifier.name == "alcohol") {
+                val range = modifier.maxValue - modifier.minValue
+                if (range == 0.0) return 0.0
+                return 100.0 * (value - modifier.minValue) / range
+            }
+        }
+        return 0.0
+    }
+
 }
