@@ -72,9 +72,9 @@ class RecipesConfig : OkaeriConfig() {
         "If incremental-learning is true, determines how much of the true recipe each quality level reveals:",
         "learningCurve > 1: Low-quality brews reveal little, high-quality brews reveal a lot",
         "learningCurve < 1: Low-quality brews reveal a lot, high-quality brews reveal a little",
-        "learningCurve <= 0: Creating a brew immediately reveals the entire recipe",
+        "learningCurve <= 0: Creating a brew immediately reveals as much as possible",
         "The recipe's fragmentation percentage is calculated with the following formula:",
-        "fragmentation = startingFragmentation * (1 - halfStars/10) ^ learningCurve"
+        "fragmentation = min + (max - min) * (1 - halfStars/10) ^ learningCurve"
     )
     @CustomKey("learning-curve")
     var learningCurve: Double = 2.0
@@ -84,8 +84,16 @@ class RecipesConfig : OkaeriConfig() {
         "determines how fragmented the learned recipe is.",
         "Ranges from 0.0 to 100.0."
     )
-    @CustomKey("starting-fragmentation")
-    var startingFragmentation: Double = 80.0
+    @CustomKey("max-learning-fragmentation")
+    var maxLearningFragmentation: Double = 80.0
+
+    @Comment(
+        "If incremental-learning is true, when the player creates a 5-star brew,",
+        "determines how fragmented the learned recipe is.",
+        "Ranges from 0.0 to max-learning-fragmentation."
+    )
+    @CustomKey("min-learning-fragmentation")
+    var minLearningFragmentation: Double = 0.0
 
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()

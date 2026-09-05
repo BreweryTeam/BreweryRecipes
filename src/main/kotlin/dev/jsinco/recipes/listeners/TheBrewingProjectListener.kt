@@ -147,8 +147,9 @@ data class TheBrewingProjectListener(val api: TheBrewingProjectApi) : Listener {
     private fun computeTargetFragmentation(score: Double): Double {
         val numHalfStars = (score * 10.0).toInt().toDouble()
         val learningCurve = BreweryRecipes.recipesConfig.learningCurve.coerceAtLeast(0.0)
-        val startingFragmentation = BreweryRecipes.recipesConfig.startingFragmentation.coerceIn(0.0, 100.0)
-        return startingFragmentation * (1.0 - (numHalfStars / 10.0).pow(learningCurve))
+        val max = BreweryRecipes.recipesConfig.maxLearningFragmentation.coerceIn(0.0, 100.0)
+        val min = BreweryRecipes.recipesConfig.minLearningFragmentation.coerceIn(0.0, max)
+        return min + (max - min) * (1.0 - (numHalfStars / 10.0).pow(learningCurve))
     }
 
 }
