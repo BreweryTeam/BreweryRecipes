@@ -5,6 +5,7 @@ import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import net.kyori.adventure.text.Component
 import org.bukkit.Color
+import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.ItemStack
 
 class MockIntegration : BrewingIntegration {
@@ -54,5 +55,7 @@ class MockIntegration : BrewingIntegration {
     override fun score(recipe: BreweryRecipe): Double {
         throw NotImplementedError()
     }
+
+    override fun drunkenness(player: OfflinePlayer): Double = 0.0
 
 }
