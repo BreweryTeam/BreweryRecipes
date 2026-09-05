@@ -15,7 +15,7 @@ class MockIntegration : BrewingIntegration {
         recipes[recipe.identifier] = recipe
     }
 
-    override fun createItem(recipeDisplay: RecipeDisplay): ItemStack? {
+    override fun createItem(identifier: String): ItemStack? {
         throw NotImplementedError()
     }
 
