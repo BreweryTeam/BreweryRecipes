@@ -35,7 +35,7 @@ class DifficultySection(val recipe: BreweryRecipe) : LoreSection {
     }
 
     private fun formatDifficulty(difficulty: Double): String =
-        "%.2f".format(difficulty).trimEnd('0').trimEnd('.')
+        "%.2f".format(difficulty).trimEnd('0').trimEnd('.').trimEnd(',')
 
     private fun difficultyColor(difficulty: Double): TextColor {
         val green = TextColor.color(0x55FF55)
