@@ -6,7 +6,6 @@ import com.dre.brewery.recipe.BRecipe
 import com.dre.brewery.utility.BUtil
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
@@ -70,6 +69,8 @@ object BreweryXBrewingIntegration : BrewingIntegration {
 
     override fun brewIngredientColor(ingredientKey: String): Color? =
         BRecipe.getRecipes().firstOrNull { it.id.equals(ingredientKey, ignoreCase = true) }?.color?.color
+
+    override fun ingredientColor(ingredientKey: String): Color? = null
 
     override fun score(recipe: BreweryRecipe): Double = 1.0
 }

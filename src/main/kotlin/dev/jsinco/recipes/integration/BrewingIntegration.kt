@@ -42,6 +42,7 @@ interface BrewingIntegration {
     fun createItem(identifier: String): ItemStack?
     fun brewDisplayName(identifier: String): Component?
     fun brewIngredientColor(ingredientKey: String): Color?
+    fun ingredientColor(ingredientKey: String): Color?
     fun cookingMinuteTicks(): Long
     fun agingYearTicks(): Long
     fun allRecipes(): Collection<BreweryRecipe>

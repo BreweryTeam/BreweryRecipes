@@ -1,17 +1,18 @@
 package dev.jsinco.recipes.integration
 
 import dev.jsinco.brewery.api.brew.BrewQuality
+import dev.jsinco.brewery.api.ingredient.IngredientGroup
 import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
-import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Color
 import org.bukkit.inventory.ItemStack
+import kotlin.jvm.java
 import kotlin.jvm.optionals.getOrNull
 
 object TbpBrewingIntegration : BrewingIntegration {
@@ -90,6 +91,19 @@ object TbpBrewingIntegration : BrewingIntegration {
             ?.newLorelessItem()
             ?.getData(DataComponentTypes.POTION_CONTENTS)
             ?.customColor()
+    }
+
+    override fun ingredientColor(ingredientKey: String): Color? {
+        val manager = getApi().resolvedIngredientManager;
+        if (!manager.isDone) return null;
+        val ingredient = manager.join().getIngredient(ingredientKey)?.get() ?: return null;
+        val baseIngredient = if (ingredient is IngredientGroup) {
+            ingredient.alternatives().firstOrNull()?.toBaseIngredient()
+        } else ingredient.toBaseIngredient()
+        return baseIngredient
+            ?.color()
+            ?.orElse(null)
+            ?.let { Color.fromRGB(it.red, it.green, it.blue) }
     }
 
     override fun enable(breweryRecipes: BreweryRecipes) {

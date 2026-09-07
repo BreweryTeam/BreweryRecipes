@@ -57,8 +57,12 @@ class StepsSection(
 
             if (step is IngredientStep) {
                 for ((ingredient, amount) in step.ingredients()) {
-                    val itemColorTag = ItemColorUtil.getHex(ingredient.key)
+                    val itemColor = BreweryRecipes.brewingIntegration
+                        .ingredientColor(ingredient.key)
+                        ?.let { TextColor.color(it.asRGB()) }
+                        ?: ItemColorUtil.getHex(ingredient.key)
                         ?.let { TextColor.fromHexString(it) }
+                    val itemColorTag = itemColor
                         ?.let { Tag.styling(it) }
                         ?: Tag.selfClosingInserting(Component.empty())
                     val brewColorTag = if (ingredient.key.startsWith("brewery:"))
