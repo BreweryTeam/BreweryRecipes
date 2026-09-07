@@ -140,7 +140,7 @@ bukkit {
     main = "dev.jsinco.recipes.BreweryRecipes"
     foliaSupported = true
     apiVersion = "1.21"
-    authors = listOf("Jsinco", "Thorinwasher, Mitality")
+    authors = listOf("Jsinco", "Thorinwasher", "Mitality", "Tisawesomeness")
     name = rootProject.name
     permissions {
         register("breweryrecipes.command") {
