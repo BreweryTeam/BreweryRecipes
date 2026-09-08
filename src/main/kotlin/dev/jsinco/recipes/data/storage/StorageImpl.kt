@@ -12,4 +12,6 @@ interface StorageImpl {
 
     fun createTables()
 
+    fun close()
+
 }

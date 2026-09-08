@@ -1,6 +1,13 @@
 package dev.jsinco.recipes
 
+import dev.jsinco.recipes.BreweryRecipes.Companion.brewingIntegration
+import dev.jsinco.recipes.BreweryRecipes.Companion.detailsConfig
+import dev.jsinco.recipes.BreweryRecipes.Companion.guiConfig
+import dev.jsinco.recipes.BreweryRecipes.Companion.recipeGuiItemCache
+import dev.jsinco.recipes.BreweryRecipes.Companion.recipesConfig
+import dev.jsinco.recipes.BreweryRecipes.Companion.spawnConfig
 import dev.jsinco.recipes.commands.RecipesCommand
+import dev.jsinco.recipes.commands.SketchyCommandInjector
 import dev.jsinco.recipes.configuration.GuiConfig
 import dev.jsinco.recipes.configuration.DetailsConfig
 import dev.jsinco.recipes.configuration.RecipesConfig
@@ -27,6 +34,7 @@ import eu.okaeri.configs.yaml.bukkit.YamlBukkitConfigurer
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.translation.GlobalTranslator
+import net.kyori.adventure.translation.GlobalTranslator.translator
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Biome
@@ -38,7 +46,7 @@ import java.io.File
 // Idea:
 // Allow recipes for brews to be collected from randomly generated chests and make some recipes rarer than others
 // Has a gui that shows all the recipes the player has collected and how to make them
-// Pulls directly from the Brewery plugin's config.yml file
+// Pulls directly from the Brewery plugin's recipes.yml file
 class BreweryRecipes : JavaPlugin() {
     companion object {
         lateinit var instance: BreweryRecipes
@@ -61,6 +69,8 @@ class BreweryRecipes : JavaPlugin() {
 
     lateinit var storageImpl: StorageImpl
     var translator: RecipesTranslator? = null
+    private var hotLoaded: Boolean = false
+    private var recipesRegistered: Boolean = false
 
     override fun onEnable() {
         recipesConfig = readConfig()
@@ -82,18 +92,36 @@ class BreweryRecipes : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
         Bukkit.getPluginManager().registerEvents(MigrationListener(), this)
         Bukkit.getPluginManager().registerEvents(playerEventListener, this)
-        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
-            it.registrar().register(RecipesCommand.command())
-        }
+        registerCommands()
         recipesConfig.book.craftingRecipe.register("recipes_book", BookUtil.createBook())
         spawnConfig.recipeSpawning
             .forEachIndexed { index, definition -> definition.registerRecipe(index) }
+        recipesRegistered = true
         Bukkit.getGlobalRegionScheduler().runAtFixedRate(
             this,
             { playerEventListener.tick() },
             1,
             20
         )
+    }
+
+    private fun registerCommands() {
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
+            it.registrar().register(RecipesCommand.command())
+        }
+        if (hotLoaded) SketchyCommandInjector.inject(this, RecipesCommand.command())
+    }
+
+    override fun onDisable() {
+        translator?.let { GlobalTranslator.translator().removeSource(it) }
+        if (!Bukkit.isStopping()) unregisterRecipes()
+        if (this::storageImpl.isInitialized) storageImpl.close()
+    }
+
+    private fun unregisterRecipes() {
+        if (!recipesRegistered) return
+        Bukkit.removeRecipe(key("recipes_book"))
+        spawnConfig.recipeSpawning.indices.forEach { Bukkit.removeRecipe(key("spawning/index_$it")) }
     }
 
     private fun loadRecipeProvider(): List<BreweryRecipe>? {
@@ -176,6 +204,7 @@ class BreweryRecipes : JavaPlugin() {
 
     override fun onLoad() {
         instance = this
+        hotLoaded = Bukkit.getWorlds().isNotEmpty() // Highly scientific hot-load detection™
     }
 
     fun reload() {

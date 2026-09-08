@@ -13,6 +13,7 @@ import java.io.File
 import java.sql.SQLException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
     private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -49,6 +50,20 @@ class SQLiteStorageImpl(private val dataFolder: File) : StorageImpl {
         config.initializationFailTimeout = -1
 
         return HikariDataSource(config)
+    }
+
+    override fun close() {
+        executor.shutdown()
+        try {
+            if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                Logger.logErr("Timed out waiting for pending database writes, some may be lost!")
+                executor.shutdownNow()
+            }
+        } catch (_: InterruptedException) {
+            executor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
+        dataSource.close()
     }
 
     override fun createTables() {

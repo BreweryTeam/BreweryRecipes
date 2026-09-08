@@ -13,6 +13,7 @@ import java.sql.PreparedStatement
 import java.sql.SQLException
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 class MySQLStorageImpl : StorageImpl {
 
@@ -49,6 +50,20 @@ class MySQLStorageImpl : StorageImpl {
         config.connectionTimeout = 30_000 // 30s
 
         return HikariDataSource(config)
+    }
+
+    override fun close() {
+        executor.shutdown()
+        try {
+            if (!executor.awaitTermination(500, TimeUnit.MILLISECONDS)) {
+                Logger.logErr("Timed out waiting for pending database writes, some may be lost!")
+                executor.shutdownNow()
+            }
+        } catch (_: InterruptedException) {
+            executor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
+        dataSource.close()
     }
 
     override fun createTables() {
