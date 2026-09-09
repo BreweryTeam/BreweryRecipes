@@ -1,5 +1,6 @@
 package dev.jsinco.recipes.integration
 
+import com.dre.brewery.BPlayer
 import com.dre.brewery.configuration.ConfigManager
 import com.dre.brewery.configuration.files.Config
 import com.dre.brewery.recipe.BRecipe
@@ -10,6 +11,7 @@ import dev.jsinco.recipes.util.BreweryXRecipeConverter
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Color
+import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.ItemStack
 
 object BreweryXBrewingIntegration : BrewingIntegration {
@@ -73,4 +75,8 @@ object BreweryXBrewingIntegration : BrewingIntegration {
     override fun ingredientColor(ingredientKey: String): Color? = null
 
     override fun score(recipe: BreweryRecipe): Double = 1.0
+
+    override fun drunkenness(player: OfflinePlayer): Double =
+        BPlayer.get(player)?.drunkenness?.toDouble() ?: 0.0
+
 }

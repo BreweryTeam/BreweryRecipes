@@ -46,6 +46,62 @@ class RecipesConfig : OkaeriConfig() {
     @CustomKey("mode-switch-cooldown-ticks")
     var modeSwitchCooldownTicks: Long = 5L
 
+    @Comment(
+        "Whether players see a message and sound when they complete a recipe for the first time.",
+        "Only available for TheBrewingProject."
+    )
+    @CustomKey("show-recipe-complete-message")
+    var showRecipeCompleteMessage: Boolean = true
+
+    @Comment(
+        "Whether players see a message and sound when they perfect (5-stars) a recipe for the first time.",
+        "Only available for TheBrewingProject."
+    )
+    @CustomKey("show-recipe-perfect-message")
+    var showRecipePerfectMessage: Boolean = true
+
+    @Comment(
+        "Whether players learn part of the true recipe by creating brews.",
+        "As players create higher and higher-quality brews, they learn more and more of the true recipe.",
+        "Only available for TheBrewingProject."
+    )
+    @CustomKey("incremental-learning")
+    var incrementalLearning: Boolean = false
+
+    @Comment(
+        "If incremental-learning is true, determines how much of the true recipe each quality level reveals:",
+        "learningCurve > 1: Low-quality brews reveal little, high-quality brews reveal a lot",
+        "learningCurve < 1: Low-quality brews reveal a lot, high-quality brews reveal a little",
+        "learningCurve <= 0: Creating a brew immediately reveals as much as possible",
+        "The recipe's fragmentation percentage is calculated with the following formula:",
+        "fragmentation = min + (max - min) * (1 - halfStars/10) ^ learningCurve"
+    )
+    @CustomKey("learning-curve")
+    var learningCurve: Double = 2.0
+
+    @Comment(
+        "If incremental-learning is true, when the player creates a 0-star brew,",
+        "determines how fragmented the learned recipe is.",
+        "Ranges from 0.0 to 100.0."
+    )
+    @CustomKey("max-learning-fragmentation")
+    var maxLearningFragmentation: Double = 80.0
+
+    @Comment(
+        "If incremental-learning is true, when the player creates a 5-star brew,",
+        "determines how fragmented the learned recipe is.",
+        "Ranges from 0.0 to max-learning-fragmentation."
+    )
+    @CustomKey("min-learning-fragmentation")
+    var minLearningFragmentation: Double = 0.0
+
+    @Comment(
+        "If incremental-learning is true, whether players receive an action bar message",
+        "when they learn more of the true recipe."
+    )
+    @CustomKey("show-learn-message")
+    var showLearnMessage: Boolean = true
+
     @Comment("Storage settings")
     var storage: StorageConfig = StorageConfig()
 

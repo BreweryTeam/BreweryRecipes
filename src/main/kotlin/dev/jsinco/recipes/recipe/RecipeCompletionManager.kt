@@ -15,17 +15,17 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
 
     val backing = synchronizedMap(mutableMapOf<UUID, MutableMap<String, BreweryRecipe>>())
 
-    fun insertOrUpdateRecipeCompletion(uuid: UUID, recipe: BreweryRecipe) {
+    fun insertOrUpdateRecipeCompletion(uuid: UUID, recipe: BreweryRecipe): BreweryRecipe? {
         val existing = synchronized(backing) { backing[uuid]?.get(recipe.identifier) }
         if (existing != null) {
-            if (existing.score > recipe.score) return
+            if (existing.score > recipe.score) return existing
             if (existing.score == recipe.score) {
-                val ideal = BreweryRecipes.brewingIntegration.getRecipe(recipe.identifier) ?: return
+                val ideal = BreweryRecipes.brewingIntegration.getRecipe(recipe.identifier) ?: return existing
                 val existingMismatches = typeMismatches(existing.steps, ideal.steps)
                 val newMismatches = typeMismatches(recipe.steps, ideal.steps)
-                if (existingMismatches < newMismatches) return
+                if (existingMismatches < newMismatches) return existing
                 if (existingMismatches == newMismatches) {
-                    if (stepDeviation(existing.steps, ideal.steps) <= stepDeviation(recipe.steps, ideal.steps)) return
+                    if (stepDeviation(existing.steps, ideal.steps) <= stepDeviation(recipe.steps, ideal.steps)) return existing
                 }
             }
         }
@@ -35,6 +35,7 @@ class RecipeCompletionManager(private val storageImpl: StorageImpl) : Persistenc
             backing.computeIfAbsent(uuid) { mutableMapOf() }[recipe.identifier] = recipe
         }
         BreweryRecipes.recipeGuiItemCache.invalidate(uuid, recipe.identifier)
+        return existing
     }
 
     fun removeCompletion(uuid: UUID, recipeKey: String) {
