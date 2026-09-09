@@ -8,6 +8,7 @@ import eu.okaeri.configs.annotation.CustomKey
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
 
@@ -43,14 +44,14 @@ class CraftingDefinition : OkaeriConfig() {
                 else -> recipe.shape(rows[0], rows[1], rows[2])
             }
             this.ingredientMap.forEach { (char, material) ->
-                recipe.setIngredient(char[0], material)
+                recipe.setIngredient(char[0], RecipeChoice.ExactChoice(ItemStack(material)))
             }
             Bukkit.addRecipe(recipe)
             Logger.log("Added a shaped recipe with key $keyValue")
         } else {
             val recipe = ShapelessRecipe(recipeKey, item)
             this.ingredients.forEach { material ->
-                recipe.addIngredient(material)
+                recipe.addIngredient(RecipeChoice.ExactChoice(ItemStack(material)))
             }
             Bukkit.addRecipe(recipe)
             Logger.log("Added a shapeless recipe with key $keyValue")
