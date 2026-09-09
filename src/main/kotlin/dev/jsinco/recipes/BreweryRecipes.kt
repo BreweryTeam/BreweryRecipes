@@ -108,9 +108,9 @@ class BreweryRecipes : JavaPlugin() {
 
     private fun registerCommands() {
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
-            it.registrar().register(RecipesCommand.command())
+            it.registrar().register(RecipesCommand.command(), listOf("brecipes"))
         }
-        if (hotLoaded) SketchyCommandInjector.inject(this, RecipesCommand.command())
+        if (hotLoaded) SketchyCommandInjector.inject(this, RecipesCommand.command(), listOf("brecipes"))
     }
 
     override fun onDisable() {

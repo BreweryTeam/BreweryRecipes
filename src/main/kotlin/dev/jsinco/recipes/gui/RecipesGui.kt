@@ -3,7 +3,6 @@ package dev.jsinco.recipes.gui
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.GUIUtil
-import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
