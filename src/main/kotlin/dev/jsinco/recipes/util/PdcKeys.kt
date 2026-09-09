@@ -7,4 +7,5 @@ object PdcKeys {
     val BOOK_KEY: NamespacedKey = BreweryRecipes.key("recipe-book")
     val RECIPE_KEY = BreweryRecipes.key("recipe")
     val FLAW_KEY = BreweryRecipes.key("flaw")
+    val RECIPE_VIEW_KEY = BreweryRecipes.key("recipe-view")
 }

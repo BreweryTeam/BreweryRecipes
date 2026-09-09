@@ -15,7 +15,11 @@ import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        val item = if (recipeDisplay is UndiscoveredRecipe) {
+        return createDisplayItem(recipeDisplay)?.let { GuiItem(it, GuiItem.Type.NO_ACTION) }
+    }
+
+    fun createDisplayItem(recipeDisplay: RecipeDisplay, base: ItemStack? = null): ItemStack? {
+        val item = base ?: if (recipeDisplay is UndiscoveredRecipe) {
             BreweryRecipes.guiConfig.recipes.undiscoveredItem.generateItem()
         } else {
             val customItemConfig = BreweryRecipes.guiConfig.recipes.customItem
@@ -36,7 +40,7 @@ interface BrewingIntegration {
             GlobalTranslator.render(displayName, BreweryRecipes.recipesConfig.language)
         )
         item.setData(DataComponentTypes.LORE, ItemLore.lore(lore))
-        return GuiItem(item, GuiItem.Type.NO_ACTION)
+        return item
     }
 
     fun createItem(identifier: String): ItemStack?

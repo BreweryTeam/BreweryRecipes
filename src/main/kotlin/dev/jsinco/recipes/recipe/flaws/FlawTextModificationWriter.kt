@@ -40,7 +40,8 @@ object FlawTextModificationWriter {
         text: Component,
         textModifications: FlawTextModifications,
         flaw: Flaw,
-        offsets: Map<Int, Int>
+        offsets: Map<Int, Int>,
+        onModified: ((Int) -> Unit)? = null
     ): Component {
         return text.replaceText(Consumer {
             var pos = 0
@@ -58,6 +59,7 @@ object FlawTextModificationWriter {
                 while (currentPos < pos) {
                     val currentOffsetPos = currentPos + offset
                     if (textModifications.modifies(currentOffsetPos) && !invalidPoints.contains(currentPos)) {
+                        onModified?.invoke(currentOffsetPos)
                         if (modifiedText.isEmpty()) {
                             builder.append(
                                 Component.text(unmodifiedText)
@@ -91,19 +93,23 @@ object FlawTextModificationWriter {
         })
     }
 
+
+    // Positions filling out an earlier replacement that grew (not part of the original text -> don't apply flaws here)
+    // The offsets are cumulative, so what a single position added is its own value minus the one before it
     private fun findInvalid(offsets: Map<Int, Int>): Set<Int> {
         if (offsets.isEmpty()) {
             return setOf()
         }
         val output = mutableSetOf<Int>()
-        var currentOffset = 0
-        for (i in 0..<(offsets.keys.max() + 1)) {
+        var previousOffset = 0
+        for (i in 0..offsets.keys.max()) {
             val offset = offsets[i] ?: continue
-            val currentPos = i + currentOffset
-            for (pos in currentPos..<(currentPos + offset)) {
+            val grew = offset - previousOffset
+            val currentPos = i + previousOffset
+            for (pos in currentPos..<(currentPos + grew)) {
                 output.add(pos + 1)
             }
-            currentOffset += offset
+            previousOffset = offset
         }
         return output
     }
@@ -122,13 +128,23 @@ object FlawTextModificationWriter {
         }
         traverse(text) { string, startPos ->
             var pos = startPos
-            for (character in string) {
-                val rng = Random(config.seed + pos + character.code)
-                if ((character != ' ' || overwriteSpace) && modificationFindSession.appliesTo(pos) && rng.nextDouble() < config.intensity / 100
+            var index = 0
+            while (index < string.length) {
+                // Emojis can be two chars -> flaw them together
+                val codePoint = string.codePointAt(index)
+                val charCount = Character.charCount(codePoint)
+                val sign = string.substring(index, index + charCount)
+                val random = Random(config.seed + pos + codePoint)
+                if ((sign != " " || overwriteSpace) &&
+                    modificationFindSession.appliesTo(pos) && random.nextDouble() < config.intensity / 100
                 ) {
-                    flawTextModifications.write(pos, textInfo(character.toString()), individualFlawIntensity)
+                    flawTextModifications.write(pos, textInfo(sign), individualFlawIntensity)
+                    for (trailing in 1..<charCount) {
+                        flawTextModifications.write(pos + trailing, "", 0.0)
+                    }
                 }
-                pos++
+                pos += charCount
+                index += charCount
             }
         }
         return flawTextModifications

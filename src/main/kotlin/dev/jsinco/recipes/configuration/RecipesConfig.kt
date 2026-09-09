@@ -51,4 +51,8 @@ class RecipesConfig : OkaeriConfig() {
 
     @CustomKey("recipes-book")
     var book = RecipesBookConfig()
+
+    @Comment("Recipe item settings")
+    @CustomKey("recipe-items")
+    var recipeItems = RecipeItemsConfig()
 }

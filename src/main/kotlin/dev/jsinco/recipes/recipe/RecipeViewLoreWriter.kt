@@ -13,15 +13,14 @@ import dev.jsinco.recipes.recipe.lore.EffectSection
 import dev.jsinco.recipes.recipe.lore.HintSection
 import dev.jsinco.recipes.recipe.lore.ScoreSection
 import dev.jsinco.recipes.recipe.lore.LoreType
+import dev.jsinco.recipes.recipe.lore.RecipeLoreLines
 import dev.jsinco.recipes.recipe.lore.SpacerSection
 import dev.jsinco.recipes.recipe.lore.StepsSection
-import dev.jsinco.recipes.recipe.process.Step
 import dev.jsinco.recipes.util.TranslationUtil
 import dev.jsinco.recipes.util.ext.removeAdjacentWhere
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import java.util.Locale
 
 object RecipeViewLoreWriter {
 
@@ -49,14 +48,15 @@ object RecipeViewLoreWriter {
             RecipeCompletionState.PARTIAL -> loreConfig.partialSections
             RecipeCompletionState.UNDISCOVERED -> loreConfig.undiscoveredSections
         }
+        val recipeView = recipeDisplay.generateView()
         val loreComponentsBySection = sections.mapNotNull { sectionEntry ->
             when (sectionEntry.type) {
-                LoreType.STEPS -> recipeDisplay.generateView()?.let { view ->
+                LoreType.STEPS -> recipeView?.let { view ->
                     val stepsToRender = recipeDisplay.displaySteps() ?: recipe.steps
                     StepsSection(stepsToRender, view, isBrewNote)
                 }
                 LoreType.SCORE -> if (recipeDisplay is BreweryRecipe) ScoreSection(recipeDisplay) else null
-                LoreType.DIFFICULTY -> DifficultySection(recipe)
+                LoreType.DIFFICULTY -> DifficultySection(recipe, recipeView)
                 LoreType.HINT -> HintSection(details.hint)
                 LoreType.EFFECT -> EffectSection(details.effect)
                 LoreType.AUTHOR -> AuthorSection(details.author)
@@ -86,28 +86,34 @@ object RecipeViewLoreWriter {
         return line
     }
 
-    private fun buildBaseStep(step: Step, isBrewNote: Boolean = false): Component {
-        return TranslationUtil.render(if (isBrewNote) step.displayBrewNote() else step.display())
-    }
-
-    fun applyFlaws(component: Component, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>): Component {
+    fun applyFlaws(
+        component: Component,
+        stepIndex: Int,
+        flaws: List<Flaw>,
+        reveals: List<Set<Int>>,
+        revealIndex: Int = stepIndex,
+        onPositionObscured: ((Int) -> Unit)? = null
+    ): Component {
         if (flaws.isEmpty()) return component
         val base = resolveTranslatablesForMutation(component)
+        val revealed = revealFilter(reveals, revealIndex)
         val textModifications = compileTextModifications(base, stepIndex, flaws)
-            .map { it.key to it.value.withMatching { idx -> reveals.isEmpty() || reveals[stepIndex].contains(idx) } }
+            .map { it.key to it.value.withMatching { idx -> revealed == null || revealed.contains(idx) } }
             .toMap()
         var output = base
         var offsets = mapOf<Int, Int>()
         for (flaw in flaws) {
             val textModification = textModifications[flaw] ?: continue
-            output = FlawTextModificationWriter.process(output, textModification, flaw, offsets)
+            output = FlawTextModificationWriter.process(output, textModification, flaw, offsets, onPositionObscured)
             offsets = textModification.offsets(offsets)
         }
         return output
     }
 
-    fun renderStep(step: Step, stepIndex: Int, flaws: List<Flaw>, reveals: List<Set<Int>>, isBrewNote: Boolean = false): Component {
-        return applyFlaws(buildBaseStep(step, isBrewNote), stepIndex, flaws, reveals)
+    // Positions a view still obscures on one line (null when it obscures everything its flaws appy to)
+    private fun revealFilter(invertedReveals: List<Set<Int>>, revealIndex: Int): Set<Int>? {
+        if (invertedReveals.isEmpty()) return null
+        return invertedReveals.getOrNull(revealIndex) ?: emptySet()
     }
 
     private fun compileTextModifications(
@@ -143,20 +149,23 @@ object RecipeViewLoreWriter {
 
         var fragmentation = 0.0
 
-        recipe.steps.forEachIndexed { idx, step ->
-            val base = resolveTranslatablesForMutation(buildBaseStep(step))
-            val approxBaseLength = PlainTextComponentSerializer.plainText().serialize(base).length
-            val modifications = compileTextModifications(base, idx, recipeView.flaws)
-                .map {
-                    it.key to it.value.withMatching { pos ->
-                        recipeView.invertedReveals.isEmpty() || recipeView.invertedReveals[idx].contains(pos)
-                    }
-                }.toMap()
-            if (modifications.isEmpty()) {
-                return@forEachIndexed
+        RecipeLoreLines.steps(recipe.steps, false)
+            .filter { it.type == RecipeLoreLines.LineType.STEP }
+            .forEach { stepLine ->
+                val base = resolveTranslatablesForMutation(stepLine.component)
+                val approxBaseLength = PlainTextComponentSerializer.plainText().serialize(base).length
+                val revealed = revealFilter(recipeView.invertedReveals, stepLine.revealIndex)
+                val modifications = compileTextModifications(base, stepLine.stepIndex, recipeView.flaws)
+                    .map {
+                        it.key to it.value.withMatching { pos ->
+                            revealed == null || revealed.contains(pos)
+                        }
+                    }.toMap()
+                if (modifications.isEmpty()) {
+                    return@forEach
+                }
+                fragmentation += modifications.values.sumOf { it.intensity(approxBaseLength) }
             }
-            fragmentation += modifications.values.sumOf { it.intensity(approxBaseLength) }
-        }
 
         return fragmentation / recipe.steps.size * 100.0
     }
@@ -164,9 +173,12 @@ object RecipeViewLoreWriter {
     fun clearRedundantFlaws(view: RecipeView, thresholdPercent: Double = 15.0): RecipeView {
         val applicableFlaws = mutableSetOf<Flaw>()
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(view.recipeIdentifier) ?: return view
-        recipe.steps.forEachIndexed { index, step ->
-            compileTextModifications(resolveTranslatablesForMutation(buildBaseStep(step)), index, view.flaws)
-                .keys.forEach { applicableFlaws.add(it) }
+        RecipeLoreLines.all(recipe).forEach { line ->
+            compileTextModifications(
+                resolveTranslatablesForMutation(line.component),
+                line.stepIndex,
+                view.flaws
+            ).keys.forEach { applicableFlaws.add(it) }
         }
 
         val newFlaws = view.flaws.filter { applicableFlaws.contains(it) }
@@ -180,45 +192,26 @@ object RecipeViewLoreWriter {
 
     fun mergeFlaws(base: RecipeView, toSubtract: RecipeView): RecipeView {
         val recipe = BreweryRecipes.brewingIntegration.getRecipe(base.recipeIdentifier) ?: return base
-        val flawPositions = mutableListOf<MutableSet<Int>>()
-        for (i in 0..<recipe.steps.size) {
-            val step = recipe.steps[i]
-            val positions = mutableSetOf<Int>()
-            for (flaw in toSubtract.flaws) {
-                if (flawApplies(i, flaw)) {
-                    val session = FlawType.ModificationFindSession(i, flaw.config) {
-                        !positions.contains(it)
-                    }
-                    val textModifications = flaw.type.findFlawModifications(buildBaseStep(step), session)
-                    positions.addAll(
-                        textModifications.modifiedPoints
-                            .keys
-                    )
-                }
+        val invertedReveals = RecipeLoreLines.all(recipe)
+            .sortedBy { it.revealIndex }
+            .map { line ->
+                obscuredPositions(base, line) intersect obscuredPositions(toSubtract, line)
             }
-            flawPositions.add(positions)
-        }
-        val invertedReveals = if (base.invertedReveals.isEmpty()) {
-            flawPositions
-        } else {
-            base.invertedReveals
-                .mapIndexed { idx, stepReveals ->
-                    stepReveals.filter { andMask(it, flawPositions[idx]) }
-                        .toSet()
-                }
-        }
         return RecipeView(
             base.recipeIdentifier, base.flaws, invertedReveals
         )
     }
 
-    private fun andMask(i: Int, ints: Set<Int>, radius: Int = 1): Boolean {
-        for (idx in (i - radius)..<(i + radius)) {
-            if (!ints.contains(idx)) {
-                return false
-            }
-        }
-        return true
+    private fun obscuredPositions(recipeView: RecipeView, flawableLine: RecipeLoreLines.FlawableLine): Set<Int> {
+        val obscured = mutableSetOf<Int>()
+        applyFlaws(
+            flawableLine.component,
+            flawableLine.stepIndex,
+            recipeView.flaws,
+            recipeView.invertedReveals,
+            flawableLine.revealIndex
+        ) { position -> obscured.add(position) }
+        return obscured
     }
 
     private fun flawApplies(stepIndex: Int, flaw: Flaw): Boolean {

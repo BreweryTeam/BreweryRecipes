@@ -48,24 +48,24 @@ class FlawTextModifications {
         return out
     }
 
+    // How far a position in the original text moved by applying these modifications
     fun offsets(previous: Map<Int, Int>): Map<Int, Int> {
         val output = mutableMapOf<Int, Int>()
         if (modifiedPoints.isEmpty()) {
             return previous
         }
-        var offset = 0
-        val stopPoint = if (previous.isEmpty()) {
-            modifiedPoints.keys.max() + 1
-        } else {
-            modifiedPoints.keys.max()
-                .coerceAtLeast(previous.keys.max()) + 1
-        }
+        val stopPoint = modifiedPoints.keys.max()
+            .coerceAtLeast(previous.keys.maxOrNull() ?: 0) + 1
+        var carried = 0
+        var added = 0
         for (i in 0..<stopPoint) {
+            carried = previous[i] ?: carried
             val newOffset = (modifiedPoints[i]?.content()?.length ?: 1) - 1
+            added += newOffset
             if (newOffset == 0 && !previous.contains(i)) {
                 continue
             }
-            offset = (previous[i] ?: offset) + newOffset
+            val offset = carried + added
             if (offset != 0) {
                 output[i] = offset
             }

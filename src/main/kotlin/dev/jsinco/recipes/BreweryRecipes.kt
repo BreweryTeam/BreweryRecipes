@@ -90,6 +90,7 @@ class BreweryRecipes : JavaPlugin() {
         Bukkit.getPluginManager().registerEvents(GuiEventListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeSpawningListener(), this)
         Bukkit.getPluginManager().registerEvents(RecipeListener(), this)
+        Bukkit.getPluginManager().registerEvents(RecipeItemListener(), this)
         Bukkit.getPluginManager().registerEvents(MigrationListener(), this)
         Bukkit.getPluginManager().registerEvents(playerEventListener, this)
         registerCommands()

@@ -3,6 +3,7 @@ package dev.jsinco.recipes.listeners
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import dev.jsinco.recipes.util.PdcKeys
+import dev.jsinco.recipes.util.RecipeItemUtil
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.NamespacedKey
@@ -26,6 +27,7 @@ class RecipeListener : Listener {
         if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.RIGHT_CLICK_AIR) return
         val item = event.item ?: return
         if (item.isEmpty) return
+        if (RecipeItemUtil.isRecipeItem(item)) return // handled by RecipeItemListener
 
         val pdc = item.persistentDataContainer
         val legacyIdentifier = legacyRecipeKeys.firstNotNullOfOrNull { pdc.get(it, PersistentDataType.STRING) }

@@ -2,6 +2,7 @@ package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.spawning.ConditionsDefinition
 import dev.jsinco.recipes.configuration.spawning.SpawnDefinition
+import dev.jsinco.recipes.configuration.spawning.SpawnItemType
 import dev.jsinco.recipes.configuration.spawning.triggers.*
 import dev.jsinco.recipes.recipe.flaws.creation.RecipeViewCreator
 import eu.okaeri.configs.OkaeriConfig
@@ -23,13 +24,20 @@ class SpawnConfig : OkaeriConfig() {
         "+-------------------------------------------------------------------------------------------+",
         " ",
         "Common settings:",
-        "  enabled: <true|false>   - Optional. Enables or disables this spawn entry.",
-        "  attempts: <number>      - How many times to attempt spawning a recipe per event.",
-        "  chance: <0.0–1.0>       - Probability for each attempt (1.0 = 100% = always).",
-        "  whitelist: <list>       - Only recipes with matching keys will be considered.",
-        "  blacklist: <list>       - Recipes with these keys will not be spawned.",
-        "  flaws: <list>           - Optional. The flaws to choose to apply to a recipe",
-        "  flawless: <true|false>  - Optional. True if there's no flaw on this recipe",
+        "  enabled: <true|false>     - Optional. Enables or disables this spawn entry.",
+        "  attempts: <number>        - How many times to attempt spawning a recipe per event.",
+        "  chance: <0.0–1.0>         - Probability for each attempt (1.0 = 100% = always).",
+        "  recipe-whitelist: <list>  - Only recipes with matching keys will be considered.",
+        "  recipe-blacklist: <list>  - Recipes with these keys will not be spawned.",
+        "  flaws: <list>             - Optional. The flaws to choose to apply to a recipe",
+        "  flawless: <true|false>    - Optional. True if there's no flaw on this recipe",
+        " ",
+        "Item settings:",
+        "  item-type: <scribbling|recipe> - Optional. Scribblings are like recipe vouchers that only reveal their recipe when",
+        "                                   they are redeemed (added to book), while recipes are always visible and usable",
+        "  flaw-level-min: <0.0-100.0>    - Optional. Lowest allowed flaw severity for this item, recipe items only",
+        "  flaw-level-max: <0.0-100.0>    - Optional. Highest allowed flaw severity for this item, recipe items only",
+        "  item-override: <item>          - Optional. Override the spawned items's item type (e.g. 'material: BOOK')",
         " ",
         "Triggers options:",
         "  premade: <fishing|barrel|chest|minecart> - Optional. Premade triggers",
@@ -39,12 +47,12 @@ class SpawnConfig : OkaeriConfig() {
         "  inventories: <list>                      - Optional. A list of inventory types that should populate recipe loot",
         " ",
         "Conditions (optional):",
-        "  biomes: <list> - Optional. Biomes the event has to occurred in",
-        "  worlds: <list> - Optional. Worlds the event has to occurred in",
+        "  biomes: <list> - Optional. Biomes the event has to occur in",
+        "  worlds: <list> - Optional. Worlds the event has to occur in",
         " ",
         "Condition Blacklist (optional)",
-        "  biomes: <list> - Optional. Biomes the event has to not occurred in",
-        "  worlds: <list> - Optional. Worlds the event has to not occurred in",
+        "  biomes: <list> - Optional. Biomes the event has to not occur in",
+        "  worlds: <list> - Optional. Worlds the event has to not occur in",
         " ",
         "Your time to shine:"
     )
@@ -156,6 +164,25 @@ class SpawnConfig : OkaeriConfig() {
                 biomeCondition = listOf(
                     Biome.NETHER_WASTES,
                     Biome.CRIMSON_FOREST
+                )
+            )
+        ),
+        SpawnDefinition(
+            recipeBlacklist = listOf("ex"),
+            attempts = 1,
+            chance = 0.05,
+            itemType = SpawnItemType.RECIPE,
+            flaws = listOf(RecipeViewCreator.Type.ENCRYPTED, RecipeViewCreator.Type.UNCERTAIN),
+            flawLevelMin = 20.0,
+            flawLevelMax = 80.0,
+            itemOverride = ConfigItem.Builder()
+                .material(Material.PAPER)
+                .build(),
+            triggers = TriggersDefinition(
+                premadeTrigger = listOf(
+                    PremadeTrigger.MINECART,
+                    PremadeTrigger.BARREL,
+                    PremadeTrigger.CHEST,
                 )
             )
         )
