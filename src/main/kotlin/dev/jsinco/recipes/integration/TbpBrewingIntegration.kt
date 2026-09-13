@@ -96,7 +96,7 @@ object TbpBrewingIntegration : BrewingIntegration {
     override fun ingredientColor(ingredientKey: String): Color? {
         val manager = getApi().resolvedIngredientManager;
         if (!manager.isDone) return null;
-        val ingredient = manager.join().getIngredient(ingredientKey)?.get() ?: return null;
+        val ingredient = manager.join().getIngredient(ingredientKey)?.getOrNull() ?: return null;
         val baseIngredient = if (ingredient is IngredientGroup) {
             ingredient.alternatives().firstOrNull()?.toBaseIngredient()
         } else ingredient.toBaseIngredient()
