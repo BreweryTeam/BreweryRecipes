@@ -20,6 +20,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
+import kotlin.random.Random
 
 data class BreweryRecipe(
     val identifier: String,
@@ -82,16 +83,20 @@ data class BreweryRecipe(
     }
 
     fun generateCompletedView(): RecipeView {
-        return RecipeView.of(this.identifier, listOf())
+        return RecipeView(this.identifier)
     }
 
-    fun generate(expectedFlawLevel: Double): RecipeView {
-        val collection = RecipeViewCreator.Type.entries.random()
-        return generate(expectedFlawLevel, collection)
+    fun generate(expectedFlawLevel: Double, random: Random = Random.Default): RecipeView {
+        val collection = RecipeViewCreator.Type.entries.random(random)
+        return generate(expectedFlawLevel, collection, random)
     }
 
-    fun generate(expectedFlawLevel: Double, flawViewType: RecipeViewCreator.Type): RecipeView {
-        return flawViewType.recipeViewCreator.create(this, expectedFlawLevel)
+    fun generate(expectedFlawLevel: Double, flawViewType: RecipeViewCreator.Type, random: Random = Random.Default): RecipeView {
+        return flawViewType.recipeViewCreator.create(this, expectedFlawLevel, random)
+    }
+
+    fun generateFullyFlawedView(flawViewType: RecipeViewCreator.Type, random: Random = Random.Default): RecipeView {
+        return flawViewType.recipeViewCreator.createFullyFlawed(this, random)
     }
 
     override fun recipeKey(): String = identifier
