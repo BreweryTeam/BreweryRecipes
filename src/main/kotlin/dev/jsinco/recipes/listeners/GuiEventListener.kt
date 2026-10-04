@@ -2,6 +2,7 @@ package dev.jsinco.recipes.listeners
 
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.CooldownManager
+import dev.jsinco.recipes.gui.Gui
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.gui.GuiManager
 import dev.jsinco.recipes.gui.RecipesGui
@@ -22,29 +23,20 @@ class GuiEventListener : Listener {
 
     companion object {
         val GUI_ITEM_TYPE = BreweryRecipes.key("gui_item_type")
+        val GUI_GROUP = BreweryRecipes.key("gui_group")
     }
 
     @EventHandler
     fun onGuiClick(event: InventoryClickEvent) {
-        val gui = event.inventory.getHolder(false) as? RecipesGui ?: return
+        val gui = event.inventory.getHolder(false) as? Gui ?: return
         val clickedItem: ItemStack = event.currentItem ?: return
         event.isCancelled = true
 
         if (clickedItem.persistentDataContainer.has(GUI_ITEM_TYPE, PersistentDataType.STRING)) {
             val value = clickedItem.persistentDataContainer.get(GUI_ITEM_TYPE, PersistentDataType.STRING) ?: return
             val type = GuiItem.Type.entries.firstOrNull { it.identifier() == value } ?: return
-            val player = event.whoClicked as? Player ?: return
-            when (type) {
-                GuiItem.Type.NEXT_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.nextPage()
-                GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) gui.previousPage()
-                GuiItem.Type.SWITCH_MODE -> {
-                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(gui.mode.next(), player, gui.target, gui.admin)
-                }
-                else -> {
-                    val targetMode = type.targetMode() ?: return
-                    if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(targetMode, player, gui.target, gui.admin)
-                }
-            }
+            if (event.whoClicked !is Player) return
+            gui.onGuiClick(clickedItem, type)
         }
     }
 

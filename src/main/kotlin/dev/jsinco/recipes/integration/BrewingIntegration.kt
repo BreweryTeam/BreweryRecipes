@@ -3,6 +3,7 @@ package dev.jsinco.recipes.integration
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.UndiscoveredRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -51,6 +52,8 @@ interface BrewingIntegration {
     fun agingYearTicks(): Long
     fun allRecipes(): Collection<BreweryRecipe>
     fun getRecipe(id: String): BreweryRecipe?
+    fun allGroups(): Collection<String> = emptyList()
+    fun getGroup(id: String): BreweryRecipeGroup? = null
     fun reload()
 
     fun enable(breweryRecipes: BreweryRecipes)

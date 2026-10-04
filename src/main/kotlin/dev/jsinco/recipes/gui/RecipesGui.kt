@@ -1,58 +1,51 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import dev.jsinco.recipes.util.GUIUtil
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
-import org.bukkit.inventory.InventoryHolder
+import org.bukkit.inventory.ItemStack
 
 class RecipesGui(
     private val player: Player,
     val target: OfflinePlayer,
     val mode: RecipeBookMode,
+    val group: BreweryRecipeGroup?,
     val admin: Boolean,
     private val recipeDisplays: List<RecipeDisplay>,
     private val itemResolver: (RecipeDisplay) -> GuiItem?,
     size: Int = 54
-) : InventoryHolder {
+) : Gui {
 
-    private val inventory = Bukkit.createInventory(this, size, mode.guiName(admin))
+    private val inventory = Bukkit.createInventory(this, size, mode.guiName(admin, group))
 
-    private val recipesSlots = findRecipeSlots()
+    private val recipesSlots = GUIUtil.openSlots()
     private val pageRecipeCapacity = recipesSlots.size
     private val resolved: MutableList<GuiItem> = mutableListOf()
     private var nextInputIdx = 0
     private var page = 0
 
-    fun nextPage() {
+    private fun nextPage() {
         if (!hasNextPage()) return
         page++
         render()
     }
 
-    fun previousPage() {
+    private fun previousPage() {
         page = (page - 1).coerceAtLeast(0)
         render()
     }
 
-    fun findRecipeSlots(): List<Int> {
-        val output = (0..<54).toMutableList()
-        for (borderEntry in BreweryRecipes.guiConfig.borders) {
-            output.removeAll(borderEntry.key.positions.toList())
-        }
-        for (guiOverride in BreweryRecipes.guiConfig.overrides) {
-            for (slot in GUIUtil.getValidSlots(guiOverride.pos)) {
-                output.remove(slot)
-            }
-        }
-        return output.toList()
-    }
-
     private fun resolveUntil(needed: Int) {
-        while (resolved.size < needed && nextInputIdx < recipeDisplays.size) {
-            val item = itemResolver(recipeDisplays[nextInputIdx])
+        val displaysThisGroup = if (group == null) recipeDisplays else {
+            val recipeKeys = group.recipes.map { it.recipeKey() }
+            recipeDisplays.filter { it.recipeKey() in recipeKeys }
+        }
+        while (resolved.size < needed && nextInputIdx < displaysThisGroup.size) {
+            val item = itemResolver(displaysThisGroup[nextInputIdx])
             nextInputIdx++
             if (item != null) resolved.add(item)
         }
@@ -63,26 +56,22 @@ class RecipesGui(
         return resolved.size > (page + 1) * pageRecipeCapacity
     }
 
-    fun render() {
+    override fun render() {
         inventory.clear()
         resolveUntil((page + 1) * pageRecipeCapacity)
 
-        for (borderEntry in BreweryRecipes.guiConfig.borders) {
-            val borderType = borderEntry.key
-            val palette = borderEntry.value
-            for (i in 0..<borderType.positions.size) {
-                val pos = borderType.positions[i]
-                val item = palette.content[i % palette.content.size].generateItem()
-                renderItem(GuiItem(item, GuiItem.Type.NO_ACTION), pos)
+        GUIUtil.borders().forEach { renderItem(it.first, it.second) }
+
+        BreweryRecipes.guiConfig.overrides.filter { override ->
+            when (override.type) {
+                GuiItem.Type.PREVIOUS_PAGE -> page > 0
+                GuiItem.Type.NEXT_PAGE -> hasNextPage()
+                GuiItem.Type.SET_MODE_FRAGMENTS -> mode != RecipeBookMode.FRAGMENTS
+                GuiItem.Type.SET_MODE_BREWED -> mode != RecipeBookMode.BREWED
+                GuiItem.Type.VIEW_GROUPS, GuiItem.Type.SWITCH_MODE, GuiItem.Type.NO_ACTION -> true
+                else -> false
             }
-        }
-
-        for (override in BreweryRecipes.guiConfig.overrides) {
-            if (override.type == GuiItem.Type.PREVIOUS_PAGE && page == 0) continue
-            if (override.type == GuiItem.Type.NEXT_PAGE && !hasNextPage()) continue
-            if (override.type == GuiItem.Type.SET_MODE_FRAGMENTS && mode == RecipeBookMode.FRAGMENTS) continue
-            if (override.type == GuiItem.Type.SET_MODE_BREWED && mode == RecipeBookMode.BREWED) continue
-
+        }.forEach { override ->
             for (slot in GUIUtil.getValidSlots(override.pos)) {
                 renderItem(GuiItem(override.item.generateItem(), override.type), slot)
             }
@@ -95,12 +84,24 @@ class RecipesGui(
         }
     }
 
-    fun renderItem(guiItem: GuiItem, position: Int) {
-        inventory.setItem(position, guiItem.item())
+    override fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type) {
+        when (type) {
+            GuiItem.Type.NEXT_PAGE -> if (CooldownManager.tryPageSwitch(player)) nextPage()
+            GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) previousPage()
+            GuiItem.Type.VIEW_GROUPS -> {
+                GuiManager.openGroupsGui(mode, player, target, admin)
+            }
+            GuiItem.Type.SWITCH_MODE -> {
+                if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(mode.next(), player, target, group, admin)
+            }
+            else -> {
+                val targetMode = type.targetMode() ?: return
+                if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(targetMode, player, target, group, admin)
+            }
+        }
     }
 
-    fun open() = open(player)
-    fun open(player: Player) = player.openInventory(inventory)
-
+    override fun open() = open(player)
     override fun getInventory() = inventory
+
 }
