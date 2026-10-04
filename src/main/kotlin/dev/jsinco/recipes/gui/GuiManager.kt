@@ -15,19 +15,25 @@ import kotlin.collections.sortedByDescending
 
 object GuiManager {
 
-    fun openRecipeGui(
+    fun openGui(
         viewer: Player,
         target: OfflinePlayer = viewer,
         admin: Boolean = false
     ) {
         if (!CooldownManager.tryOpen(viewer)) return
         when (BreweryRecipes.guiConfig.defaultView) {
-            RecipeBookView.RECIPES -> openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
-            RecipeBookView.GROUPS -> openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
+            RecipeBookView.RECIPES -> openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
+            RecipeBookView.GROUPS -> {
+                if (BreweryRecipes.brewingIntegration.allGroups().isEmpty()) {
+                    openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
+                } else {
+                    openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
+                }
+            }
         }
     }
 
-    fun openWithMode(
+    fun openRecipesGui(
         mode: RecipeBookMode,
         viewer: Player,
         target: OfflinePlayer = viewer,

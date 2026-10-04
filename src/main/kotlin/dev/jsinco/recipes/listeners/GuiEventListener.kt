@@ -60,7 +60,7 @@ class GuiEventListener : Listener {
             return
         }
 
-        GuiManager.openRecipeGui(player)
+        GuiManager.openGui(player)
 
         event.setUseInteractedBlock(Event.Result.DENY)
         event.setUseItemInHand(Event.Result.DENY)

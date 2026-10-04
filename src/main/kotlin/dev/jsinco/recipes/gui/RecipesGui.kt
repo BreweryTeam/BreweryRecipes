@@ -68,7 +68,8 @@ class RecipesGui(
                 GuiItem.Type.NEXT_PAGE -> hasNextPage()
                 GuiItem.Type.SET_MODE_FRAGMENTS -> mode != RecipeBookMode.FRAGMENTS
                 GuiItem.Type.SET_MODE_BREWED -> mode != RecipeBookMode.BREWED
-                GuiItem.Type.VIEW_GROUPS, GuiItem.Type.SWITCH_MODE, GuiItem.Type.NO_ACTION -> true
+                GuiItem.Type.VIEW_GROUPS -> !BreweryRecipes.brewingIntegration.allGroups().isEmpty()
+                GuiItem.Type.SWITCH_MODE, GuiItem.Type.NO_ACTION -> true
                 else -> false
             }
         }.forEach { override ->
@@ -92,11 +93,11 @@ class RecipesGui(
                 GuiManager.openGroupsGui(mode, player, target, admin)
             }
             GuiItem.Type.SWITCH_MODE -> {
-                if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(mode.next(), player, target, group, admin)
+                if (CooldownManager.tryModeSwitch(player)) GuiManager.openRecipesGui(mode.next(), player, target, group, admin)
             }
             else -> {
                 val targetMode = type.targetMode() ?: return
-                if (CooldownManager.tryModeSwitch(player)) GuiManager.openWithMode(targetMode, player, target, group, admin)
+                if (CooldownManager.tryModeSwitch(player)) GuiManager.openRecipesGui(targetMode, player, target, group, admin)
             }
         }
     }
