@@ -114,6 +114,6 @@ class GuiConfig : OkaeriConfig() {
     @Comment("Settings related to the recipe items")
     var recipes: GuiRecipesSection = GuiRecipesSection()
 
-    @Comment("Settings related to recipe groups")
+    @Comment("Settings related to recipe groups", "Only available for TheBrewingProject")
     var groups: GuiGroupsSection = GuiGroupsSection()
 }

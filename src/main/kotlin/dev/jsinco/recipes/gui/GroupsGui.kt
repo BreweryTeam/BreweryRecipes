@@ -128,14 +128,14 @@ class GroupsGui(
             GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) previousPage()
             GuiItem.Type.OPEN_ALL_GROUP -> {
                 if (CooldownManager.tryModeSwitch(player)) {
-                    GuiManager.openWithMode(mode, player, target, null, admin)
+                    GuiManager.openRecipesGui(mode, player, target, null, admin)
                 }
             }
             GuiItem.Type.OPEN_GROUP -> {
                 if (CooldownManager.tryModeSwitch(player)) {
                     val groupId = clickedItem.persistentDataContainer[GuiEventListener.GUI_GROUP, PersistentDataType.STRING] ?: return
                     val group = BreweryRecipes.brewingIntegration.getGroup(groupId) ?: return
-                    GuiManager.openWithMode(mode, player, target, group, admin)
+                    GuiManager.openRecipesGui(mode, player, target, group, admin)
                 }
             }
             else -> {}
