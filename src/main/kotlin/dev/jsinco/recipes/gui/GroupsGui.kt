@@ -23,12 +23,21 @@ class GroupsGui(
 
     private val inventory = Bukkit.createInventory(this, size, Component.translatable("breweryrecipes.gui.name.groups"))
 
-    private val groups = listOf(null) + BreweryRecipes.brewingIntegration.allGroups()
-        .filter { id -> BreweryRecipes.guiConfig.groups.groupItems[id]?.enabled != false }
-        .toList()
+    private val groups = initGroups()
     private val recipesSlots = GUIUtil.openSlots()
     private val pageRecipeCapacity = recipesSlots.size
     private var page = 0
+
+    private fun initGroups(): List<String?> {
+        val list = mutableListOf<String?>()
+        if (BreweryRecipes.guiConfig.groups.allItem.enabled) {
+            list.add(null)
+        }
+        list.addAll(BreweryRecipes.brewingIntegration.allGroups()
+            .filter { id -> BreweryRecipes.guiConfig.groups.hiddenGroups.none { hidden -> hidden.equals(id, ignoreCase = true) } }
+            .toList())
+        return list
+    }
 
     private fun nextPage() {
         if (!hasNextPage()) return
@@ -78,12 +87,12 @@ class GroupsGui(
     }
 
     private fun renderAllGroup(position: Int) {
-        val item = BreweryRecipes.guiConfig.groups.allItem.generateItem()
+        val item = BreweryRecipes.guiConfig.groups.allItem.item.generateItem()
         renderItem(GuiItem(item, GuiItem.Type.OPEN_ALL_GROUP), position)
     }
 
     private fun renderGroup(group: BreweryRecipeGroup, position: Int) {
-        val configItem = BreweryRecipes.guiConfig.groups.groupItems[group.id]?.item ?: BreweryRecipes.guiConfig.groups.defaultItem
+        val configItem = BreweryRecipes.guiConfig.groups.groupItems[group.id] ?: BreweryRecipes.guiConfig.groups.defaultItem
         val item = configItem.generateItem()
         item.setData(
             DataComponentTypes.CUSTOM_NAME,

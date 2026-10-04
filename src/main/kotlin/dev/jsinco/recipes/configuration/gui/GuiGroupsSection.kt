@@ -10,10 +10,8 @@ class GuiGroupsSection : OkaeriConfig() {
 
     @Comment("The item used for the \"All Recipes\" recipe group")
     @CustomKey("all-item")
-    var allItem: ConfigItem = ConfigItem.Builder()
-        .name("<gold>All Recipes")
-        .material(Material.BREWING_STAND)
-        .glint(true)
+    var allItem: GuiRecipe = GuiRecipe.Builder()
+        .item(ConfigItem.Builder().name("<gold>All Recipes").material(Material.BREWING_STAND).glint(true).build())
         .build()
 
     @Comment("The default item to be used if a group is not assigned an item")
@@ -22,12 +20,15 @@ class GuiGroupsSection : OkaeriConfig() {
         .material(Material.WHEAT_SEEDS)
         .build()
 
+    @Comment("Groups hidden from the GUI")
+    @CustomKey("hidden-groups")
+    var hiddenGroups: List<String> = listOf()
+
     @Comment("Set the item each group uses in the groups menu")
     @CustomKey("group-items")
-    var groupItems: Map<String, GuiRecipe> = mapOf(
-        "beers" to GuiRecipe.Builder()
-            .enabled(true)
-            .item(ConfigItem.Builder().material(Material.WHEAT).build())
+    var groupItems: Map<String, ConfigItem> = mapOf(
+        "beers" to ConfigItem.Builder()
+            .material(Material.WHEAT)
             .build()
     )
 
