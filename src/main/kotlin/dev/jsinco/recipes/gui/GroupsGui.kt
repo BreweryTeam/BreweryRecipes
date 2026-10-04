@@ -1,17 +1,22 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.configuration.GroupPosition
+import dev.jsinco.recipes.configuration.SortOrder
 import dev.jsinco.recipes.listeners.GuiEventListener
 import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.util.GUIUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import kotlin.collections.sortedWith
+import kotlin.comparisons.compareBy
 
 class GroupsGui(
     private val player: Player,
@@ -29,14 +34,29 @@ class GroupsGui(
     private var page = 0
 
     private fun initGroups(): List<String?> {
-        val list = mutableListOf<String?>()
-        if (BreweryRecipes.guiConfig.groups.allItem.enabled) {
-            list.add(null)
-        }
-        list.addAll(BreweryRecipes.brewingIntegration.allGroups()
+        val groups = BreweryRecipes.brewingIntegration.allGroups()
             .filter { id -> BreweryRecipes.guiConfig.groups.hiddenGroups.none { hidden -> hidden.equals(id, ignoreCase = true) } }
-            .toList())
-        return list
+        val sorted: MutableList<String?> = when (BreweryRecipes.guiConfig.groups.groupSortOrder) {
+            SortOrder.AS_PROVIDED -> groups
+            SortOrder.ALPHABETICAL_IDENTIFIER ->
+                groups.sortedWith(String.CASE_INSENSITIVE_ORDER)
+            SortOrder.ALPHABETICAL_NAME ->
+                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it) })
+        }.toMutableList()
+
+        if (BreweryRecipes.guiConfig.groups.allRecipesItem.enabled) {
+            when (BreweryRecipes.guiConfig.groups.allRecipesPosition) {
+                GroupPosition.START -> sorted.addFirst(null)
+                GroupPosition.END -> sorted.addLast(null)
+            }
+        }
+        return sorted
+    }
+
+    private fun plainName(groupId: String): String {
+        val group = BreweryRecipes.brewingIntegration.getGroup(groupId) ?: return groupId
+        val rendered = GlobalTranslator.render(group.displayName, BreweryRecipes.recipesConfig.language)
+        return PlainTextComponentSerializer.plainText().serialize(rendered)
     }
 
     private fun nextPage() {
@@ -87,7 +107,7 @@ class GroupsGui(
     }
 
     private fun renderAllGroup(position: Int) {
-        val item = BreweryRecipes.guiConfig.groups.allItem.item.generateItem()
+        val item = BreweryRecipes.guiConfig.groups.allRecipesItem.item.generateItem()
         renderItem(GuiItem(item, GuiItem.Type.OPEN_ALL_GROUP), position)
     }
 
