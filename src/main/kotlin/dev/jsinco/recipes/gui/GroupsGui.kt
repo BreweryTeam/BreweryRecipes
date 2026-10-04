@@ -115,7 +115,7 @@ class GroupsGui(
         val configItem = BreweryRecipes.guiConfig.groups.groupItems[group.id] ?: BreweryRecipes.guiConfig.groups.defaultItem
         val item = configItem.generateItem()
         item.setData(
-            DataComponentTypes.CUSTOM_NAME,
+            DataComponentTypes.ITEM_NAME,
             GlobalTranslator.render(group.displayName, BreweryRecipes.recipesConfig.language)
         )
         item.editPersistentDataContainer { pdc -> pdc.set(GuiEventListener.GUI_GROUP, PersistentDataType.STRING, group.id) }
