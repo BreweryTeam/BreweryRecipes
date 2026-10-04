@@ -1,7 +1,7 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
-import dev.jsinco.recipes.configuration.RecipeSortOrder
+import dev.jsinco.recipes.configuration.SortOrder
 import dev.jsinco.recipes.configuration.Visibility
 import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.UndiscoveredRecipe
@@ -21,10 +21,9 @@ object GuiManager {
         admin: Boolean = false
     ) {
         if (!CooldownManager.tryOpen(viewer)) return
-        if (BreweryRecipes.guiConfig.defaultView == RecipeBookView.RECIPES) {
-            openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
-        } else {
-            openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
+        when (BreweryRecipes.guiConfig.defaultView) {
+            RecipeBookView.RECIPES -> openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
+            RecipeBookView.GROUPS -> openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
         }
     }
 
@@ -91,11 +90,11 @@ object GuiManager {
 
     private fun sortDisplays(displays: Collection<RecipeDisplay>, mode: RecipeBookMode): List<RecipeDisplay> {
         val baseSorted = when (BreweryRecipes.recipesConfig.recipeSortOrder) {
-            RecipeSortOrder.AS_PROVIDED -> displays.toList()
-            RecipeSortOrder.ALPHABETICAL_IDENTIFIER ->
+            SortOrder.AS_PROVIDED -> displays.toList()
+            SortOrder.ALPHABETICAL_IDENTIFIER ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.recipeKey() })
 
-            RecipeSortOrder.ALPHABETICAL_NAME ->
+            SortOrder.ALPHABETICAL_NAME ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
         }
 
