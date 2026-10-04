@@ -37,7 +37,7 @@ interface BrewingIntegration {
         val displayName = recipeDisplay.displayName(brewDisplayName)
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
-            DataComponentTypes.CUSTOM_NAME,
+            DataComponentTypes.ITEM_NAME,
             GlobalTranslator.render(displayName, BreweryRecipes.recipesConfig.language)
         )
         item.setData(DataComponentTypes.LORE, ItemLore.lore(lore))
