@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.util.ColorUtil
 import eu.okaeri.configs.OkaeriConfig
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
@@ -113,6 +114,7 @@ class ConfigItem : OkaeriConfig() {
         fun customModelData(customModelData: Int) = apply { configItemSection.customModelData = customModelData }
         fun itemModel(itemModel: String) = apply { configItemSection.itemModel = NamespacedKey.fromString(itemModel) }
         fun itemModel(itemModel: Key) = apply { configItemSection.itemModel = itemModel }
+        fun potionColor(potionColor: String) = apply { configItemSection.potionColor = ColorUtil.parseColorString(potionColor) }
         fun potionColor(potionColor: Color) = apply { configItemSection.potionColor = potionColor }
         fun noText(noText: Boolean) = apply { configItemSection.noText = noText }
 
