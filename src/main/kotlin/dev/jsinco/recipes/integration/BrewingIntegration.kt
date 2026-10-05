@@ -9,6 +9,7 @@ import dev.jsinco.recipes.recipe.RecipeDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Color
@@ -37,8 +38,10 @@ interface BrewingIntegration {
         val displayName = recipeDisplay.displayName(brewDisplayName)
         val lore = recipeDisplay.toLore() ?: return null
         item.setData(
-            DataComponentTypes.ITEM_NAME,
+            DataComponentTypes.CUSTOM_NAME,
             GlobalTranslator.render(displayName, BreweryRecipes.recipesConfig.language)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .colorIfAbsent(NamedTextColor.WHITE)
         )
         item.setData(DataComponentTypes.LORE, ItemLore.lore(lore))
         return item

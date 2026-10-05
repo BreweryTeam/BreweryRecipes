@@ -6,7 +6,7 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
 import io.papermc.paper.datacomponent.item.ItemLore
 import io.papermc.paper.datacomponent.item.PotionContents
-import io.papermc.paper.datacomponent.item.TooltipDisplay.tooltipDisplay
+import io.papermc.paper.datacomponent.item.TooltipDisplay
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -17,7 +17,6 @@ import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
-
 
 class ConfigItem : OkaeriConfig() {
 
@@ -80,11 +79,14 @@ class ConfigItem : OkaeriConfig() {
             item.setData(
                 DataComponentTypes.POTION_CONTENTS, PotionContents.potionContents()
                     .customColor(it)
-                    .build()
+            )
+            item.setData(
+                DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay()
+                    .addHiddenComponents(DataComponentTypes.POTION_CONTENTS)
             )
         }
         if (noText) {
-            item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltipDisplay().hideTooltip(true))
+            item.setData(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().hideTooltip(true))
         }
         return item
     }
