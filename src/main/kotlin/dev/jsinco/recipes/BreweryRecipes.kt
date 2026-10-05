@@ -168,6 +168,7 @@ class BreweryRecipes : JavaPlugin() {
         SerdesPackBuilder()
             .add(ComponentSerializer)
             .add(KeySerializer)
+            .add(ColorSerializer)
             .add(ConfigItemSerializer)
             .add(ConfigItemCollectionSerializer)
             .add(LoreSerializer)

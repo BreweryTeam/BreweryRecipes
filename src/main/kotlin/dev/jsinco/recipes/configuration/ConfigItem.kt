@@ -5,6 +5,7 @@ import eu.okaeri.configs.OkaeriConfig
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
 import io.papermc.paper.datacomponent.item.ItemLore
+import io.papermc.paper.datacomponent.item.PotionContents
 import io.papermc.paper.datacomponent.item.TooltipDisplay.tooltipDisplay
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
@@ -12,6 +13,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.translation.GlobalTranslator
+import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
@@ -32,6 +34,7 @@ class ConfigItem : OkaeriConfig() {
     var glint: Boolean = false
     var customModelData: Int? = null
     var itemModel: Key? = null
+    var potionColor: Color? = null
     var noText = false
 
     fun generateItem(): ItemStack {
@@ -73,6 +76,13 @@ class ConfigItem : OkaeriConfig() {
         itemModel?.let {
             item.setData(DataComponentTypes.ITEM_MODEL, it)
         }
+        potionColor?.let {
+            item.setData(
+                DataComponentTypes.POTION_CONTENTS, PotionContents.potionContents()
+                    .customColor(it)
+                    .build()
+            )
+        }
         if (noText) {
             item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltipDisplay().hideTooltip(true))
         }
@@ -101,6 +111,7 @@ class ConfigItem : OkaeriConfig() {
         fun customModelData(customModelData: Int) = apply { configItemSection.customModelData = customModelData }
         fun itemModel(itemModel: String) = apply { configItemSection.itemModel = NamespacedKey.fromString(itemModel) }
         fun itemModel(itemModel: Key) = apply { configItemSection.itemModel = itemModel }
+        fun potionColor(potionColor: Color) = apply { configItemSection.potionColor = potionColor }
         fun noText(noText: Boolean) = apply { configItemSection.noText = noText }
 
         fun build() = configItemSection

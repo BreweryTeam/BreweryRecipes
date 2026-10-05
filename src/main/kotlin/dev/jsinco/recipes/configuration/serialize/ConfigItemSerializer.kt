@@ -7,6 +7,7 @@ import eu.okaeri.configs.serdes.ObjectSerializer
 import eu.okaeri.configs.serdes.SerializationData
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
+import org.bukkit.Color
 import org.bukkit.Material
 
 object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
@@ -27,6 +28,7 @@ object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
         }
         `object`.customModelData?.let { data.add("custom-model-data", it) }
         `object`.itemModel?.let { data.add("item-model", it) }
+        `object`.potionColor?.let { data.add("potion-color", it) }
         if (`object`.noText) {
             data.add("no-text", true)
         }
@@ -44,6 +46,7 @@ object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
         data.get("glint", Boolean::class.java)?.let { builder.glint(it) }
         data.get("custom-model-data", Int::class.java)?.let { builder.customModelData(it) }
         data.get("item-model", Key::class.java)?.let { builder.itemModel(it) }
+        data.get("potion-color", Color::class.java)?.let { builder.potionColor(it) }
         data.get("no-text", Boolean::class.java)?.let { builder.noText(it) }
         return builder.build()
     }
