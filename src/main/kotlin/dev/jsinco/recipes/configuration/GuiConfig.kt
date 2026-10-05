@@ -104,7 +104,7 @@ class GuiConfig : OkaeriConfig() {
         GuiOverride.Builder()
             .pos("4")
             .item(
-                ConfigItem.Builder().material(Material.BLAZE_POWDER)
+                ConfigItem.Builder().material(Material.BREWING_STAND)
                     .name("<gray>Groups")
                     .build()
             ).type(GuiItem.Type.VIEW_GROUPS)
