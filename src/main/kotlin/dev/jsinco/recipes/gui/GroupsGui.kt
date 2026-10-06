@@ -48,9 +48,9 @@ class GroupsGui(
         val stats: Stats?
     )
     class Stats(
-        val unlocked: Int,
-        val brewed: Int,
-        val perfected: Int,
+        val unlocked: Int?,
+        val brewed: Int?,
+        val perfected: Int?,
         val total: Int
     )
 
@@ -83,16 +83,28 @@ class GroupsGui(
     }
 
     private fun statsFactory(): (Collection<BreweryRecipe>) -> Stats? {
-        val showStats = !admin && BreweryRecipes.guiConfig.groups.showStats
-        if (showStats) {
-            val recipeViews = BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
-                .associateBy { it.recipeIdentifier }
-            val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId)
-                .associateBy { it.identifier }
+        val statsEnabled = BreweryRecipes.guiConfig.groups.unlockedStats
+                || BreweryRecipes.guiConfig.groups.brewedStats
+                || BreweryRecipes.guiConfig.groups.perfectedStats
+        if (statsEnabled && !admin) {
+            val recipeViews by lazy {
+                BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
+                    .associateBy { it.recipeIdentifier }
+            }
+            val completedRecipes by lazy {
+                BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId)
+                    .associateBy { it.identifier }
+            }
             return { recipes -> Stats(
-                recipes.count { it.identifier in recipeViews },
-                recipes.count { it.identifier in completedRecipes },
-                recipes.count { (completedRecipes[it.identifier]?.scoreEquivalent() ?: 0.0) >= 1.0 },
+                if (BreweryRecipes.guiConfig.groups.unlockedStats) {
+                    recipes.count { it.identifier in recipeViews }
+                } else null,
+                if (BreweryRecipes.guiConfig.groups.brewedStats) {
+                    recipes.count { it.identifier in completedRecipes }
+                } else null,
+                if (BreweryRecipes.guiConfig.groups.perfectedStats) {
+                    recipes.count { (completedRecipes[it.identifier]?.scoreEquivalent() ?: 0.0) >= 1.0 }
+                } else null,
                 recipes.count {
                     RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, it.identifier).visibility != Visibility.HIDDEN
                 }
@@ -162,11 +174,17 @@ class GroupsGui(
         }
 
         if (group.stats != null) {
-            val lore = listOf(
-                line("breweryrecipes.gui.groups.unlocked", group.stats.unlocked, group.stats.total),
-                line("breweryrecipes.gui.groups.brewed", group.stats.brewed, group.stats.total),
-                line("breweryrecipes.gui.groups.perfected", group.stats.perfected, group.stats.total)
-            ).map { component ->
+            val lore = mutableListOf<Component>().apply {
+                group.stats.unlocked?.let {
+                    add(line("breweryrecipes.gui.groups.unlocked", it, group.stats.total))
+                }
+                group.stats.brewed?.let {
+                    add(line("breweryrecipes.gui.groups.brewed", it, group.stats.total))
+                }
+                group.stats.perfected?.let {
+                    add(line("breweryrecipes.gui.groups.perfected", it, group.stats.total))
+                }
+            }.map { component ->
                 GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
                     .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             }

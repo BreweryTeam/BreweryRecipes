@@ -19,9 +19,17 @@ class GuiGroupsSection : OkaeriConfig() {
     @CustomKey("group-sort-order")
     var groupSortOrder: SortOrder = SortOrder.AS_PROVIDED
 
-    @Comment("Whether the groups menu should show completion stats for each group")
-    @CustomKey("show-stats")
-    var showStats: Boolean = true
+    @Comment("Whether the groups menu should show how many recipes have been unlocked for each group")
+    @CustomKey("unlocked-stats")
+    var unlockedStats: Boolean = true
+
+    @Comment("Whether the groups menu should show how many recipes have been brewed for each group")
+    @CustomKey("brewed-stats")
+    var brewedStats: Boolean = true
+
+    @Comment("Whether the groups menu should show how many recipes have been perfected for each group")
+    @CustomKey("perfected-stats")
+    var perfectedStats: Boolean = true
 
     @Comment("The item used for the \"All Recipes\" recipe group")
     @CustomKey("all-recipes-item")
