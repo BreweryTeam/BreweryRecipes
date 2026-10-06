@@ -19,6 +19,10 @@ class GuiGroupsSection : OkaeriConfig() {
     @CustomKey("group-sort-order")
     var groupSortOrder: SortOrder = SortOrder.AS_PROVIDED
 
+    @Comment("Whether the groups menu should show completion stats for each group")
+    @CustomKey("show-stats")
+    var showStats: Boolean = true
+
     @Comment("The item used for the \"All Recipes\" recipe group")
     @CustomKey("all-recipes-item")
     var allRecipesItem: GuiRecipe = GuiRecipe.Builder()

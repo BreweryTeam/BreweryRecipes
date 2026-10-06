@@ -3,16 +3,24 @@ package dev.jsinco.recipes.gui
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.configuration.GroupPosition
 import dev.jsinco.recipes.configuration.SortOrder
+import dev.jsinco.recipes.configuration.Visibility
 import dev.jsinco.recipes.listeners.GuiEventListener
+import dev.jsinco.recipes.recipe.BreweryRecipe
 import dev.jsinco.recipes.recipe.BreweryRecipeGroup
+import dev.jsinco.recipes.recipe.RecipeDetails
+import dev.jsinco.recipes.util.ColorUtil
 import dev.jsinco.recipes.util.GUIUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.translation.Argument
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -35,30 +43,63 @@ class GroupsGui(
     private val pageRecipeCapacity = recipesSlots.size
     private var page = 0
 
-    private fun initGroups(): List<String?> {
+    class Group(
+        val group: BreweryRecipeGroup?,
+        val stats: Stats?
+    )
+    class Stats(
+        val unlocked: Int,
+        val brewed: Int,
+        val perfected: Int,
+        val total: Int
+    )
+
+    private fun initGroups(): List<Group> {
+        val statsFactory = statsFactory()
+
         val groups = BreweryRecipes.brewingIntegration.allGroups()
             .filter { id -> BreweryRecipes.guiConfig.groups.hiddenGroups.none { hidden -> hidden.equals(id, ignoreCase = true) } }
-        val sorted: MutableList<String?> = when (BreweryRecipes.guiConfig.groups.groupSortOrder) {
+            .mapNotNull { id -> BreweryRecipes.brewingIntegration.getGroup(id) }
+        val sorted = when (BreweryRecipes.guiConfig.groups.groupSortOrder) {
             SortOrder.AS_PROVIDED -> groups
             SortOrder.ALPHABETICAL_IDENTIFIER ->
-                groups.sortedWith(String.CASE_INSENSITIVE_ORDER)
+                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.id })
             SortOrder.ALPHABETICAL_NAME ->
-                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it) })
-        }.toMutableList()
+                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) {
+                    val rendered = GlobalTranslator.render(it.displayName, BreweryRecipes.recipesConfig.language)
+                    PlainTextComponentSerializer.plainText().serialize(rendered)
+                })
+        }.map { group -> Group(group, statsFactory(group.recipes)) }
+            .toMutableList()
 
+        val allRecipes = BreweryRecipes.brewingIntegration.allRecipes()
         if (BreweryRecipes.guiConfig.groups.allRecipesItem.enabled) {
             when (BreweryRecipes.guiConfig.groups.allRecipesPosition) {
-                GroupPosition.START -> sorted.addFirst(null)
-                GroupPosition.END -> sorted.addLast(null)
+                GroupPosition.START -> sorted.addFirst(Group(null, statsFactory(allRecipes)))
+                GroupPosition.END -> sorted.addLast(Group(null, statsFactory(allRecipes)))
             }
         }
         return sorted
     }
 
-    private fun plainName(groupId: String): String {
-        val group = BreweryRecipes.brewingIntegration.getGroup(groupId) ?: return groupId
-        val rendered = GlobalTranslator.render(group.displayName, BreweryRecipes.recipesConfig.language)
-        return PlainTextComponentSerializer.plainText().serialize(rendered)
+    private fun statsFactory(): (Collection<BreweryRecipe>) -> Stats? {
+        val showStats = !admin && BreweryRecipes.guiConfig.groups.showStats
+        if (showStats) {
+            val recipeViews = BreweryRecipes.recipeViewManager.getViews(target.uniqueId)
+                .associateBy { it.recipeIdentifier }
+            val completedRecipes = BreweryRecipes.completedRecipeManager.getCompletedRecipes(target.uniqueId)
+                .associateBy { it.identifier }
+            return { recipes -> Stats(
+                recipes.count { it.identifier in recipeViews },
+                recipes.count { it.identifier in completedRecipes },
+                recipes.count { (completedRecipes[it.identifier]?.scoreEquivalent() ?: 0.0) >= 1.0 },
+                recipes.count {
+                    RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, it.identifier).visibility != Visibility.HIDDEN
+                }
+            ) }
+        } else {
+            return { _ -> null }
+        }
     }
 
     private fun nextPage() {
@@ -97,33 +138,55 @@ class GroupsGui(
         val start = page * pageRecipeCapacity
         val end = minOf((page + 1) * pageRecipeCapacity, groups.size)
         for (i in start until end) {
-            val groupId = groups[i]
-            if (groupId == null) {
-                renderAllGroup(recipesSlots[i - start])
-            } else {
-                BreweryRecipes.brewingIntegration.getGroup(groupId)?.let { group ->
-                    renderGroup(group, recipesSlots[i - start])
-                }
-            }
+            renderGroup(groups[i], recipesSlots[i - start])
         }
     }
 
-    private fun renderAllGroup(position: Int) {
-        val item = BreweryRecipes.guiConfig.groups.allRecipesItem.item.generateItem()
-        renderItem(GuiItem(item, GuiItem.Type.OPEN_ALL_GROUP), position)
+    private fun renderGroup(group: Group, position: Int) {
+        val recipeGroup = group.group
+        val item = if (recipeGroup != null) {
+            val configItem = BreweryRecipes.guiConfig.groups.groupItems[recipeGroup.id] ?: BreweryRecipes.guiConfig.groups.defaultItem
+            val item = configItem.generateItem()
+            item.setData(
+                DataComponentTypes.CUSTOM_NAME,
+                GlobalTranslator.render(recipeGroup.displayName, BreweryRecipes.recipesConfig.language)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.WHITE)
+            )
+            item.editPersistentDataContainer { pdc ->
+                pdc.set(GuiEventListener.GUI_GROUP, PersistentDataType.STRING, recipeGroup.id)
+            }
+            item
+        } else {
+            BreweryRecipes.guiConfig.groups.allRecipesItem.item.generateItem()
+        }
+
+        if (group.stats != null) {
+            val lore = listOf(
+                line("breweryrecipes.gui.groups.unlocked", group.stats.unlocked, group.stats.total),
+                line("breweryrecipes.gui.groups.brewed", group.stats.brewed, group.stats.total),
+                line("breweryrecipes.gui.groups.perfected", group.stats.perfected, group.stats.total)
+            ).map { component ->
+                GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            }
+            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore))
+        }
+
+        val type = if (recipeGroup != null) GuiItem.Type.OPEN_GROUP else GuiItem.Type.OPEN_ALL_GROUP
+        renderItem(GuiItem(item, type), position)
     }
 
-    private fun renderGroup(group: BreweryRecipeGroup, position: Int) {
-        val configItem = BreweryRecipes.guiConfig.groups.groupItems[group.id] ?: BreweryRecipes.guiConfig.groups.defaultItem
-        val item = configItem.generateItem()
-        item.setData(
-            DataComponentTypes.CUSTOM_NAME,
-            GlobalTranslator.render(group.displayName, BreweryRecipes.recipesConfig.language)
-                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                .colorIfAbsent(NamedTextColor.WHITE)
+    private fun line(key: String, current: Int, total: Int): Component {
+        val color = ColorUtil.lerp(
+            Color.fromRGB(NamedTextColor.RED.value()),
+            Color.fromRGB(NamedTextColor.GREEN.value()),
+            current.toFloat() / total.toFloat()
         )
-        item.editPersistentDataContainer { pdc -> pdc.set(GuiEventListener.GUI_GROUP, PersistentDataType.STRING, group.id) }
-        renderItem(GuiItem(item, GuiItem.Type.OPEN_GROUP), position)
+        return Component.translatable(key,
+            Argument.numeric("current", current),
+            Argument.numeric("max", total)
+        ).color(TextColor.color(color.asRGB()))
     }
 
     override fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type) {
