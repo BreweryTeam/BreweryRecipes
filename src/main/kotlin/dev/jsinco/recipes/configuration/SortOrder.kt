@@ -1,6 +1,6 @@
 package dev.jsinco.recipes.configuration
 
-enum class RecipeSortOrder {
+enum class SortOrder {
     ALPHABETICAL_IDENTIFIER,
     ALPHABETICAL_NAME,
     AS_PROVIDED

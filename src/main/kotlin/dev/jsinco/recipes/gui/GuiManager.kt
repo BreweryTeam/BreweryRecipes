@@ -1,8 +1,9 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
-import dev.jsinco.recipes.configuration.RecipeSortOrder
+import dev.jsinco.recipes.configuration.SortOrder
 import dev.jsinco.recipes.configuration.Visibility
+import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.UndiscoveredRecipe
 import dev.jsinco.recipes.recipe.RecipeDetails
 import dev.jsinco.recipes.recipe.RecipeDisplay
@@ -14,12 +15,31 @@ import kotlin.collections.sortedByDescending
 
 object GuiManager {
 
-    fun openRecipeGui(viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
+    fun openGui(
+        viewer: Player,
+        target: OfflinePlayer = viewer,
+        admin: Boolean = false
+    ) {
         if (!CooldownManager.tryOpen(viewer)) return
-        openWithMode(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
+        when (BreweryRecipes.guiConfig.defaultView) {
+            RecipeBookView.RECIPES -> openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
+            RecipeBookView.GROUPS -> {
+                if (BreweryRecipes.brewingIntegration.allGroups().isEmpty()) {
+                    openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
+                } else {
+                    openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)
+                }
+            }
+        }
     }
 
-    fun openWithMode(mode: RecipeBookMode, viewer: Player, target: OfflinePlayer = viewer, admin: Boolean = false) {
+    fun openRecipesGui(
+        mode: RecipeBookMode,
+        viewer: Player,
+        target: OfflinePlayer = viewer,
+        group: BreweryRecipeGroup? = null,
+        admin: Boolean = false
+    ) {
         val recipeDisplays: Collection<RecipeDisplay> = if (admin) {
             when (mode) {
                 RecipeBookMode.FRAGMENTS -> BreweryRecipes.brewingIntegration.allRecipes().map { it.generateCompletedView() }
@@ -61,6 +81,7 @@ object GuiManager {
             viewer,
             target,
             mode,
+            group,
             admin,
             sortDisplays(recipeDisplays, mode),
             { display ->
@@ -75,11 +96,11 @@ object GuiManager {
 
     private fun sortDisplays(displays: Collection<RecipeDisplay>, mode: RecipeBookMode): List<RecipeDisplay> {
         val baseSorted = when (BreweryRecipes.recipesConfig.recipeSortOrder) {
-            RecipeSortOrder.AS_PROVIDED -> displays.toList()
-            RecipeSortOrder.ALPHABETICAL_IDENTIFIER ->
+            SortOrder.AS_PROVIDED -> displays.toList()
+            SortOrder.ALPHABETICAL_IDENTIFIER ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.recipeKey() })
 
-            RecipeSortOrder.ALPHABETICAL_NAME ->
+            SortOrder.ALPHABETICAL_NAME ->
                 displays.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plainName(it.recipeKey()) })
         }
 
@@ -98,6 +119,17 @@ object GuiManager {
         val component = BreweryRecipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
         val rendered = GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
         return PlainTextComponentSerializer.plainText().serialize(rendered)
+    }
+
+    fun openGroupsGui(
+        mode: RecipeBookMode,
+        viewer: Player,
+        target: OfflinePlayer = viewer,
+        admin: Boolean = false
+    ) {
+        val gui = GroupsGui(viewer, target, mode, admin)
+        gui.render()
+        gui.open()
     }
 
 }

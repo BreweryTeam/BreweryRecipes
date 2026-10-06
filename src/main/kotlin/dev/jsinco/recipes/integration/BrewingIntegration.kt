@@ -3,11 +3,13 @@ package dev.jsinco.recipes.integration
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.UndiscoveredRecipe
 import dev.jsinco.recipes.recipe.RecipeDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Color
@@ -38,6 +40,8 @@ interface BrewingIntegration {
         item.setData(
             DataComponentTypes.CUSTOM_NAME,
             GlobalTranslator.render(displayName, BreweryRecipes.recipesConfig.language)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .colorIfAbsent(NamedTextColor.WHITE)
         )
         item.setData(DataComponentTypes.LORE, ItemLore.lore(lore))
         return item
@@ -51,6 +55,8 @@ interface BrewingIntegration {
     fun agingYearTicks(): Long
     fun allRecipes(): Collection<BreweryRecipe>
     fun getRecipe(id: String): BreweryRecipe?
+    fun allGroups(): Collection<String> = emptyList()
+    fun getGroup(id: String): BreweryRecipeGroup? = null
     fun reload()
 
     fun enable(breweryRecipes: BreweryRecipes)

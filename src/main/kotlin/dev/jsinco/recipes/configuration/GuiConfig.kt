@@ -1,17 +1,22 @@
 package dev.jsinco.recipes.configuration
 
 import dev.jsinco.recipes.configuration.gui.GuiBorderType
+import dev.jsinco.recipes.configuration.gui.GuiGroupsSection
 import dev.jsinco.recipes.configuration.gui.GuiOverride
 import dev.jsinco.recipes.configuration.gui.GuiRecipesSection
 import dev.jsinco.recipes.gui.GuiItem
 import dev.jsinco.recipes.gui.RecipeBookMode
+import dev.jsinco.recipes.gui.RecipeBookView
 import eu.okaeri.configs.OkaeriConfig
 import eu.okaeri.configs.annotation.Comment
 import org.bukkit.Material
 
 class GuiConfig : OkaeriConfig() {
 
-    @Comment("The default mode shown when opening the recipe book (FRAGMENTS or BREWED)")
+    @Comment("The default view shown when opening the recipe book (RECIPES or GROUPS)")
+    var defaultView: RecipeBookView = RecipeBookView.RECIPES
+
+    @Comment("The default mode shown when viewing recipes (FRAGMENTS or BREWED)")
     var defaultMode: RecipeBookMode = RecipeBookMode.FRAGMENTS
 
     @Comment("Define borders in the recipe GUI")
@@ -95,9 +100,20 @@ class GuiConfig : OkaeriConfig() {
                     .name("<gray>Previous")
                     .build()
             ).type(GuiItem.Type.PREVIOUS_PAGE)
+            .build(),
+        GuiOverride.Builder()
+            .pos("4")
+            .item(
+                ConfigItem.Builder().material(Material.BREWING_STAND)
+                    .name("<gray>Groups")
+                    .build()
+            ).type(GuiItem.Type.VIEW_GROUPS)
             .build()
     )
 
     @Comment("Settings related to the recipe items")
     var recipes: GuiRecipesSection = GuiRecipesSection()
+
+    @Comment("Settings related to recipe groups", "Only available for TheBrewingProject")
+    var groups: GuiGroupsSection = GuiGroupsSection()
 }
