@@ -56,6 +56,10 @@ interface BrewingIntegration {
     fun allRecipes(): Collection<BreweryRecipe>
     fun getRecipe(id: String): BreweryRecipe?
     fun allGroups(): Collection<String> = emptyList()
+    fun hasCustomGroups(): Boolean {
+        val groups = allGroups()
+        return groups.size > 1 || (groups.size == 1 && groups.first() != "recipes")
+    }
     fun getGroup(id: String): BreweryRecipeGroup? = null
     fun reload()
 

@@ -13,7 +13,11 @@ import org.bukkit.Material
 
 class GuiConfig : OkaeriConfig() {
 
-    @Comment("The default view shown when opening the recipe book (RECIPES or GROUPS)")
+    @Comment(
+        "The default view shown when opening the recipe book (RECIPES or GROUPS)",
+        "GROUPS is only available for TheBrewingProject",
+        "Will default to RECIPES if no groups are loaded"
+    )
     var defaultView: RecipeBookView = RecipeBookView.RECIPES
 
     @Comment("The default mode shown when viewing recipes (FRAGMENTS or BREWED)")
@@ -114,6 +118,9 @@ class GuiConfig : OkaeriConfig() {
     @Comment("Settings related to the recipe items")
     var recipes: GuiRecipesSection = GuiRecipesSection()
 
-    @Comment("Settings related to recipe groups", "Only available for TheBrewingProject")
+    @Comment(
+        "Settings related to recipe groups",
+        "Only available for TheBrewingProject"
+    )
     var groups: GuiGroupsSection = GuiGroupsSection()
 }
