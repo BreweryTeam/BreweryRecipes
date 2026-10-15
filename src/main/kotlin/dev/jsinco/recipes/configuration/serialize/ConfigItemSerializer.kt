@@ -27,6 +27,7 @@ object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
         }
         `object`.customModelData?.let { data.add("custom-model-data", it) }
         `object`.itemModel?.let { data.add("item-model", it) }
+        `object`.tooltipStyle?.let { data.add("tooltip-style", it) }
         if (`object`.noText) {
             data.add("no-text", true)
         }
@@ -44,6 +45,7 @@ object ConfigItemSerializer : ObjectSerializer<ConfigItem> {
         data.get("glint", Boolean::class.java)?.let { builder.glint(it) }
         data.get("custom-model-data", Int::class.java)?.let { builder.customModelData(it) }
         data.get("item-model", Key::class.java)?.let { builder.itemModel(it) }
+        data.get("tooltip-style", Key::class.java)?.let { builder.tooltipStyle(it) }
         data.get("no-text", Boolean::class.java)?.let { builder.noText(it) }
         return builder.build()
     }
