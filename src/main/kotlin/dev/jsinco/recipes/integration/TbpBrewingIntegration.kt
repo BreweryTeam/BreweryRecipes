@@ -6,6 +6,7 @@ import dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.listeners.TheBrewingProjectListener
 import dev.jsinco.recipes.recipe.BreweryRecipe
+import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.util.TBPRecipeConverter
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
@@ -61,6 +62,15 @@ object TbpBrewingIntegration : BrewingIntegration {
 
     override fun getRecipe(id: String): BreweryRecipe? {
         return getRecipeMap()[id]
+    }
+
+    override fun allGroups(): Collection<String> {
+        return getApi().recipeRegistry.recipeGroups.map { it.id() }
+    }
+
+    override fun getGroup(id: String): BreweryRecipeGroup? {
+        val group = getApi().recipeRegistry.getRecipeGroup(id).getOrNull() ?: return null
+        return BreweryRecipeGroup(group.id(), group.displayName(), group.recipes().mapNotNull { getRecipe(it.recipeName) })
     }
 
     override fun reload() {

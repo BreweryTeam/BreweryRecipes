@@ -4,6 +4,7 @@ import eu.okaeri.configs.migrate.ConfigMigration
 
 object Migrations {
     fun guiMigrations(): Array<ConfigMigration> = arrayOf(
-        G001_lore_rework
+        G001_lore_rework,
+        G002_group_override
     )
 }

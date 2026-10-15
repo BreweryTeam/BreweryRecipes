@@ -134,7 +134,10 @@ class BreweryRecipes : JavaPlugin() {
 
     private fun loadGuiIntegration(): BrewingIntegration {
         if (ClassUtil.exists("dev.jsinco.brewery.bukkit.api.TheBrewingProjectApi")) {
-            return TbpBrewingIntegration
+            if (ClassUtil.exists("dev.jsinco.brewery.api.recipe.RecipeRegistry", "getRecipeGroups")) {
+                return TbpBrewingIntegration
+            }
+            throw IllegalStateException("TheBrewingProject is outdated! Update TheBrewingProject to 3.5.0 or later.")
         }
         if (ClassUtil.exists("com.dre.brewery.recipe.BRecipe")) {
             return BreweryXBrewingIntegration
@@ -168,6 +171,7 @@ class BreweryRecipes : JavaPlugin() {
         SerdesPackBuilder()
             .add(ComponentSerializer)
             .add(KeySerializer)
+            .add(ColorSerializer)
             .add(ConfigItemSerializer)
             .add(ConfigItemCollectionSerializer)
             .add(LoreSerializer)

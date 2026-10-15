@@ -24,7 +24,7 @@ object RecipeOpenCommand {
                     context.source.sender.sendMessage(Component.translatable("breweryrecipes.command.invalid.sender"))
                     return@executes 1
                 }
-                GuiManager.openRecipeGui(sender)
+                GuiManager.openGui(sender)
                 return@executes 1
             }
             .then(
@@ -42,7 +42,7 @@ object RecipeOpenCommand {
                             // player must have permission for other mode since requires() checked if player has either permission
                             defaultMode.next()
                         }
-                        GuiManager.openWithMode(mode, sender, admin = true)
+                        GuiManager.openRecipesGui(mode, sender, admin = true)
                         return@executes 1
                     }.requires { stack ->
                         val sender = stack.sender
@@ -59,7 +59,7 @@ object RecipeOpenCommand {
                                 return@executes 1
                             }
                             val target = context.getArgument("target", OfflinePlayer::class.java)
-                            GuiManager.openRecipeGui(sender, target)
+                            GuiManager.openGui(sender, target)
                             return@executes 1
                         }
                 ).requires { it.sender.hasPermission("breweryrecipes.command.open.as") }
@@ -75,7 +75,7 @@ object RecipeOpenCommand {
                                 .color(NamedTextColor.RED))
                         }
                         targets.forEach { target ->
-                            GuiManager.openRecipeGui(target)
+                            GuiManager.openGui(target)
                         }
                         return@executes 1
                     }.requires { it.sender.hasPermission("breweryrecipes.command.others") }
