@@ -24,7 +24,7 @@ object GuiManager {
         when (BreweryRecipes.guiConfig.defaultView) {
             RecipeBookView.RECIPES -> openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
             RecipeBookView.GROUPS -> {
-                if (BreweryRecipes.brewingIntegration.allGroups().isEmpty()) {
+                if (BreweryRecipes.brewingIntegration.hasCustomGroups()) {
                     openRecipesGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, null, admin)
                 } else {
                     openGroupsGui(BreweryRecipes.guiConfig.defaultMode, viewer, target, admin)

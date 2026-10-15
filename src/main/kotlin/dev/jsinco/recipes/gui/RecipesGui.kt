@@ -68,7 +68,7 @@ class RecipesGui(
                 GuiItem.Type.NEXT_PAGE -> hasNextPage()
                 GuiItem.Type.SET_MODE_FRAGMENTS -> mode != RecipeBookMode.FRAGMENTS
                 GuiItem.Type.SET_MODE_BREWED -> mode != RecipeBookMode.BREWED
-                GuiItem.Type.VIEW_GROUPS -> !BreweryRecipes.brewingIntegration.allGroups().isEmpty()
+                GuiItem.Type.VIEW_GROUPS -> BreweryRecipes.brewingIntegration.hasCustomGroups()
                 GuiItem.Type.SWITCH_MODE, GuiItem.Type.NO_ACTION -> true
                 else -> false
             }
