@@ -18,6 +18,7 @@ import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
+import java.util.EnumSet
 
 class ConfigItem : OkaeriConfig() {
 
@@ -25,6 +26,12 @@ class ConfigItem : OkaeriConfig() {
         val IGNORED_DATA_TYPES = setOf(
             DataComponentTypes.ITEM_MODEL,
             DataComponentTypes.MAX_STACK_SIZE,
+        )
+        val POTION_TYPES: EnumSet<Material> = EnumSet.of(
+            Material.POTION,
+            Material.SPLASH_POTION,
+            Material.LINGERING_POTION,
+            Material.TIPPED_ARROW
         )
     }
 
@@ -81,6 +88,8 @@ class ConfigItem : OkaeriConfig() {
                 DataComponentTypes.POTION_CONTENTS, PotionContents.potionContents()
                     .customColor(it)
             )
+        }
+        if (material in POTION_TYPES || potionColor != null) {
             item.setData(
                 DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay()
                     .addHiddenComponents(DataComponentTypes.POTION_CONTENTS)
