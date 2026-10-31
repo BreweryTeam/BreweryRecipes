@@ -1,9 +1,12 @@
 package dev.jsinco.recipes.util
 
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Color
+import org.jetbrains.annotations.VisibleForTesting
 import org.joml.Math
 import org.joml.Vector3f
 import org.joml.Vector3fc
+import java.util.HexFormat
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.cbrt
@@ -13,41 +16,45 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 object ColorUtil {
-    val NAME_TO_COLOR_MAP: Map<String, Color> = mapOf(
-        "WHITE" to Color.WHITE,
-        "SILVER" to Color.SILVER,
-        "GRAY" to Color.GRAY,
-        "BLACK" to Color.BLACK,
-        "RED" to Color.RED,
-        "MAROON" to Color.MAROON,
-        "YELLOW" to Color.YELLOW,
-        "OLIVE" to Color.OLIVE,
-        "LIME" to Color.LIME,
-        "GREEN" to Color.GREEN,
-        "AQUA" to Color.AQUA,
-        "TEAL" to Color.TEAL,
-        "BLUE" to Color.BLUE,
-        "NAVY" to Color.NAVY,
-        "FUCHSIA" to Color.FUCHSIA,
-        "PURPLE" to Color.PURPLE,
-        "ORANGE" to Color.ORANGE,
-        "PINK" to Color.FUCHSIA,
-        "BRIGHT_GRAY" to Color.SILVER,
-        "BRIGHT_RED" to Color.fromRGB(255, 0, 0),
-        "DARK_RED" to Color.fromRGB(128, 0, 0),
-    )
+
+    @VisibleForTesting
+    val NAME_TO_COLOR_MAP: Map<String, Color> = NamedTextColor.NAMES.values()
+        .associateBy({ it.toString().uppercase() }, { Color.fromRGB(it.value()) })
+        .toMutableMap() + mapOf(
+            "SILVER" to Color.SILVER,
+            "MAROON" to Color.MAROON,
+            "OLIVE" to Color.OLIVE,
+            "LIME" to Color.LIME,
+            "TEAL" to Color.TEAL,
+            "NAVY" to Color.NAVY,
+            "FUCHSIA" to Color.FUCHSIA,
+            "PURPLE" to Color.PURPLE,
+            "ORANGE" to Color.ORANGE,
+            "PINK" to Color.FUCHSIA,
+            "BRIGHT_GRAY" to Color.SILVER,
+            "BRIGHT_RED" to Color.fromRGB(255, 0, 0),
+            "DARK_RED" to Color.fromRGB(128, 0, 0), // NamedTextColor uses 170,0,0
+        )
+    private val EXPLICIT_HEX_FORMAT: HexFormat = HexFormat.of().withPrefix("#")
 
     fun parseColorString(hexOrValue: String): Color? {
         val standardized = hexOrValue.replace("&", "").replace("#", "").uppercase(Locale.getDefault())
-        return NAME_TO_COLOR_MAP[standardized] ?: try {
-            return Color.fromRGB(
+        return NAME_TO_COLOR_MAP[standardized] ?: if (standardized.length == 6) {
+            Color.fromRGB(
                 standardized.substring(0, 2).toInt(16),
                 standardized.substring(2, 4).toInt(16),
                 standardized.substring(4, 6).toInt(16)
             )
-        } catch (_: Exception) {
-            return null
+        } else null
+    }
+
+    fun colorToString(color: Color): String {
+        for ((name, namedColor) in NAME_TO_COLOR_MAP) {
+            if (namedColor.asRGB() == color.asRGB()) {
+                return name
+            }
         }
+        return "#" + EXPLICIT_HEX_FORMAT.toHexDigits(color.asRGB().toLong(), 6)
     }
 
     fun lerp(a: Color, b: Color, t: Float): Color {

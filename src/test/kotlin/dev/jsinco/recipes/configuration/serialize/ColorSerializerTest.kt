@@ -41,6 +41,17 @@ class ColorSerializerTest {
         assertEquals(name, serializationData.asMap()[ObjectSerializer.VALUE])
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["GOLD", "LIGHT_PURPLE"])
+    fun `serializes named text colors to their names`(name: String) {
+        val color = ColorUtil.NAME_TO_COLOR_MAP[name]!!
+        val serializationData = SerializationData(configurer, serdesContext)
+
+        serializer.serialize(color, serializationData, GenericsDeclaration.of(String::class.java))
+
+        assertEquals(name, serializationData.asMap()[ObjectSerializer.VALUE])
+    }
+
     @Test
     fun `serializes unnamed colors to hex format`() {
         val color = Color.fromRGB(123, 45, 67)
@@ -74,6 +85,21 @@ class ColorSerializerTest {
     @ParameterizedTest
     @CsvSource("WHITE, WHITE", "RED, RED", "BLUE, BLUE", "GREEN, GREEN", "BLACK, BLACK", "YELLOW, YELLOW")
     fun `deserializes named colors correctly`(input: String, expectedName: String) {
+        val deserializationData = DeserializationData(
+            mapOf(ObjectSerializer.VALUE to input),
+            configurer,
+            serdesContext
+        )
+
+        val color = serializer.deserialize(deserializationData, GenericsDeclaration.of(String::class.java))
+
+        assertNotNull(color)
+        assertEquals(ColorUtil.NAME_TO_COLOR_MAP[expectedName]!!.asRGB(), color!!.asRGB())
+    }
+
+    @ParameterizedTest
+    @CsvSource("GOLD, GOLD", "LIGHT_PURPLE, LIGHT_PURPLE")
+    fun `deserializes named text colors correctly`(input: String, expectedName: String) {
         val deserializationData = DeserializationData(
             mapOf(ObjectSerializer.VALUE to input),
             configurer,
@@ -145,7 +171,7 @@ class ColorSerializerTest {
     @Test
     fun `deserializes invalid string returns null`() {
         val deserializationData = DeserializationData(
-            mapOf("value" to "INVALID_COLOR"),
+            mapOf("#1234567" to "INVALID_COLOR"),
             configurer,
             serdesContext
         )
