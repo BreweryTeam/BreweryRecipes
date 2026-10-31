@@ -16,13 +16,7 @@ object ColorSerializer : ObjectSerializer<Color> {
     }
 
     override fun serialize(`object`: Color, data: SerializationData, generics: GenericsDeclaration) {
-        for ((name, color) in ColorUtil.NAME_TO_COLOR_MAP) {
-            if (`object`.asRGB() == color.asRGB()) {
-                data.setValue(name)
-                return
-            }
-        }
-        data.setValue("#" + EXPLICIT_HEX_FORMAT.toHexDigits(`object`.asRGB().toLong(), 6))
+        data.setValue(ColorUtil.colorToString(`object`))
     }
 
     override fun deserialize(data: DeserializationData, generics: GenericsDeclaration): Color? {
