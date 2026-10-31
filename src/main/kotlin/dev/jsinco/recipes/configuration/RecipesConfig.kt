@@ -20,7 +20,7 @@ class RecipesConfig : OkaeriConfig() {
         "AS_PROVIDED: keep the order in which the providing brewing plugin relays its recipes"
     )
     @CustomKey("recipe-sort-order")
-    var recipeSortOrder: RecipeSortOrder = RecipeSortOrder.AS_PROVIDED
+    var recipeSortOrder: SortOrder = SortOrder.AS_PROVIDED
 
     @Comment(
         "In the fragments book, group recipes by their completeness before applying the sort order?",
