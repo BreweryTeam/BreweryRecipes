@@ -30,7 +30,6 @@ interface BrewingIntegration {
             }
         }
         val brewDisplayName = brewDisplayName(recipeDisplay.recipeKey())
-            ?.color(null)
             ?.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             ?: return null
         val displayName = recipeDisplay.displayName(brewDisplayName)
