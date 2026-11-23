@@ -89,23 +89,38 @@ object RecipeLoreLines {
             ?: ItemColorUtil.getHex(ingredient.key)
                 ?.let { TextColor.fromHexString(it) }
         val itemColorTag = itemColor
-            ?.let { Tag.styling(it) }
+            ?.let { Tag.styling(ensureMinBrightness(it)) }
             ?: Tag.selfClosingInserting(Component.empty())
         val brewColorTag = if (ingredient.key.startsWith("brewery:"))
             BreweryRecipes.brewingIntegration.brewIngredientColor(ingredient.key)
                 ?.let { TextColor.color(it.asRGB()) }
-                ?.let { Tag.styling(it) }
+                ?.let { Tag.styling(ensureMinBrightness(it)) }
                 ?: Tag.selfClosingInserting(Component.empty())
         else Tag.selfClosingInserting(Component.empty())
         return Component.translatable(
             "breweryrecipes.gui.recipes.lore.step.ingredient",
             Argument.tagResolver(
                 Formatter.number("count", amount),
-                Placeholder.component("name", ingredient.displayName),
+                Placeholder.component("name", ingredientName(ingredient)),
                 TagResolver.resolver("itemcolor", itemColorTag),
                 TagResolver.resolver("brewcolor", brewColorTag)
             )
         ).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+    }
+
+    private fun ingredientName(ingredient: Ingredient): Component {
+        if (!ingredient.key.startsWith("brewery:") || !BreweryRecipes.guiConfig.recipes.useGoodQualityName) {
+            return ingredient.displayName
+        }
+        return BreweryRecipes.brewingIntegration.brewDisplayName(ingredient.key.substringAfterLast(':'), true)
+            ?: ingredient.displayName
+    }
+
+    private fun ensureMinBrightness(color: TextColor): TextColor {
+        return TextColor.color(
+            color.red().coerceAtLeast(0x20),
+            color.green().coerceAtLeast(0x20),
+            color.blue().coerceAtLeast(0x20))
     }
 
     private fun vesselLine(step: Step): Component? = when (step) {
