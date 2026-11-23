@@ -30,8 +30,9 @@ class ConfigItem : OkaeriConfig() {
     var name: Component? = null
     var lore: Lore? = null
     var glint: Boolean = false
-    var customModelData: Int? = null
+    var customModelData: CustomModelData? = null
     var itemModel: Key? = null
+    var tooltipStyle: Key? = null
     var noText = false
 
     fun generateItem(): ItemStack {
@@ -65,13 +66,13 @@ class ConfigItem : OkaeriConfig() {
         }
         item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, glint)
         customModelData?.let {
-            item.setData(
-                DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData()
-                    .addFloat(it.toFloat())
-            )
+            item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, it)
         }
         itemModel?.let {
             item.setData(DataComponentTypes.ITEM_MODEL, it)
+        }
+        tooltipStyle?.let {
+            item.setData(DataComponentTypes.TOOLTIP_STYLE, it)
         }
         if (noText) {
             item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltipDisplay().hideTooltip(true))
@@ -98,9 +99,16 @@ class ConfigItem : OkaeriConfig() {
         fun lore(lore: List<Component>) = apply { configItemSection.lore = Lore(*lore.toTypedArray()) }
 
         fun glint(glint: Boolean) = apply { configItemSection.glint = glint }
-        fun customModelData(customModelData: Int) = apply { configItemSection.customModelData = customModelData }
+        fun customModelData(customModelData: Int) = apply {
+            configItemSection.customModelData = CustomModelData.customModelData()
+                .addFloat(customModelData.toFloat())
+                .build()
+        }
+        fun customModelData(customModelData: CustomModelData) = apply { configItemSection.customModelData = customModelData }
         fun itemModel(itemModel: String) = apply { configItemSection.itemModel = NamespacedKey.fromString(itemModel) }
         fun itemModel(itemModel: Key) = apply { configItemSection.itemModel = itemModel }
+        fun tooltipStyle(itemModel: String) = apply { configItemSection.tooltipStyle = NamespacedKey.fromString(itemModel) }
+        fun tooltipStyle(itemModel: Key) = apply { configItemSection.tooltipStyle = itemModel }
         fun noText(noText: Boolean) = apply { configItemSection.noText = noText }
 
         fun build() = configItemSection
