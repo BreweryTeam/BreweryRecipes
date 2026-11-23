@@ -180,7 +180,10 @@ class RecipeItemListener : Listener {
                 translationKey,
                 Argument.component(
                     "recipe_name",
-                    BreweryRecipes.brewingIntegration.brewDisplayName(recipeView.recipeIdentifier)
+                    BreweryRecipes.brewingIntegration.brewDisplayName(
+                        recipeView.recipeIdentifier,
+                        BreweryRecipes.guiConfig.recipes.useGoodQualityName
+                    )
                         ?: Component.text(recipeView.recipeIdentifier)
                 )
             )

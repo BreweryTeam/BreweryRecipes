@@ -33,9 +33,10 @@ object TbpBrewingIntegration : BrewingIntegration {
         return recipe.getRecipeResult(BrewQuality.EXCELLENT).newLorelessItem()
     }
 
-    override fun brewDisplayName(identifier: String): Component? {
+    override fun brewDisplayName(identifier: String, goodQuality: Boolean): Component? {
         val recipe = getApi().recipeRegistry.getRecipe(identifier).getOrNull() ?: return null
-        return recipe.getRecipeResult(BrewQuality.EXCELLENT).displayName()
+        val quality = if (goodQuality) BrewQuality.GOOD else BrewQuality.EXCELLENT
+        return recipe.getRecipeResult(quality).displayName()
     }
 
     override fun cookingMinuteTicks(): Long {

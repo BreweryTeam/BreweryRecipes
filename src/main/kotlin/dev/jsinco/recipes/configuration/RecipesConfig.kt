@@ -16,7 +16,7 @@ class RecipesConfig : OkaeriConfig() {
     @Comment(
         "How recipes are ordered in the recipe book:",
         "ALPHABETICAL_IDENTIFIER: sorted alphabetically by recipe identifier",
-        "ALPHABETICAL_NAME: sorted by the brew's excellent-quality display name (ignoring color codes/tags)",
+        "ALPHABETICAL_NAME: sorted by the brew's display name (ignoring color codes/tags), using the quality set by gui.yml recipes.use-good-quality-name",
         "AS_PROVIDED: keep the order in which the providing brewing plugin relays its recipes"
     )
     @CustomKey("recipe-sort-order")

@@ -117,7 +117,7 @@ object GuiManager {
     }
 
     private fun plainName(recipeId: String): String {
-        val component = BreweryRecipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
+        val component = BreweryRecipes.brewingIntegration.brewDisplayName(recipeId, BreweryRecipes.guiConfig.recipes.useGoodQualityName) ?: return recipeId
         val rendered = GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
         return PlainTextComponentSerializer.plainText().serialize(rendered)
     }

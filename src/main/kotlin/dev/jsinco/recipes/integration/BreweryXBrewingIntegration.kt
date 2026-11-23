@@ -22,9 +22,10 @@ object BreweryXBrewingIntegration : BrewingIntegration {
         return recipe.createBrew(10).createItem()
     }
 
-    override fun brewDisplayName(identifier: String): Component? {
-        val recipe = BRecipe.getRecipes().first { it.id.equals(identifier, true) } ?: return null
-        return LegacyComponentSerializer.legacySection().deserialize(BUtil.color(recipe.getName(10)))
+    override fun brewDisplayName(identifier: String, goodQuality: Boolean): Component? {
+        val recipe = BRecipe.getRecipes().firstOrNull { it.id.equals(identifier, true) } ?: return null
+        val quality = if (goodQuality) 5 else 10
+        return LegacyComponentSerializer.legacySection().deserialize(BUtil.color(recipe.getName(quality)))
     }
 
     override fun cookingMinuteTicks(): Long {

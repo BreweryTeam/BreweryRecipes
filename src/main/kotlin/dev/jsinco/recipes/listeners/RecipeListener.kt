@@ -42,7 +42,7 @@ class RecipeListener : Listener {
                     "breweryrecipes.spawning.item.redeemed",
                     Argument.component(
                         "recipe_name",
-                        BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier)
+                        BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier, BreweryRecipes.guiConfig.recipes.useGoodQualityName)
                             ?: Component.text("Unknown")
                     )
                 )
@@ -78,7 +78,7 @@ class RecipeListener : Listener {
                 "breweryrecipes.spawning.item.redeemed",
                 Argument.component(
                     "recipe_name",
-                    BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier) ?: Component.text("Unknown")
+                    BreweryRecipes.brewingIntegration.brewDisplayName(recipe.identifier, BreweryRecipes.guiConfig.recipes.useGoodQualityName) ?: Component.text("Unknown")
                 )
             )
         )
