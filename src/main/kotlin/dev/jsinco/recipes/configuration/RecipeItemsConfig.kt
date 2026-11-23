@@ -18,6 +18,10 @@ class RecipeItemsConfig : OkaeriConfig() {
         .item(ConfigItem.Builder().material(Material.PAPER).glint(true).build())
         .build()
 
+    @Comment("Use the brew's good-quality name in the recipe item's name instead of the excellent-quality name?")
+    @CustomKey("use-good-quality-name")
+    var useGoodQualityName: Boolean = false
+
     @Comment("Allow recipe items to be redeemed into a player's recipe book by right-clicking them?")
     @CustomKey("redeem-on-right-click")
     var redeemOnRightClick: Boolean = false
