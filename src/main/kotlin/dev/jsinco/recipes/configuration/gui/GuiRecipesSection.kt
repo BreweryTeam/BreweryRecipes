@@ -22,6 +22,13 @@ class GuiRecipesSection : OkaeriConfig() {
         .material(Material.GLASS_BOTTLE)
         .build()
 
+    @Comment(
+        "Use the brew's good-quality name for recipes shown in the GUI instead of the excellent-quality name?",
+        "Also applies to alphabetical sorting, brew ingredient names in recipe lore and recipe chat messages"
+    )
+    @CustomKey("use-good-quality-name")
+    var useGoodQualityName: Boolean = false
+
     @Comment("Lore formatting settings")
     var lore: LoreConfig = LoreConfig()
 }

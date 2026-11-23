@@ -17,10 +17,17 @@ import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
     fun createGuiItem(recipeDisplay: RecipeDisplay): GuiItem? {
-        return createDisplayItem(recipeDisplay)?.let { GuiItem(it, GuiItem.Type.NO_ACTION) }
+        return createDisplayItem(
+            recipeDisplay,
+            goodQualityName = BreweryRecipes.guiConfig.recipes.useGoodQualityName
+        )?.let { GuiItem(it, GuiItem.Type.NO_ACTION) }
     }
 
-    fun createDisplayItem(recipeDisplay: RecipeDisplay, base: ItemStack? = null): ItemStack? {
+    fun createDisplayItem(
+        recipeDisplay: RecipeDisplay,
+        base: ItemStack? = null,
+        goodQualityName: Boolean = false
+    ): ItemStack? {
         val item = base ?: if (recipeDisplay is UndiscoveredRecipe) {
             BreweryRecipes.guiConfig.recipes.undiscoveredItem.generateItem()
         } else {
@@ -31,7 +38,7 @@ interface BrewingIntegration {
                 createItem(recipeDisplay.recipeKey()) ?: return null
             }
         }
-        val brewDisplayName = brewDisplayName(recipeDisplay.recipeKey())
+        val brewDisplayName = brewDisplayName(recipeDisplay.recipeKey(), goodQualityName)
             ?.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             ?: return null
         val displayName = recipeDisplay.displayName(brewDisplayName)
@@ -47,7 +54,7 @@ interface BrewingIntegration {
     }
 
     fun createItem(identifier: String): ItemStack?
-    fun brewDisplayName(identifier: String): Component?
+    fun brewDisplayName(identifier: String, goodQuality: Boolean = false): Component?
     fun brewIngredientColor(ingredientKey: String): Color?
     fun ingredientColor(ingredientKey: String): Color?
     fun cookingMinuteTicks(): Long
