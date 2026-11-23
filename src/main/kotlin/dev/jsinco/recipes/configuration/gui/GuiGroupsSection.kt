@@ -54,9 +54,9 @@ class GuiGroupsSection : OkaeriConfig() {
     @Comment("Groups hidden from the GUI")
     @CustomKey("hidden-groups")
     var hiddenGroups: List<String> = listOf(
-        "recipes",
-        "alcoholic",
-        "beers"
+        "example_group",
+        "hidden_group",
+        "testing"
     )
 
     @Comment("Set the item each group uses in the groups menu")
