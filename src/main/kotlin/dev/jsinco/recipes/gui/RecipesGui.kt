@@ -3,10 +3,19 @@ package dev.jsinco.recipes.gui
 import dev.jsinco.recipes.BreweryRecipes
 import dev.jsinco.recipes.recipe.BreweryRecipeGroup
 import dev.jsinco.recipes.recipe.RecipeDisplay
+import dev.jsinco.recipes.util.ComponentUtil
 import dev.jsinco.recipes.util.GUIUtil
+import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.ItemLore
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.text.minimessage.translation.Argument
+import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
 
 class RecipesGui(
@@ -68,13 +77,15 @@ class RecipesGui(
                 GuiItem.Type.NEXT_PAGE -> hasNextPage()
                 GuiItem.Type.SET_MODE_FRAGMENTS -> mode != RecipeBookMode.FRAGMENTS
                 GuiItem.Type.SET_MODE_BREWED -> mode != RecipeBookMode.BREWED
-                GuiItem.Type.VIEW_GROUPS -> BreweryRecipes.brewingIntegration.hasCustomGroups()
+                GuiItem.Type.VIEW_GROUPS, GuiItem.Type.CYCLE_CATEGORY -> BreweryRecipes.brewingIntegration.hasCustomGroups()
                 GuiItem.Type.SWITCH_MODE, GuiItem.Type.NO_ACTION -> true
                 else -> false
             }
         }.forEach { override ->
+            val item = override.item.generateItem()
+            if (override.type == GuiItem.Type.CYCLE_CATEGORY) appendCategoryLore(item)
             for (slot in GUIUtil.getValidSlots(override.pos)) {
-                renderItem(GuiItem(override.item.generateItem(), override.type), slot)
+                renderItem(GuiItem(item, override.type), slot)
             }
         }
 
@@ -85,8 +96,39 @@ class RecipesGui(
         }
     }
 
-    override fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type) {
+    private fun cycleCategory(step: Int): BreweryRecipeGroup? {
+        val options = GuiManager.groupOrder(includeAll = true)
+        val current = options.indexOfFirst { it?.id == group?.id }.coerceAtLeast(0)
+        return options[Math.floorMod(current + step, options.size)]
+    }
+
+    private fun appendCategoryLore(item: ItemStack) {
+        val categoryName = group?.displayName ?: Component.translatable("breweryrecipes.gui.category.all")
+        val extraLore = listOf(
+            Component.translatable("breweryrecipes.gui.category.current", Argument.component("category", categoryName)),
+            Component.translatable("breweryrecipes.gui.category.usage")
+        ).flatMap {
+            ComponentUtil.splitLines(GlobalTranslator.render(it, BreweryRecipes.recipesConfig.language))
+        }.map {
+            it.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .colorIfAbsent(NamedTextColor.WHITE)
+        }
+        val existing = item.getData(DataComponentTypes.LORE)?.lines() ?: emptyList()
+        item.setData(DataComponentTypes.LORE, ItemLore.lore(existing + extraLore))
+        item.unsetData(DataComponentTypes.TOOLTIP_DISPLAY)
+    }
+
+    override fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type, click: ClickType) {
         when (type) {
+            GuiItem.Type.CYCLE_CATEGORY -> {
+                if (!CooldownManager.tryModeSwitch(player)) return
+                val next = when {
+                    click.isShiftClick -> null
+                    click.isRightClick -> cycleCategory(-1)
+                    else -> cycleCategory(1)
+                }
+                GuiManager.openRecipesGui(mode, player, target, next, admin)
+            }
             GuiItem.Type.NEXT_PAGE -> if (CooldownManager.tryPageSwitch(player)) nextPage()
             GuiItem.Type.PREVIOUS_PAGE -> if (CooldownManager.tryPageSwitch(player)) previousPage()
             GuiItem.Type.VIEW_GROUPS -> {

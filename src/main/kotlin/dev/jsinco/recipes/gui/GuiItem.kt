@@ -27,7 +27,8 @@ data class GuiItem(private val item: ItemStack, val type: Type) {
         SET_MODE_BREWED,
         VIEW_GROUPS,
         OPEN_ALL_GROUP,
-        OPEN_GROUP;
+        OPEN_GROUP,
+        CYCLE_CATEGORY;
 
         fun identifier() = name.lowercase(Locale.ROOT)
 

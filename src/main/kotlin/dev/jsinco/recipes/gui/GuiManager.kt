@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.gui
 
 import dev.jsinco.recipes.BreweryRecipes
+import dev.jsinco.recipes.configuration.GroupPosition
 import dev.jsinco.recipes.configuration.SortOrder
 import dev.jsinco.recipes.configuration.Visibility
 import dev.jsinco.recipes.recipe.BreweryRecipeGroup
@@ -119,6 +120,30 @@ object GuiManager {
         val component = BreweryRecipes.brewingIntegration.brewDisplayName(recipeId) ?: return recipeId
         val rendered = GlobalTranslator.render(component, BreweryRecipes.recipesConfig.language)
         return PlainTextComponentSerializer.plainText().serialize(rendered)
+    }
+
+    fun groupOrder(includeAll: Boolean): List<BreweryRecipeGroup?> {
+        val groupsConfig = BreweryRecipes.guiConfig.groups
+        val groups = BreweryRecipes.brewingIntegration.allGroups()
+            .filter { id -> groupsConfig.hiddenGroups.none { hidden -> hidden.equals(id, ignoreCase = true) } }
+            .mapNotNull { id -> BreweryRecipes.brewingIntegration.getGroup(id) }
+        val sorted: MutableList<BreweryRecipeGroup?> = when (groupsConfig.groupSortOrder) {
+            SortOrder.AS_PROVIDED -> groups
+            SortOrder.ALPHABETICAL_IDENTIFIER ->
+                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.id })
+            SortOrder.ALPHABETICAL_NAME ->
+                groups.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) {
+                    val rendered = GlobalTranslator.render(it.displayName, BreweryRecipes.recipesConfig.language)
+                    PlainTextComponentSerializer.plainText().serialize(rendered)
+                })
+        }.toMutableList()
+        if (includeAll) {
+            when (groupsConfig.allRecipesPosition) {
+                GroupPosition.START -> sorted.addFirst(null)
+                GroupPosition.END -> sorted.addLast(null)
+            }
+        }
+        return sorted
     }
 
     fun openGroupsGui(

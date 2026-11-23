@@ -50,7 +50,11 @@ object RecipeItemUtil {
         if (!isKnownRecipe(recipeView)) return null
         val recipeItemsConfig = BreweryRecipes.recipesConfig.recipeItems
         val base = itemOverride ?: recipeItemsConfig.itemOverride.takeIf { it.enabled }?.item
-        val item = BreweryRecipes.brewingIntegration.createDisplayItem(recipeView, base?.generateItem()) ?: return null
+        val item = BreweryRecipes.brewingIntegration.createDisplayItem(
+            recipeView,
+            base?.generateItem(),
+            recipeItemsConfig.useGoodQualityName
+        ) ?: return null
         if (item.hasData(DataComponentTypes.CONSUMABLE)) {
             item.unsetData(DataComponentTypes.CONSUMABLE) // You could actually get drunk from a recipe otherwise :D
         }

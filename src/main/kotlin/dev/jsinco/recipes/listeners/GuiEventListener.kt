@@ -36,7 +36,7 @@ class GuiEventListener : Listener {
             val value = clickedItem.persistentDataContainer.get(GUI_ITEM_TYPE, PersistentDataType.STRING) ?: return
             val type = GuiItem.Type.entries.firstOrNull { it.identifier() == value } ?: return
             if (event.whoClicked !is Player) return
-            gui.onGuiClick(clickedItem, type)
+            gui.onGuiClick(clickedItem, type, event.click)
         }
     }
 

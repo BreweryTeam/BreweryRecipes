@@ -1,6 +1,7 @@
 package dev.jsinco.recipes.gui
 
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.InventoryView
 import org.bukkit.inventory.ItemStack
@@ -13,7 +14,7 @@ interface Gui : InventoryHolder {
         inventory.setItem(position, guiItem.item())
     }
 
-    fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type)
+    fun onGuiClick(clickedItem: ItemStack, type: GuiItem.Type, click: ClickType)
 
     fun open(): InventoryView?
     fun open(player: Player) = player.openInventory(inventory)
