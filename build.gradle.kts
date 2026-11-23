@@ -265,9 +265,11 @@ tasks.register("generateItemColors") {
             "sugar_cane*" to 0x8eb971, "lily_pad*" to 0x208030,
             "*seagrass*" to 0x4d9e3f, "kelp*" to 0x4d9e3f,
             "bush*" to 0x71a74d, "*dry_bush*" to 0x946b44,
-            "*fern*" to 0x7cbd6b, "*vine*" to 0x48b518,
+            "*fern*" to 0x7cbd6b, "vine" to 0x48b518,
             "*dry_grass*" to 0xa89060,
-            "*_leaves" to 0x71a74d,
+            "oak_leaves" to 0x71a74d, "spruce_leaves" to 0x71a74d, "birch_leaves" to 0x71a74d,
+            "jungle_leaves" to 0x71a74d, "acacia_leaves" to 0x71a74d, "dark_oak_leaves" to 0x71a74d,
+            "mangrove_leaves" to 0x71a74d,
             "lantern" to 0xffd56b,
             "blaze_powder" to 0xFFA100
         )
