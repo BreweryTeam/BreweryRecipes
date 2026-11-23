@@ -106,7 +106,7 @@ tasks {
         minecraftVersion("1.21.11")
         downloadPlugins {
             if (project.findProperty("testing.with.tbp")!! == "true") {
-                modrinth("thebrewingproject", "3.3.1")
+                modrinth("thebrewingproject", "3.5.3")
             } else {
                 modrinth("breweryx", "3.6.0")
             }
@@ -129,7 +129,7 @@ runPaper.folia.registerTask {
     runDirectory.set(File("run-folia"))
     downloadPlugins {
         if (project.findProperty("testing.with.tbp")!! == "true") {
-            modrinth("thebrewingproject", "3.3.1")
+            modrinth("thebrewingproject", "3.5.3")
         } else {
             modrinth("breweryx", "3.6.0")
         }
