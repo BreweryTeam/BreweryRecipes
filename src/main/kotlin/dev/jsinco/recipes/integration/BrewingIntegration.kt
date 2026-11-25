@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import org.bukkit.Color
+import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.ItemStack
 
 interface BrewingIntegration {
@@ -72,4 +73,9 @@ interface BrewingIntegration {
     fun enable(breweryRecipes: BreweryRecipes)
     fun score(recipe: BreweryRecipe): Double
     fun scoreDisplayName(recipe: BreweryRecipe): Component? = null
+
+    /**
+     * The player's drunkenness, from 0.0 to 100.0
+     */
+    fun drunkenness(player: OfflinePlayer): Double
 }

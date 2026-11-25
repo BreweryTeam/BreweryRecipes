@@ -29,8 +29,12 @@ class RecipeViewManager(private val storageImpl: StorageImpl) : PersistencyLinke
         return backing[playerUuid] ?: listOf()
     }
 
+    fun getView(playerUuid: UUID, recipeKey: String): RecipeView? {
+        return backing[playerUuid]?.find { it.recipeIdentifier == recipeKey }
+    }
+
     fun contains(playerUuid: UUID, recipeKey: String): Boolean {
-        return backing[playerUuid]?.any { it.recipeIdentifier == recipeKey } ?: false
+        return getView(playerUuid, recipeKey) != null
     }
 
     fun insertOrUpdateView(playerUuid: UUID, recipeView: RecipeView) {
