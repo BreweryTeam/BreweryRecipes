@@ -83,6 +83,8 @@ class GroupsGui(
                 } else null,
                 recipes.count {
                     RecipeDetails.fromConfig(BreweryRecipes.detailsConfig, it.identifier).visibility != Visibility.HIDDEN
+                            || it.identifier in recipeViews
+                            || it.identifier in completedRecipes
                 }
             ) }
         } else {
